@@ -47,8 +47,10 @@ use synthesizer_program::{FinalizeOperation, Program};
 
 use aleo_std_storage::StorageMode;
 use anyhow::Result;
-use parking_lot::RwLock;
-use std::{borrow::Cow, sync::Arc};
+use std::{
+    borrow::Cow,
+    sync::{Arc, RwLock},
+};
 
 #[cfg(not(feature = "serial"))]
 use rayon::prelude::*;
@@ -1037,7 +1039,7 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
     /// Stores the given block into storage.
     pub fn insert(&self, block: &Block<N>) -> Result<()> {
         // Acquire the write lock on the block tree.
-        let mut tree = self.tree.write();
+        let mut tree = self.tree.write().unwrap();
         // Prepare an updated Merkle tree containing the new block hash.
         let updated_tree = tree.prepare_append(&[block.hash().to_bits_le()])?;
         // Ensure the next block height is correct.
@@ -1057,7 +1059,7 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
         // Ensure 'n' is non-zero.
         ensure!(n > 0, "Cannot remove zero blocks");
         // Acquire the write lock on the block tree.
-        let mut tree = self.tree.write();
+        let mut tree = self.tree.write().unwrap();
         // Prepare an updated Merkle tree removing the last 'n' block hashes.
         let updated_tree = tree.prepare_remove_last_n(usize::try_from(n)?)?;
         // Update the block tree.
@@ -1072,7 +1074,7 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
         ensure!(n > 0, "Cannot remove zero blocks");
 
         // Acquire the write lock on the block tree.
-        let mut tree = self.tree.write();
+        let mut tree = self.tree.write().unwrap();
 
         // Determine the block heights to remove.
         let heights = match self.storage.id_map().keys_confirmed().max() {
@@ -1199,7 +1201,7 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
 impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
     /// Returns the current state root.
     pub fn current_state_root(&self) -> N::StateRoot {
-        (*self.tree.read().root()).into()
+        (*self.tree.read().unwrap().root()).into()
     }
 
     /// Returns the state root that contains the given `block height`.
@@ -1209,7 +1211,7 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
 
     /// Returns a state path for the given `commitment`.
     pub fn get_state_path_for_commitment(&self, commitment: &Field<N>) -> Result<StatePath<N>> {
-        self.storage.get_state_path_for_commitment(commitment, &self.tree.read())
+        self.storage.get_state_path_for_commitment(commitment, &self.tree.read().unwrap())
     }
 
     /// Returns the previous block hash of the given `block height`.

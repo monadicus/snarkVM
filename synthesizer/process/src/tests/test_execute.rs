@@ -39,8 +39,7 @@ use synthesizer_program::{FinalizeGlobalState, FinalizeStoreTrait, Program, Stac
 use synthesizer_snark::UniversalSRS;
 
 use indexmap::IndexMap;
-use parking_lot::RwLock;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 type CurrentNetwork = MainnetV0;
 type CurrentAleo = AleoV0;

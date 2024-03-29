@@ -27,7 +27,6 @@ mod tests;
 use aleo_std_storage::StorageMode;
 use anyhow::{bail, ensure, Result};
 use once_cell::sync::OnceCell;
-use parking_lot::Mutex;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{
     borrow::Borrow,
@@ -37,6 +36,7 @@ use std::{
     sync::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
         Arc,
+        Mutex,
     },
 };
 
@@ -240,7 +240,7 @@ impl RocksDB {
         // atomically (just as a part of a larger batch), every atomic
         // storage operation that has accumulated from the moment the
         // writes have been paused becomes executed as a single atomic batch.
-        let batch = mem::take(&mut *self.atomic_batch.lock());
+        let batch = mem::take(&mut *self.atomic_batch.lock().unwrap());
         if !DISCARD_BATCH {
             self.rocksdb.write(batch)?;
         }

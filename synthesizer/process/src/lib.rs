@@ -67,8 +67,10 @@ use synthesizer_snark::{ProvingKey, UniversalSRS, VerifyingKey};
 
 use aleo_std::prelude::{finish, lap, timer};
 use indexmap::IndexMap;
-use parking_lot::RwLock;
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
 #[cfg(feature = "aleo-cli")]
 use colored::Colorize;

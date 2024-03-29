@@ -348,9 +348,8 @@ mod tests {
     use super::*;
     use console::prelude::TestRng;
 
-    use parking_lot::RwLock;
     use rayon::prelude::*;
-    use std::sync::Arc;
+    use std::sync::{Arc, RwLock};
 
     type CurrentNetwork = console::network::MainnetV0;
 

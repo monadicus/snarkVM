@@ -19,13 +19,14 @@ use console::network::prelude::*;
 use indexmap::IndexMap;
 
 use core::{borrow::Borrow, hash::Hash};
-use parking_lot::{Mutex, RwLock};
 use std::{
     borrow::Cow,
     collections::{btree_map, BTreeMap},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
+        Mutex,
+        RwLock,
     },
 };
 
@@ -92,11 +93,11 @@ impl<
         match self.is_atomic_in_progress() {
             // If a batch is in progress, add the key-value pair to the batch.
             true => {
-                self.atomic_batch.lock().push((key, Some(value)));
+                self.atomic_batch.lock().unwrap().push((key, Some(value)));
             }
             // Otherwise, insert the key-value pair directly into the map.
             false => {
-                self.map.write().insert(bincode::serialize(&key)?, value);
+                self.map.write().unwrap().insert(bincode::serialize(&key)?, value);
             }
         }
 
@@ -111,11 +112,11 @@ impl<
         match self.is_atomic_in_progress() {
             // If a batch is in progress, add the key-None pair to the batch.
             true => {
-                self.atomic_batch.lock().push((*key, None));
+                self.atomic_batch.lock().unwrap().push((*key, None));
             }
             // Otherwise, remove the key-value pair directly from the map.
             false => {
-                self.map.write().remove(&bincode::serialize(&key)?);
+                self.map.write().unwrap().remove(&bincode::serialize(&key)?);
             }
         }
 
@@ -130,7 +131,7 @@ impl<
         // Set the atomic batch flag to `true`.
         self.batch_in_progress.store(true, Ordering::SeqCst);
         // Ensure that the atomic batch is empty.
-        assert!(self.atomic_batch.lock().is_empty());
+        assert!(self.atomic_batch.lock().unwrap().is_empty());
     }
 
     ///
@@ -148,7 +149,7 @@ impl<
     ///
     fn atomic_checkpoint(&self) {
         // Push the current length of the atomic batch to the checkpoint stack.
-        self.checkpoint.lock().push(self.atomic_batch.lock().len());
+        self.checkpoint.lock().unwrap().push(self.atomic_batch.lock().unwrap().len());
     }
 
     ///
@@ -156,7 +157,7 @@ impl<
     ///
     fn clear_latest_checkpoint(&self) {
         // Removes the latest checkpoint.
-        let _ = self.checkpoint.lock().pop();
+        let _ = self.checkpoint.lock().unwrap().pop();
     }
 
     ///
@@ -165,10 +166,10 @@ impl<
     ///
     fn atomic_rewind(&self) {
         // Acquire the write lock on the atomic batch.
-        let mut atomic_batch = self.atomic_batch.lock();
+        let mut atomic_batch = self.atomic_batch.lock().unwrap();
 
         // Retrieve the last checkpoint.
-        let checkpoint = self.checkpoint.lock().pop().unwrap_or(0);
+        let checkpoint = self.checkpoint.lock().unwrap().pop().unwrap_or(0);
 
         // Remove all operations after the checkpoint.
         atomic_batch.truncate(checkpoint);
@@ -179,9 +180,9 @@ impl<
     ///
     fn abort_atomic(&self) {
         // Clear the atomic batch.
-        *self.atomic_batch.lock() = Default::default();
+        *self.atomic_batch.lock().unwrap() = Default::default();
         // Clear the checkpoint stack.
-        *self.checkpoint.lock() = Default::default();
+        *self.checkpoint.lock().unwrap() = Default::default();
         // Set the atomic batch flag to `false`.
         self.batch_in_progress.store(false, Ordering::SeqCst);
     }
@@ -191,14 +192,14 @@ impl<
     ///
     fn finish_atomic(&self) -> Result<()> {
         // Retrieve the atomic batch.
-        let operations = core::mem::take(&mut *self.atomic_batch.lock());
+        let operations = core::mem::take(&mut *self.atomic_batch.lock().unwrap());
 
         // Insert the operations into an index map to remove any operations that would have been overwritten anyways.
         let operations: IndexMap<_, _> = IndexMap::from_iter(operations);
 
         if !operations.is_empty() {
             // Acquire a write lock on the map.
-            let mut locked_map = self.map.write();
+            let mut locked_map = self.map.write().unwrap();
 
             // Prepare the key and value for each queued operation.
             //
@@ -222,7 +223,7 @@ impl<
         }
 
         // Clear the checkpoint stack.
-        *self.checkpoint.lock() = Default::default();
+        *self.checkpoint.lock().unwrap() = Default::default();
         // Set the atomic batch flag to `false`.
         self.batch_in_progress.store(false, Ordering::SeqCst);
 
@@ -265,7 +266,7 @@ impl<
     /// Returns the number of confirmed entries in the map.
     ///
     fn len_confirmed(&self) -> usize {
-        self.map.read().len()
+        self.map.read().unwrap().len()
     }
 
     ///
@@ -276,7 +277,7 @@ impl<
         K: Borrow<Q>,
         Q: PartialEq + Eq + Hash + Serialize + ?Sized,
     {
-        Ok(self.map.read().contains_key(&bincode::serialize(key)?))
+        Ok(self.map.read().unwrap().contains_key(&bincode::serialize(key)?))
     }
 
     ///
@@ -292,7 +293,7 @@ impl<
         if self.is_atomic_in_progress() {
             // If the key is present in the atomic batch, then check if the value is 'Some(V)'.
             // We iterate from the back of the `atomic_batch` to find the latest value.
-            if let Some((_, value)) = self.atomic_batch.lock().iter().rev().find(|&(k, _)| k.borrow() == key) {
+            if let Some((_, value)) = self.atomic_batch.lock().unwrap().iter().rev().find(|&(k, _)| k.borrow() == key) {
                 // If the value is 'Some(V)', then the key exists.
                 // If the value is 'Some(None)', then the key is scheduled to be removed.
                 return Ok(value.is_some());
@@ -311,7 +312,7 @@ impl<
         K: Borrow<Q>,
         Q: PartialEq + Eq + Hash + Serialize + ?Sized,
     {
-        Ok(self.map.read().get(&bincode::serialize(key)?).cloned().map(Cow::Owned))
+        Ok(self.map.read().unwrap().get(&bincode::serialize(key)?).cloned().map(Cow::Owned))
     }
 
     ///
@@ -330,7 +331,14 @@ impl<
         // Return early if there is no atomic batch in progress.
         if self.is_atomic_in_progress() {
             // We iterate from the back of the `atomic_batch` to find the latest value.
-            self.atomic_batch.lock().iter().rev().find(|&(k, _)| k.borrow() == key).map(|(_, value)| value).cloned()
+            self.atomic_batch
+                .lock()
+                .unwrap()
+                .iter()
+                .rev()
+                .find(|&(k, _)| k.borrow() == key)
+                .map(|(_, value)| value)
+                .cloned()
         } else {
             None
         }
@@ -340,7 +348,7 @@ impl<
     /// Returns an iterator visiting each key-value pair in the atomic batch.
     ///
     fn iter_pending(&'a self) -> Self::PendingIterator {
-        let filtered_atomic_batch: IndexMap<_, _> = IndexMap::from_iter(self.atomic_batch.lock().clone());
+        let filtered_atomic_batch: IndexMap<_, _> = IndexMap::from_iter(self.atomic_batch.lock().unwrap().clone());
         filtered_atomic_batch.into_iter().map(|(k, v)| (Cow::Owned(k), v.map(|v| Cow::Owned(v))))
     }
 
@@ -349,7 +357,12 @@ impl<
     ///
     fn iter_confirmed(&'a self) -> Self::Iterator {
         // Note: The 'unwrap' is safe here, because the keys are defined by us.
-        self.map.read().clone().into_iter().map(|(k, v)| (Cow::Owned(bincode::deserialize(&k).unwrap()), Cow::Owned(v)))
+        self.map
+            .read()
+            .unwrap()
+            .clone()
+            .into_iter()
+            .map(|(k, v)| (Cow::Owned(bincode::deserialize(&k).unwrap()), Cow::Owned(v)))
     }
 
     ///
@@ -357,14 +370,14 @@ impl<
     ///
     fn keys_confirmed(&'a self) -> Self::Keys {
         // Note: The 'unwrap' is safe here, because the keys are defined by us.
-        self.map.read().clone().into_keys().map(|k| Cow::Owned(bincode::deserialize(&k).unwrap()))
+        self.map.read().unwrap().clone().into_keys().map(|k| Cow::Owned(bincode::deserialize(&k).unwrap()))
     }
 
     ///
     /// Returns an iterator over each value in the map.
     ///
     fn values_confirmed(&'a self) -> Self::Values {
-        self.map.read().clone().into_values().map(Cow::Owned)
+        self.map.read().unwrap().clone().into_values().map(Cow::Owned)
     }
 }
 

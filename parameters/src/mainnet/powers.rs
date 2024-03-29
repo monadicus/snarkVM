@@ -28,8 +28,11 @@ use snarkvm_utilities::{
 };
 
 use anyhow::{anyhow, bail, ensure, Result};
-use parking_lot::RwLock;
-use std::{collections::BTreeMap, ops::Range, sync::Arc};
+use std::{
+    collections::BTreeMap,
+    ops::Range,
+    sync::{Arc, RwLock},
+};
 
 const NUM_POWERS_15: usize = 1 << 15;
 const NUM_POWERS_16: usize = 1 << 16;
@@ -106,12 +109,12 @@ impl<E: PairingEngine> PowersOfG<E> {
 
     /// Download the powers of beta G specified by `range`.
     pub fn download_powers_for(&self, range: Range<usize>) -> Result<()> {
-        self.powers_of_beta_g.write().download_powers_for(&range)
+        self.powers_of_beta_g.write().unwrap().download_powers_for(&range)
     }
 
     /// Returns the number of contiguous powers of beta G starting from the 0-th power.
     pub fn num_powers(&self) -> usize {
-        self.powers_of_beta_g.read().num_powers()
+        self.powers_of_beta_g.read().unwrap().num_powers()
     }
 
     /// Returns the maximum possible number of contiguous powers of beta G starting from the 0-th power.
@@ -126,12 +129,12 @@ impl<E: PairingEngine> PowersOfG<E> {
 
     /// Returns the `index`-th power of beta * G.
     pub fn power_of_beta_g(&self, index: usize) -> Result<E::G1Affine> {
-        self.powers_of_beta_g.write().power(index)
+        self.powers_of_beta_g.write().unwrap().power(index)
     }
 
     /// Returns the powers of `beta * G` that lie within `range`.
     pub fn powers_of_beta_g(&self, range: Range<usize>) -> Result<Vec<E::G1Affine>> {
-        Ok(self.powers_of_beta_g.write().powers(range)?.to_vec())
+        Ok(self.powers_of_beta_g.write().unwrap().powers(range)?.to_vec())
     }
 
     pub fn negative_powers_of_beta_h(&self) -> &BTreeMap<usize, E::G2Affine> {
@@ -149,7 +152,7 @@ impl<E: PairingEngine> PowersOfG<E> {
 
 impl<E: PairingEngine> CanonicalSerialize for PowersOfG<E> {
     fn serialize_with_mode<W: Write>(&self, mut writer: W, mode: Compress) -> Result<(), SerializationError> {
-        self.powers_of_beta_g.read().serialize_with_mode(&mut writer, mode)?;
+        self.powers_of_beta_g.read().unwrap().serialize_with_mode(&mut writer, mode)?;
         self.powers_of_beta_times_gamma_g.serialize_with_mode(&mut writer, mode)?;
         self.negative_powers_of_beta_h.serialize_with_mode(&mut writer, mode)?;
         self.beta_h.serialize_with_mode(&mut writer, mode)?;
@@ -157,7 +160,7 @@ impl<E: PairingEngine> CanonicalSerialize for PowersOfG<E> {
     }
 
     fn serialized_size(&self, mode: Compress) -> usize {
-        self.powers_of_beta_g.read().serialized_size(mode)
+        self.powers_of_beta_g.read().unwrap().serialized_size(mode)
             + self.powers_of_beta_times_gamma_g.serialized_size(mode)
             + self.negative_powers_of_beta_h.serialized_size(mode)
             + self.beta_h.serialized_size(mode)
@@ -201,7 +204,7 @@ impl<E: PairingEngine> CanonicalDeserialize for PowersOfG<E> {
 
 impl<E: PairingEngine> Valid for PowersOfG<E> {
     fn check(&self) -> Result<(), SerializationError> {
-        self.powers_of_beta_g.read().check()?;
+        self.powers_of_beta_g.read().unwrap().check()?;
         self.powers_of_beta_times_gamma_g.check()?;
         self.negative_powers_of_beta_h.check()?;
         self.prepared_negative_powers_of_beta_h.check()?;

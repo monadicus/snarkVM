@@ -60,7 +60,7 @@ impl<
         match self.is_atomic_in_progress() {
             // If a batch is in progress, add the key-value pair to the batch.
             true => {
-                self.atomic_batch.lock().push((key, Some(value)));
+                self.atomic_batch.lock().unwrap().push((key, Some(value)));
             }
             // Otherwise, insert the key-value pair directly into the map.
             false => {
@@ -82,7 +82,7 @@ impl<
         match self.is_atomic_in_progress() {
             // If a batch is in progress, add the key to the batch.
             true => {
-                self.atomic_batch.lock().push((*key, None));
+                self.atomic_batch.lock().unwrap().push((*key, None));
             }
             // Otherwise, remove the key-value pair directly from the map.
             false => {
@@ -106,11 +106,11 @@ impl<
         self.database.atomic_depth.fetch_add(1, Ordering::SeqCst);
 
         // Ensure that the atomic batch is empty.
-        assert!(self.atomic_batch.lock().is_empty());
+        assert!(self.atomic_batch.lock().unwrap().is_empty());
         // Ensure that the database atomic batch is empty; skip this check if the atomic
         // writes are paused, as there may be pending operations.
         if !self.database.are_atomic_writes_paused() {
-            assert!(self.database.atomic_batch.lock().is_empty());
+            assert!(self.database.atomic_batch.lock().unwrap().is_empty());
         }
     }
 
@@ -129,7 +129,7 @@ impl<
     ///
     fn atomic_checkpoint(&self) {
         // Push the current length of the atomic batch to the checkpoint stack.
-        self.checkpoints.lock().push(self.atomic_batch.lock().len());
+        self.checkpoints.lock().unwrap().push(self.atomic_batch.lock().unwrap().len());
     }
 
     ///
@@ -137,7 +137,7 @@ impl<
     ///
     fn clear_latest_checkpoint(&self) {
         // Removes the latest checkpoint.
-        let _ = self.checkpoints.lock().pop();
+        let _ = self.checkpoints.lock().unwrap().pop();
     }
 
     ///
@@ -146,10 +146,10 @@ impl<
     ///
     fn atomic_rewind(&self) {
         // Acquire the write lock on the atomic batch.
-        let mut atomic_batch = self.atomic_batch.lock();
+        let mut atomic_batch = self.atomic_batch.lock().unwrap();
 
         // Retrieve the last checkpoint.
-        let checkpoint = self.checkpoints.lock().pop().unwrap_or(0);
+        let checkpoint = self.checkpoints.lock().unwrap().pop().unwrap_or(0);
 
         // Remove all operations after the checkpoint.
         atomic_batch.truncate(checkpoint);
@@ -160,13 +160,13 @@ impl<
     ///
     fn abort_atomic(&self) {
         // Clear the atomic batch.
-        self.atomic_batch.lock().clear();
+        self.atomic_batch.lock().unwrap().clear();
         // Clear the checkpoint stack.
-        self.checkpoints.lock().clear();
+        self.checkpoints.lock().unwrap().clear();
         // Set the atomic batch flag to `false`.
         self.batch_in_progress.store(false, Ordering::SeqCst);
         // Clear the database-wide atomic batch.
-        self.database.atomic_batch.lock().clear();
+        self.database.atomic_batch.lock().unwrap().clear();
         // Reset the atomic batch depth.
         self.database.atomic_depth.store(0, Ordering::SeqCst);
     }
@@ -176,7 +176,7 @@ impl<
     ///
     fn finish_atomic(&self) -> Result<()> {
         // Retrieve the atomic batch belonging to the map.
-        let operations = core::mem::take(&mut *self.atomic_batch.lock());
+        let operations = core::mem::take(&mut *self.atomic_batch.lock().unwrap());
 
         if !operations.is_empty() {
             // Insert the operations into an index map to remove any operations that would have been overwritten anyways.
@@ -198,7 +198,7 @@ impl<
                 .collect::<Result<Vec<_>>>()?;
 
             // Enqueue all the operations from the map in the database-wide batch.
-            let mut atomic_batch = self.database.atomic_batch.lock();
+            let mut atomic_batch = self.database.atomic_batch.lock().unwrap();
             for (raw_key, raw_value) in prepared_operations {
                 match raw_value {
                     Some(raw_value) => atomic_batch.put(raw_key, raw_value),
@@ -208,7 +208,7 @@ impl<
         }
 
         // Clear the checkpoint stack.
-        self.checkpoints.lock().clear();
+        self.checkpoints.lock().unwrap().clear();
         // Set the atomic batch flag to `false`.
         self.batch_in_progress.store(false, Ordering::SeqCst);
 
@@ -224,11 +224,11 @@ impl<
         // atomic writes are paused.
         if previous_atomic_depth == 1 && !self.database.are_atomic_writes_paused() {
             // Empty the collection of pending operations.
-            let batch = mem::take(&mut *self.database.atomic_batch.lock());
+            let batch = mem::take(&mut *self.database.atomic_batch.lock().unwrap());
             // Execute all the operations atomically.
             self.database.rocksdb.write(batch)?;
             // Ensure that the database atomic batch is empty.
-            assert!(self.database.atomic_batch.lock().is_empty());
+            assert!(self.database.atomic_batch.lock().unwrap().is_empty());
         }
 
         Ok(())
@@ -315,7 +315,7 @@ impl<
         if self.is_atomic_in_progress() {
             // If the key is present in the atomic batch, then check if the value is 'Some(V)'.
             // We iterate from the back of the `atomic_batch` to find the latest value.
-            if let Some((_, value)) = self.atomic_batch.lock().iter().rev().find(|&(k, _)| k.borrow() == key) {
+            if let Some((_, value)) = self.atomic_batch.lock().unwrap().iter().rev().find(|&(k, _)| k.borrow() == key) {
                 // If the value is 'Some(V)', then the key exists.
                 // If the value is 'Some(None)', then the key is scheduled to be removed.
                 return Ok(value.is_some());
@@ -357,7 +357,14 @@ impl<
         // Return early if there is no atomic batch in progress.
         if self.is_atomic_in_progress() {
             // We iterate from the back of the `atomic_batch` to find the latest value.
-            self.atomic_batch.lock().iter().rev().find(|&(k, _)| k.borrow() == key).map(|(_, value)| value).cloned()
+            self.atomic_batch
+                .lock()
+                .unwrap()
+                .iter()
+                .rev()
+                .find(|&(k, _)| k.borrow() == key)
+                .map(|(_, value)| value)
+                .cloned()
         } else {
             None
         }
@@ -367,7 +374,7 @@ impl<
     /// Returns an iterator visiting each key-value pair in the atomic batch.
     ///
     fn iter_pending(&'a self) -> Self::PendingIterator {
-        let filtered_atomic_batch: IndexMap<_, _> = IndexMap::from_iter(self.atomic_batch.lock().clone());
+        let filtered_atomic_batch: IndexMap<_, _> = IndexMap::from_iter(self.atomic_batch.lock().unwrap().clone());
         filtered_atomic_batch.into_iter().map(|(k, v)| (Cow::Owned(k), v.map(|v| Cow::Owned(v))))
     }
 
