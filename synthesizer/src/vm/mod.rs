@@ -193,7 +193,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     /// Returns `true` if a program with the given program ID exists.
     #[inline]
     pub fn contains_program(&self, program_id: &ProgramID<N>) -> bool {
-        self.process.read().contains_program(program_id)
+        self.process.read().unwrap().contains_program(program_id)
     }
 
     /// Returns the process.

@@ -89,7 +89,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     /// Adds the given block as the next block in the ledger.
     pub fn advance_to_next_block(&self, block: &Block<N>) -> Result<()> {
         // Acquire the write lock on the current block.
-        let mut current_block = self.current_block.write();
+        let mut current_block = self.current_block.write().unwrap();
         // Update the VM.
         self.vm.add_next_block(block)?;
         // Update the current block.
@@ -99,13 +99,13 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
 
         // Update the cached committee from storage.
         if let Ok(current_committee) = self.vm.finalize_store().committee_store().current_committee() {
-            *self.current_committee.write() = Some(current_committee);
+            *self.current_committee.write().unwrap() = Some(current_committee);
         }
 
         // If the block is the start of a new epoch, or the epoch challenge has not been set, update the current epoch challenge.
-        if block.height() % N::NUM_BLOCKS_PER_EPOCH == 0 || self.current_epoch_challenge.read().is_none() {
+        if block.height() % N::NUM_BLOCKS_PER_EPOCH == 0 || self.current_epoch_challenge.read().unwrap().is_none() {
             // Update the current epoch challenge.
-            self.current_epoch_challenge.write().clone_from(&self.get_epoch_challenge(block.height()).ok());
+            self.current_epoch_challenge.write().unwrap().clone_from(&self.get_epoch_challenge(block.height()).ok());
         }
 
         Ok(())

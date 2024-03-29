@@ -129,7 +129,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
         // Spot check the integrity of `NUM_BLOCKS` random blocks upon bootup.
         const NUM_BLOCKS: usize = 10;
         // Retrieve the latest height.
-        let latest_height = ledger.current_block.read().height();
+        let latest_height = ledger.current_block.read().unwrap().height();
         debug_assert_eq!(latest_height, *ledger.vm.block_store().heights().max().unwrap(), "Mismatch in latest height");
         // Sample random block heights.
         let block_heights: Vec<u32> =
@@ -211,7 +211,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
 
     /// Returns the latest committee.
     pub fn latest_committee(&self) -> Result<Committee<N>> {
-        match self.current_committee.read().as_ref() {
+        match self.current_committee.read().unwrap().as_ref() {
             Some(committee) => Ok(committee.clone()),
             None => self.vm.finalize_store().committee_store().current_committee(),
         }
@@ -224,12 +224,12 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
 
     /// Returns the latest epoch number.
     pub fn latest_epoch_number(&self) -> u32 {
-        self.current_block.read().height() / N::NUM_BLOCKS_PER_EPOCH
+        self.current_block.read().unwrap().height() / N::NUM_BLOCKS_PER_EPOCH
     }
 
     /// Returns the latest epoch challenge.
     pub fn latest_epoch_challenge(&self) -> Result<EpochChallenge<N>> {
-        match self.current_epoch_challenge.read().as_ref() {
+        match self.current_epoch_challenge.read().unwrap().as_ref() {
             Some(challenge) => Ok(challenge.clone()),
             None => self.get_epoch_challenge(self.latest_height()),
         }
@@ -237,72 +237,72 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
 
     /// Returns the latest block.
     pub fn latest_block(&self) -> Block<N> {
-        self.current_block.read().clone()
+        self.current_block.read().unwrap().clone()
     }
 
     /// Returns the latest round number.
     pub fn latest_round(&self) -> u64 {
-        self.current_block.read().round()
+        self.current_block.read().unwrap().round()
     }
 
     /// Returns the latest block height.
     pub fn latest_height(&self) -> u32 {
-        self.current_block.read().height()
+        self.current_block.read().unwrap().height()
     }
 
     /// Returns the latest block hash.
     pub fn latest_hash(&self) -> N::BlockHash {
-        self.current_block.read().hash()
+        self.current_block.read().unwrap().hash()
     }
 
     /// Returns the latest block header.
     pub fn latest_header(&self) -> Header<N> {
-        *self.current_block.read().header()
+        *self.current_block.read().unwrap().header()
     }
 
     /// Returns the latest block cumulative weight.
     pub fn latest_cumulative_weight(&self) -> u128 {
-        self.current_block.read().cumulative_weight()
+        self.current_block.read().unwrap().cumulative_weight()
     }
 
     /// Returns the latest block cumulative proof target.
     pub fn latest_cumulative_proof_target(&self) -> u128 {
-        self.current_block.read().cumulative_proof_target()
+        self.current_block.read().unwrap().cumulative_proof_target()
     }
 
     /// Returns the latest block solutions root.
     pub fn latest_solutions_root(&self) -> Field<N> {
-        self.current_block.read().header().solutions_root()
+        self.current_block.read().unwrap().header().solutions_root()
     }
 
     /// Returns the latest block coinbase target.
     pub fn latest_coinbase_target(&self) -> u64 {
-        self.current_block.read().coinbase_target()
+        self.current_block.read().unwrap().coinbase_target()
     }
 
     /// Returns the latest block proof target.
     pub fn latest_proof_target(&self) -> u64 {
-        self.current_block.read().proof_target()
+        self.current_block.read().unwrap().proof_target()
     }
 
     /// Returns the last coinbase target.
     pub fn last_coinbase_target(&self) -> u64 {
-        self.current_block.read().last_coinbase_target()
+        self.current_block.read().unwrap().last_coinbase_target()
     }
 
     /// Returns the last coinbase timestamp.
     pub fn last_coinbase_timestamp(&self) -> i64 {
-        self.current_block.read().last_coinbase_timestamp()
+        self.current_block.read().unwrap().last_coinbase_timestamp()
     }
 
     /// Returns the latest block timestamp.
     pub fn latest_timestamp(&self) -> i64 {
-        self.current_block.read().timestamp()
+        self.current_block.read().unwrap().timestamp()
     }
 
     /// Returns the latest block transactions.
     pub fn latest_transactions(&self) -> Transactions<N> {
-        self.current_block.read().transactions().clone()
+        self.current_block.read().unwrap().transactions().clone()
     }
 }
 

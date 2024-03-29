@@ -64,7 +64,7 @@ macro_rules! process {
                     .downcast_ref::<Arc<RwLock<Process<console::network::MainnetV0>>>>()
                     .ok_or_else(|| anyhow!("Failed to downcast {}", stringify!($self.process)))?;
                 // Process the logic.
-                $logic!(process.read(), console::network::MainnetV0, circuit::AleoV0)
+                $logic!(process.read().unwrap(), console::network::MainnetV0, circuit::AleoV0)
             }
             _ => bail!("Unsupported VM configuration for network: {}", N::ID),
         }

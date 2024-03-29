@@ -20,10 +20,10 @@ impl<N: Network> Serialize for Authorization<N> {
         match serializer.is_human_readable() {
             true => {
                 let mut authorization = serializer.serialize_struct("Authorization", 2)?;
-                authorization.serialize_field("requests", &self.requests.read().clone())?;
+                authorization.serialize_field("requests", &self.requests.read().unwrap().clone())?;
                 authorization.serialize_field(
                     "transitions",
-                    &self.transitions.read().values().collect::<Vec<&Transition<N>>>(),
+                    &self.transitions.read().unwrap().values().collect::<Vec<&Transition<N>>>(),
                 )?;
                 authorization.end()
             }

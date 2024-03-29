@@ -448,7 +448,7 @@ impl<N: Network> StackExecute<N> for Stack<N> {
                 num_response_constraints,
             };
             // Add the assignment to the assignments.
-            assignments.write().push((assignment, metrics));
+            assignments.write().unwrap().push((assignment, metrics));
             lap!(timer, "Save the circuit assignment");
         }
         // If the circuit is in `Execute` mode, then execute the circuit into a transition.
@@ -471,7 +471,7 @@ impl<N: Network> StackExecute<N> for Stack<N> {
             };
 
             // Add the transition to the trace.
-            trace.write().insert_transition(
+            trace.write().unwrap().insert_transition(
                 console_request.input_ids(),
                 &transition,
                 (proving_key, assignment),
@@ -490,7 +490,7 @@ impl<N: Network> StackExecute<N> for Stack<N> {
                 num_response_constraints,
             };
             // Add the assignment to the assignments.
-            assignments.write().push((assignment, metrics));
+            assignments.write().unwrap().push((assignment, metrics));
             lap!(timer, "Save the circuit assignment");
         }
 

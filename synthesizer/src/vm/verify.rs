@@ -96,7 +96,8 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         self.check_fee(transaction, rejected_id)?;
 
         // Check if the transaction exists in the partially-verified cache.
-        let is_partially_verified = self.partially_verified_transactions.read().peek(&transaction.id()).is_some();
+        let is_partially_verified =
+            self.partially_verified_transactions.read().unwrap().peek(&transaction.id()).is_some();
 
         // Next, verify the deployment or execution.
         match transaction {
@@ -142,7 +143,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         // If the above checks have passed and this is not a fee transaction,
         // then add the transaction ID to the partially-verified transactions cache.
         if !matches!(transaction, Transaction::Fee(..)) && !is_partially_verified {
-            self.partially_verified_transactions.write().push(transaction.id(), ());
+            self.partially_verified_transactions.write().unwrap().push(transaction.id(), ());
         }
 
         finish!(timer, "Verify the transaction");
@@ -183,7 +184,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
                     // If the fee is required, then check that the base fee amount is satisfied.
                     if is_fee_required {
                         // Compute the execution cost.
-                        let (cost, _) = execution_cost(&self.process().read(), execution)?;
+                        let (cost, _) = execution_cost(&self.process().read().unwrap(), execution)?;
                         // Ensure the fee is sufficient to cover the cost.
                         if *fee.base_amount()? < cost {
                             bail!(
@@ -250,7 +251,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         // Verify the execution proof, if it has not been partially-verified before.
         let verification = match is_partially_verified {
             true => Ok(()),
-            false => self.process.read().verify_execution(execution),
+            false => self.process.read().unwrap().verify_execution(execution),
         };
         lap!(timer, "Verify the execution");
 
@@ -281,7 +282,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         ensure!(*fee_amount <= N::MAX_FEE, "Fee verification failed: fee exceeds the maximum limit");
 
         // Verify the fee.
-        let verification = self.process.read().verify_fee(fee, deployment_or_execution_id);
+        let verification = self.process.read().unwrap().verify_fee(fee, deployment_or_execution_id);
         lap!(timer, "Verify the fee");
 
         // TODO (howardwu): This check is technically insufficient. Consider moving this upstream

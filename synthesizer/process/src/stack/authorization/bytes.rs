@@ -52,8 +52,8 @@ impl<N: Network> ToBytes for Authorization<N> {
     /// Writes the authorization to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Acquire the read locks.
-        let requests = self.requests.read();
-        let transitions = self.transitions.read();
+        let requests = self.requests.read().unwrap();
+        let transitions = self.transitions.read().unwrap();
 
         // Write the version.
         1u8.write_le(&mut writer)?;

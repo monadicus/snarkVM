@@ -157,7 +157,7 @@ impl<N: Network> Stack<N> {
                     bail!("Failed to synthesize the circuit for '{function_name}': {err}")
                 }
                 // Check the certificate.
-                match assignments.read().last() {
+                match assignments.read().unwrap().last() {
                     None => bail!("The assignment for function '{function_name}' is missing in '{program_id}'"),
                     Some((assignment, _metrics)) => {
                         // Ensure the certificate is valid.

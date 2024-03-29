@@ -55,7 +55,7 @@ impl<N: Network> Package<N> {
         // Synthesize the circuit.
         let response = stack.execute_function::<A, R>(call_stack, None, None, rng)?;
         // Retrieve the call metrics.
-        let call_metrics = assignments.read().iter().map(|(_, metrics)| *metrics).collect::<Vec<_>>();
+        let call_metrics = assignments.read().unwrap().iter().map(|(_, metrics)| *metrics).collect::<Vec<_>>();
         // Return the response and call metrics.
         Ok((response, call_metrics))
     }
