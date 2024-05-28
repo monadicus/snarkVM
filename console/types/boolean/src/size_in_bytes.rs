@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBytes for Boolean<E> {
+impl SizeInBytes for Boolean {
     /// Returns the boolean size in bytes.
     #[inline]
     fn size_in_bytes() -> usize {

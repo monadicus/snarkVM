@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBits for Literal<N> {
+impl ToBits for Literal {
     /// Returns the little-endian bits of the literal.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         (&self).write_bits_le(vec);
@@ -26,7 +26,7 @@ impl<N: Network> ToBits for Literal<N> {
     }
 }
 
-impl<N: Network> ToBits for &Literal<N> {
+impl ToBits for &Literal {
     /// Returns the little-endian bits of the literal.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         match self {

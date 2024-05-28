@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment> Distribution<Field<E>> for Standard {
+impl Distribution<Field> for Standard {
     #[inline]
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Field<E> {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Field {
         Field::new(Uniform::rand(rng))
     }
 }

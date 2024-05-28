@@ -41,16 +41,18 @@ pub use snarkvm_console_types_boolean::Boolean;
 pub use snarkvm_console_types_field::Field;
 pub use snarkvm_console_types_scalar::Scalar;
 
+type GroupInner = ConsoleProjective;
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Group<E: Environment> {
+pub struct Group {
     /// The underlying group element.
-    group: E::Projective,
+    group: GroupInner,
 }
 
-impl<E: Environment> GroupTrait<Scalar<E>> for Group<E> {}
+impl GroupTrait<Scalar> for Group {}
 
-impl<E: Environment> Visibility for Group<E> {
-    type Boolean = Boolean<E>;
+impl Visibility for Group {
+    type Boolean = Boolean;
 
     /// Returns the number of field elements to encode `self`.
     fn size_in_fields(&self) -> Result<u16> {
@@ -58,31 +60,31 @@ impl<E: Environment> Visibility for Group<E> {
     }
 }
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// The coefficient A for the twisted Edwards curve equation.
-    pub const EDWARDS_A: Field<E> = Field::<E>::new(E::EDWARDS_A);
+    pub const EDWARDS_A: Field = Field::new(CONSOLE_EDWARDS_A);
     /// The coefficient D for the twisted Edwards curve equation.
-    pub const EDWARDS_D: Field<E> = Field::<E>::new(E::EDWARDS_D);
+    pub const EDWARDS_D: Field = Field::new(CONSOLE_EDWARDS_D);
     /// The coefficient A for the Montgomery curve equation.
-    pub const MONTGOMERY_A: Field<E> = Field::<E>::new(E::MONTGOMERY_A);
+    pub const MONTGOMERY_A: Field = Field::new(CONSOLE_MONTGOMERY_A);
     /// The coefficient B for the Montgomery curve equation.
-    pub const MONTGOMERY_B: Field<E> = Field::<E>::new(E::MONTGOMERY_B);
+    pub const MONTGOMERY_B: Field = Field::new(CONSOLE_MONTGOMERY_B);
 
     /// Initializes a new group.
-    pub fn new(group: E::Affine) -> Self {
+    pub fn new(group: ConsoleAffine) -> Self {
         Self { group: group.into() }
     }
 
     /// Returns the prime subgroup generator.
     pub fn generator() -> Self {
-        Self { group: E::Affine::prime_subgroup_generator().to_projective() }
+        Self { group: ConsoleAffine::prime_subgroup_generator().to_projective() }
     }
 
     /// Returns `self * COFACTOR`.
     pub fn mul_by_cofactor(&self) -> Self {
         // (For advanced users) The cofactor for this curve is `4`. Thus doubling is used to be performant.
         // See unit tests below, which sanity check that this condition holds.
-        debug_assert!(E::Affine::cofactor().len() == 1 && E::Affine::cofactor()[0] == 4);
+        debug_assert!(ConsoleAffine::cofactor().len() == 1 && ConsoleAffine::cofactor()[0] == 4);
 
         Self { group: self.group.double().double() }
     }
@@ -93,14 +95,14 @@ impl<E: Environment> Group<E> {
     }
 }
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// This internal function initializes a group element from projective coordinates.
-    const fn from_projective(group: E::Projective) -> Self {
+    const fn from_projective(group: GroupInner) -> Self {
         Self { group }
     }
 }
 
-impl<E: Environment> TypeName for Group<E> {
+impl TypeName for Group {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -108,8 +110,8 @@ impl<E: Environment> TypeName for Group<E> {
     }
 }
 
-impl<E: Environment> Deref for Group<E> {
-    type Target = E::Projective;
+impl Deref for Group {
+    type Target = GroupInner;
 
     #[inline]
     fn deref(&self) -> &Self::Target {

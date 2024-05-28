@@ -62,34 +62,34 @@ impl_local!(FeePublicVerifier, "resources/", "fee_public", "verifier");
 
 #[macro_export]
 macro_rules! insert_testnet_credit_keys {
-    ($map:ident, $type:ident<$network:ident>, $variant:ident) => {{
+    ($map:ident, $type:ident, $variant:ident) => {{
         paste::paste! {
             let string = stringify!([<$variant:lower>]);
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("bond_public", $crate::testnet::[<BondPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("unbond_public", $crate::testnet::[<UnbondPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("unbond_delegator_as_validator", $crate::testnet::[<UnbondDelegatorAsValidator $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("claim_unbond_public", $crate::testnet::[<ClaimUnbondPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("set_validator_state", $crate::testnet::[<SetValidatorState $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_private", $crate::testnet::[<TransferPrivate $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_public", $crate::testnet::[<TransferPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_public_as_signer", $crate::testnet::[<TransferPublicAsSigner $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_private_to_public", $crate::testnet::[<TransferPrivateToPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_public_to_private", $crate::testnet::[<TransferPublicToPrivate $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("join", $crate::testnet::[<Join $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("split", $crate::testnet::[<Split $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("fee_private", $crate::testnet::[<FeePrivate $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type<$network>, ("fee_public", $crate::testnet::[<FeePublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("bond_public", $crate::testnet::[<BondPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("unbond_public", $crate::testnet::[<UnbondPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("unbond_delegator_as_validator", $crate::testnet::[<UnbondDelegatorAsValidator $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("claim_unbond_public", $crate::testnet::[<ClaimUnbondPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("set_validator_state", $crate::testnet::[<SetValidatorState $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("transfer_private", $crate::testnet::[<TransferPrivate $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("transfer_public", $crate::testnet::[<TransferPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("transfer_public_as_signer", $crate::testnet::[<TransferPublicAsSigner $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("transfer_private_to_public", $crate::testnet::[<TransferPrivateToPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("transfer_public_to_private", $crate::testnet::[<TransferPublicToPrivate $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("join", $crate::testnet::[<Join $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("split", $crate::testnet::[<Split $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("fee_private", $crate::testnet::[<FeePrivate $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type, ("fee_public", $crate::testnet::[<FeePublic $variant>]::load_bytes()));
         }
     }};
 }
 
 #[macro_export]
 macro_rules! insert_testnet_key {
-    ($map:ident, $string:tt, $type:ident<$network:ident>, ($name:tt, $circuit_key:expr)) => {{
+    ($map:ident, $string:tt, $type:ident, ($name:tt, $circuit_key:expr)) => {{
         // Load the circuit key bytes.
         let key_bytes: Vec<u8> = $circuit_key.expect(&format!("Failed to load {} bytes", $string));
         // Recover the circuit key.
-        let key = $type::<$network>::from_bytes_le(&key_bytes[1..]).expect(&format!("Failed to recover {}", $string));
+        let key = $type::from_bytes_le(&key_bytes[1..]).expect(&format!("Failed to recover {}", $string));
         // Insert the circuit key.
         $map.insert($name.to_string(), std::sync::Arc::new(key));
     }};

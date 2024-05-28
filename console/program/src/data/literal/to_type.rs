@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Literal<N> {
+impl Literal {
     /// Returns the type name of the literal.
     pub fn to_type(&self) -> LiteralType {
         match self {

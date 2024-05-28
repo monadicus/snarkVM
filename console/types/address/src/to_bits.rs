@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for Address<E> {
+impl ToBits for Address {
     /// Outputs the little-endian bit representation of `self.to_x_coordinate()` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         self.address.to_x_coordinate().write_bits_le(vec);
@@ -29,9 +29,6 @@ impl<E: Environment> ToBits for Address<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -41,10 +38,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let address = Address::<CurrentEnvironment>::rand(&mut rng);
+            let address = Address::rand(&mut rng);
 
             let candidate = address.to_bits_le();
-            assert_eq!(Address::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Address::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*address).to_x_coordinate().to_bits_le().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);
@@ -58,10 +55,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let address = Address::<CurrentEnvironment>::rand(&mut rng);
+            let address = Address::rand(&mut rng);
 
             let candidate = address.to_bits_be();
-            assert_eq!(Address::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Address::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*address).to_x_coordinate().to_bits_be().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);

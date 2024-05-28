@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBits for Entry<N, Plaintext<N>> {
+impl ToBits for Entry<Plaintext> {
     /// Returns this entry as a list of **little-endian** bits.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         match self {
@@ -44,7 +44,7 @@ impl<N: Network> ToBits for Entry<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network> ToBits for Entry<N, Ciphertext<N>> {
+impl ToBits for Entry<Ciphertext> {
     /// Returns this entry as a list of **little-endian** bits.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         match self {

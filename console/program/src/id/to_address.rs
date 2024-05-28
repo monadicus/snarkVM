@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<N: Network> ProgramID<N> {
+impl ProgramID {
     /// Returns the program address for this program ID.
-    pub fn to_address(&self) -> Result<Address<N>> {
+    pub fn to_address(&self) -> Result<Address> {
         // Compute the program address as `HashToGroup(program_id)`.
-        let group = N::hash_to_group_psd4(&[self.name().to_field()?, self.network().to_field()?])?;
+        let group = AleoNetwork::hash_to_group_psd4(&[self.name().to_field()?, self.network().to_field()?])?;
         // Return the program address.
         Ok(Address::new(group))
     }

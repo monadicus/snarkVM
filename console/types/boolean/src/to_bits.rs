@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for Boolean<E> {
+impl ToBits for Boolean {
     /// Outputs `self` in a vector.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         vec.push(**self);
@@ -29,9 +29,6 @@ impl<E: Environment> ToBits for Boolean<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -41,11 +38,11 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let boolean: Boolean<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let boolean: Boolean = Uniform::rand(&mut rng);
 
             let candidate = boolean.to_bits_le();
             assert_eq!(vec![*boolean], candidate);
-            assert_eq!(Boolean::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Boolean::size_in_bits(), candidate.len());
         }
     }
 
@@ -55,11 +52,11 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let boolean: Boolean<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let boolean: Boolean = Uniform::rand(&mut rng);
 
             let candidate = boolean.to_bits_be();
             assert_eq!(vec![*boolean], candidate);
-            assert_eq!(Boolean::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Boolean::size_in_bits(), candidate.len());
         }
     }
 }

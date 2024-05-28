@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Parser for Field<E> {
+impl Parser for Field {
     /// Parses a string into a field circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -23,7 +23,7 @@ impl<E: Environment> Parser for Field<E> {
         // Parse the digits from the string.
         let (string, primitive) = recognize(many1(terminated(one_of("0123456789"), many0(char('_')))))(string)?;
         // Parse the value from the string.
-        let (string, value): (&str, E::Field) =
+        let (string, value): (&str, ConsoleField) =
             map_res(tag(Self::type_name()), |_| primitive.replace('_', "").parse())(string)?;
         // Negate the value if the negative sign was present.
         let value = match negation {
@@ -35,7 +35,7 @@ impl<E: Environment> Parser for Field<E> {
     }
 }
 
-impl<E: Environment> FromStr for Field<E> {
+impl FromStr for Field {
     type Err = Error;
 
     /// Parses a string into a field.
@@ -53,13 +53,13 @@ impl<E: Environment> FromStr for Field<E> {
     }
 }
 
-impl<E: Environment> Debug for Field<E> {
+impl Debug for Field {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<E: Environment> Display for Field<E> {
+impl Display for Field {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}{}", self.field, Self::type_name())
     }
@@ -68,9 +68,6 @@ impl<E: Environment> Display for Field<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -79,15 +76,15 @@ mod tests {
         let rng = &mut TestRng::default();
 
         // Ensure empty value fails.
-        assert!(Field::<CurrentEnvironment>::parse(Field::<CurrentEnvironment>::type_name()).is_err());
-        assert!(Field::<CurrentEnvironment>::parse("").is_err());
+        assert!(Field::parse(Field::type_name()).is_err());
+        assert!(Field::parse("").is_err());
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let field: <CurrentEnvironment as Environment>::Field = Uniform::rand(rng);
+            let field: ConsoleField = Uniform::rand(rng);
 
-            let expected = format!("{}{}", field, Field::<CurrentEnvironment>::type_name());
-            let (remainder, candidate) = Field::<CurrentEnvironment>::parse(&expected).unwrap();
+            let expected = format!("{}{}", field, Field::type_name());
+            let (remainder, candidate) = Field::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!("", remainder);
         }
@@ -98,7 +95,7 @@ mod tests {
     fn test_display() {
         /// Attempts to construct a field from the given element,
         /// format it in display mode, and recover a field from it.
-        fn check_display<E: Environment>(element: E::Field) {
+        fn check_display(element: ConsoleField) {
             let candidate = Field::<E>::new(element);
             assert_eq!(format!("{element}{}", Field::<E>::type_name()), format!("{candidate}"));
 
@@ -111,32 +108,32 @@ mod tests {
         for _ in 0..ITERATIONS {
             let element = Uniform::rand(&mut rng);
 
-            check_display::<CurrentEnvironment>(element);
+            check_display(element);
         }
     }
 
     #[test]
     fn test_display_zero() {
-        let zero = <CurrentEnvironment as Environment>::Field::zero();
+        let zero = ConsoleField::zero();
 
-        let candidate = Field::<CurrentEnvironment>::new(zero);
+        let candidate = Field::new(zero);
         assert_eq!("0field", &format!("{candidate}"));
     }
 
     #[test]
     fn test_display_one() {
-        let one = <CurrentEnvironment as Environment>::Field::one();
+        let one = ConsoleField::one();
 
-        let candidate = Field::<CurrentEnvironment>::new(one);
+        let candidate = Field::new(one);
         assert_eq!("1field", &format!("{candidate}"));
     }
 
     #[test]
     fn test_display_two() {
-        let one = <CurrentEnvironment as Environment>::Field::one();
+        let one = ConsoleField::one();
         let two = one + one;
 
-        let candidate = Field::<CurrentEnvironment>::new(two);
+        let candidate = Field::new(two);
         assert_eq!("2field", &format!("{candidate}"));
     }
 }

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Locator<N> {
+impl FromBytes for Locator {
     /// Reads the locator from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let id = FromBytes::read_le(&mut reader)?;
@@ -23,7 +23,7 @@ impl<N: Network> FromBytes for Locator<N> {
     }
 }
 
-impl<N: Network> ToBytes for Locator<N> {
+impl ToBytes for Locator {
     /// Writes the locator to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.id.write_le(&mut writer)?;

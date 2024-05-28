@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> FromBits for Integer<E, I> {
+impl<I: IntegerType> FromBits for Integer<I> {
     /// Initializes a new integer from a list of **little-endian** bits.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
         Ok(Self::new(I::from_bits_le(bits_le)?))
@@ -29,9 +29,6 @@ impl<E: Environment, I: IntegerType> FromBits for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -40,19 +37,19 @@ mod tests {
             // Sample a random value.
             let expected: I = Uniform::rand(rng);
 
-            let expected = Integer::<CurrentEnvironment, I>::new(expected);
+            let expected = Integer::<I>::new(expected);
             let given_bits = expected.to_bits_le();
-            assert_eq!(Integer::<CurrentEnvironment, I>::size_in_bits(), given_bits.len());
+            assert_eq!(Integer::<I>::size_in_bits(), given_bits.len());
 
-            let candidate = Integer::<CurrentEnvironment, I>::from_bits_le(&given_bits)?;
+            let candidate = Integer::<I>::from_bits_le(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [given_bits, vec![false; i]].concat();
 
-            let candidate = Integer::<CurrentEnvironment, I>::from_bits_le(&candidate)?;
+            let candidate = Integer::<I>::from_bits_le(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Integer::<CurrentEnvironment, I>::size_in_bits(), candidate.to_bits_le().len());
+            assert_eq!(Integer::<I>::size_in_bits(), candidate.to_bits_le().len());
         }
         Ok(())
     }
@@ -62,19 +59,19 @@ mod tests {
             // Sample a random value.
             let expected: I = Uniform::rand(rng);
 
-            let expected = Integer::<CurrentEnvironment, I>::new(expected);
+            let expected = Integer::<I>::new(expected);
             let given_bits = expected.to_bits_be();
-            assert_eq!(Integer::<CurrentEnvironment, I>::size_in_bits(), given_bits.len());
+            assert_eq!(Integer::<I>::size_in_bits(), given_bits.len());
 
-            let candidate = Integer::<CurrentEnvironment, I>::from_bits_be(&given_bits)?;
+            let candidate = Integer::<I>::from_bits_be(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [vec![false; i], given_bits].concat();
 
-            let candidate = Integer::<CurrentEnvironment, I>::from_bits_be(&candidate)?;
+            let candidate = Integer::<I>::from_bits_be(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Integer::<CurrentEnvironment, I>::size_in_bits(), candidate.to_bits_be().len());
+            assert_eq!(Integer::<I>::size_in_bits(), candidate.to_bits_be().len());
         }
         Ok(())
     }

@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<N: Network, Private: Visibility> Record<N, Private> {
+impl<Private: Visibility> Record<Private> {
     /// A helper method to derive the tag from the `sk_tag` and commitment.
-    pub fn tag(sk_tag: Field<N>, commitment: Field<N>) -> Result<Field<N>> {
+    pub fn tag(sk_tag: Field, commitment: Field) -> Result<Field> {
         // Compute the tag as `Hash(sk_tag, commitment)`.
-        N::hash_psd2(&[sk_tag, commitment])
+        AleoNetwork::hash_psd2(&[sk_tag, commitment])
     }
 }

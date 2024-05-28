@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for Field<E> {
+impl ToBits for Field {
     /// Outputs the little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         (**self).write_bits_le(vec);

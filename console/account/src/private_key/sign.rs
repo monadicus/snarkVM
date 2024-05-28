@@ -15,19 +15,19 @@
 use super::*;
 use crate::Signature;
 
-impl<N: Network> PrivateKey<N> {
+impl PrivateKey {
     /// Returns a signature for the given message (as field elements) using the private key.
-    pub fn sign<R: Rng + CryptoRng>(&self, message: &[Field<N>], rng: &mut R) -> Result<Signature<N>> {
+    pub fn sign<R: Rng + CryptoRng>(&self, message: &[Field], rng: &mut R) -> Result<Signature> {
         Signature::sign(self, message, rng)
     }
 
     /// Returns a signature for the given message (as bytes) using the private key.
-    pub fn sign_bytes<R: Rng + CryptoRng>(&self, message: &[u8], rng: &mut R) -> Result<Signature<N>> {
+    pub fn sign_bytes<R: Rng + CryptoRng>(&self, message: &[u8], rng: &mut R) -> Result<Signature> {
         Signature::sign_bytes(self, message, rng)
     }
 
     /// Returns a signature for the given message (as bits) using the private key.
-    pub fn sign_bits<R: Rng + CryptoRng>(&self, message: &[bool], rng: &mut R) -> Result<Signature<N>> {
+    pub fn sign_bits<R: Rng + CryptoRng>(&self, message: &[bool], rng: &mut R) -> Result<Signature> {
         Signature::sign_bits(self, message, rng)
     }
 }
@@ -36,9 +36,6 @@ impl<N: Network> PrivateKey<N> {
 mod tests {
     use super::*;
     use crate::Address;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 100;
 
@@ -48,7 +45,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample an address and a private key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let address = Address::try_from(&private_key)?;
 
             // Check that the signature is valid for the message.
@@ -71,7 +68,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample an address and a private key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let address = Address::try_from(&private_key)?;
 
             // Check that the signature is valid for the message.
@@ -94,7 +91,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample an address and a private key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let address = Address::try_from(&private_key)?;
 
             // Check that the signature is valid for the message.

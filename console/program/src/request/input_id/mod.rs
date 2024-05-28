@@ -16,26 +16,25 @@ mod bytes;
 mod serialize;
 mod string;
 
-use snarkvm_console_network::Network;
 use snarkvm_console_types::prelude::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub enum InputID<N: Network> {
+pub enum InputID {
     /// The hash of the constant input.
-    Constant(Field<N>),
+    Constant(Field),
     /// The hash of the public input.
-    Public(Field<N>),
+    Public(Field),
     /// The ciphertext hash of the private input.
-    Private(Field<N>),
+    Private(Field),
     /// The commitment, gamma, serial number, and tag of the record input.
-    Record(Field<N>, Group<N>, Field<N>, Field<N>),
+    Record(Field, Group, Field, Field),
     /// The hash of the external record input.
-    ExternalRecord(Field<N>),
+    ExternalRecord(Field),
 }
 
-impl<N: Network> InputID<N> {
+impl InputID {
     /// Returns the (primary) input ID.
-    pub const fn id(&self) -> &Field<N> {
+    pub const fn id(&self) -> &Field {
         match self {
             InputID::Constant(id) => id,
             InputID::Public(id) => id,

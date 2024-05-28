@@ -31,7 +31,7 @@ use std::collections::BTreeMap;
 use rayon::prelude::*;
 
 #[derive(Clone)]
-pub struct MerkleTree<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>, const DEPTH: u8> {
+pub struct MerkleTree<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>, const DEPTH: u8> {
     /// The leaf hasher for the Merkle tree.
     leaf_hasher: LH,
     /// The path hasher for the Merkle tree.
@@ -41,14 +41,12 @@ pub struct MerkleTree<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHas
     /// The internal hashes, from root to hashed leaves, of the full Merkle tree.
     tree: Vec<PH::Hash>,
     /// The canonical empty hash.
-    empty_hash: Field<E>,
+    empty_hash: Field,
     /// The number of hashed leaves in the tree.
     number_of_leaves: usize,
 }
 
-impl<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>, const DEPTH: u8>
-    MerkleTree<E, LH, PH, DEPTH>
-{
+impl<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>, const DEPTH: u8> MerkleTree<LH, PH, DEPTH> {
     #[inline]
     /// Initializes a new Merkle tree with the given leaves.
     pub fn new(leaf_hasher: &LH, path_hasher: &PH, leaves: &[LH::Leaf]) -> Result<Self> {
@@ -558,7 +556,7 @@ impl<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>
 
     #[inline]
     /// Returns the Merkle path for the given leaf index and leaf.
-    pub fn prove(&self, leaf_index: usize, leaf: &LH::Leaf) -> Result<MerklePath<E, DEPTH>> {
+    pub fn prove(&self, leaf_index: usize, leaf: &LH::Leaf) -> Result<MerklePath<DEPTH>> {
         // Ensure the leaf index is valid.
         ensure!(leaf_index < self.number_of_leaves, "The given Merkle leaf index is out of bounds");
 
@@ -605,7 +603,7 @@ impl<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>
     }
 
     /// Returns `true` if the given Merkle path is valid for the given root and leaf.
-    pub fn verify(&self, path: &MerklePath<E, DEPTH>, root: &PH::Hash, leaf: &LH::Leaf) -> bool {
+    pub fn verify(&self, path: &MerklePath<DEPTH>, root: &PH::Hash, leaf: &LH::Leaf) -> bool {
         path.verify(&self.leaf_hasher, &self.path_hasher, root, leaf)
     }
 
@@ -651,7 +649,7 @@ impl<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>
     #[inline]
     fn compute_updated_tree(
         &self,
-        tree: &mut [Field<E>],
+        tree: &mut [Field],
         mut start_index: usize,
         mut middle_index: usize,
         mut start_precompute_index: usize,

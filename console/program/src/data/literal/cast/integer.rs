@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Cast<Address<E>> for Integer<E, I> {
+impl<I: IntegerType> Cast<Address> for Integer<I> {
     /// Casts an `Integer` to an `Address`.
     ///
     /// This operation converts the integer to a field element, and then attempts to recover
@@ -23,18 +23,18 @@ impl<E: Environment, I: IntegerType> Cast<Address<E>> for Integer<E, I> {
     ///
     /// To cast arbitrary integers to addresses, use `Integer::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Address<E>> {
-        let field: Field<E> = self.cast()?;
+    fn cast(&self) -> Result<Address> {
+        let field: Field = self.cast()?;
         field.cast()
     }
 }
 
-impl<E: Environment, I: IntegerType> Cast<Boolean<E>> for Integer<E, I> {
+impl<I: IntegerType> Cast<Boolean> for Integer<I> {
     /// Casts an `Integer` to a `Boolean`, if the integer is zero or one.
     ///
     /// To cast arbitrary integers to booleans, use `Integer::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Boolean<E>> {
+    fn cast(&self) -> Result<Boolean> {
         if self.is_zero() {
             Ok(Boolean::new(false))
         } else if self.is_one() {
@@ -45,15 +45,15 @@ impl<E: Environment, I: IntegerType> Cast<Boolean<E>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Cast<Field<E>> for Integer<E, I> {
+impl<I: IntegerType> Cast<Field> for Integer<I> {
     /// Casts an `Integer` to a `Field`.
     #[inline]
-    fn cast(&self) -> Result<Field<E>> {
+    fn cast(&self) -> Result<Field> {
         self.to_field()
     }
 }
 
-impl<E: Environment, I: IntegerType> Cast<Group<E>> for Integer<E, I> {
+impl<I: IntegerType> Cast<Group> for Integer<I> {
     /// Casts an `Integer` to a `Group`.
     ///
     /// This operation converts the integer to a field element, and then attempts to recover
@@ -61,28 +61,28 @@ impl<E: Environment, I: IntegerType> Cast<Group<E>> for Integer<E, I> {
     ///
     /// To cast arbitrary integers to groups, use `Integer::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Group<E>> {
-        let field: Field<E> = self.cast()?;
+    fn cast(&self) -> Result<Group> {
+        let field: Field = self.cast()?;
         field.cast()
     }
 }
 
-impl<E: Environment, I0: IntegerType, I1: IntegerType + TryFrom<I0>> Cast<Integer<E, I1>> for Integer<E, I0> {
+impl<I0: IntegerType, I1: IntegerType + TryFrom<I0>> Cast<Integer<I1>> for Integer<I0> {
     /// Casts an `Integer` to another `Integer`, if the conversion is lossless.
     #[inline]
-    fn cast(&self) -> Result<Integer<E, I1>> {
-        Ok(Integer::<E, I1>::new(match I1::try_from(**self) {
+    fn cast(&self) -> Result<Integer<I1>> {
+        Ok(Integer::<I1>::new(match I1::try_from(**self) {
             Ok(value) => value,
             Err(_) => bail!("Failed to convert '{}' into '{}'", I0::type_name(), I1::type_name()),
         }))
     }
 }
 
-impl<E: Environment, I: IntegerType> Cast<Scalar<E>> for Integer<E, I> {
+impl<I: IntegerType> Cast<Scalar> for Integer<I> {
     /// Casts an `Integer` to a `Scalar`.
     #[inline]
-    fn cast(&self) -> Result<Scalar<E>> {
+    fn cast(&self) -> Result<Scalar> {
         let bits_le = self.to_bits_le();
-        Scalar::<E>::from_bits_le(&bits_le)
+        Scalar::from_bits_le(&bits_le)
     }
 }

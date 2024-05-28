@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Parser for Integer<E, I> {
+impl<I: IntegerType> Parser for Integer<I> {
     /// Parses a string into a integer circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -31,7 +31,7 @@ impl<E: Environment, I: IntegerType> Parser for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> FromStr for Integer<E, I> {
+impl<I: IntegerType> FromStr for Integer<I> {
     type Err = Error;
 
     /// Parses a string into an integer.
@@ -49,13 +49,13 @@ impl<E: Environment, I: IntegerType> FromStr for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Debug for Integer<E, I> {
+impl<I: IntegerType> Debug for Integer<I> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<E: Environment, I: IntegerType> Display for Integer<E, I> {
+impl<I: IntegerType> Display for Integer<I> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}{}", self.integer, Self::type_name())
     }
@@ -64,9 +64,6 @@ impl<E: Environment, I: IntegerType> Display for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -75,15 +72,15 @@ mod tests {
         let rng = &mut TestRng::default();
 
         // Ensure empty value fails.
-        assert!(Integer::<CurrentEnvironment, i8>::parse(Integer::<CurrentEnvironment, i8>::type_name()).is_err());
-        assert!(Integer::<CurrentEnvironment, i8>::parse("").is_err());
+        assert!(Integer::<i8>::parse(Integer::<i8>::type_name()).is_err());
+        assert!(Integer::<i8>::parse("").is_err());
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
             let integer: i8 = Uniform::rand(rng);
 
-            let expected = format!("{}{}", integer, Integer::<CurrentEnvironment, i8>::type_name());
-            let (remainder, candidate) = Integer::<CurrentEnvironment, i8>::parse(&expected).unwrap();
+            let expected = format!("{}{}", integer, Integer::<i8>::type_name());
+            let (remainder, candidate) = Integer::<i8>::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!("", remainder);
         }
@@ -94,7 +91,7 @@ mod tests {
     fn test_display() {
         /// Attempts to construct a integer from the given element,
         /// format it in display mode, and recover a integer from it.
-        fn check_display<E: Environment, I: IntegerType>(rng: &mut TestRng) {
+        fn check_display<I: IntegerType>(rng: &mut TestRng) {
             for _ in 0..ITERATIONS {
                 let element = Uniform::rand(rng);
 
@@ -108,24 +105,24 @@ mod tests {
 
         let mut rng = TestRng::default();
 
-        check_display::<CurrentEnvironment, u8>(&mut rng);
-        check_display::<CurrentEnvironment, u16>(&mut rng);
-        check_display::<CurrentEnvironment, u32>(&mut rng);
-        check_display::<CurrentEnvironment, u64>(&mut rng);
-        check_display::<CurrentEnvironment, u128>(&mut rng);
+        check_display::<u8>(&mut rng);
+        check_display::<u16>(&mut rng);
+        check_display::<u32>(&mut rng);
+        check_display::<u64>(&mut rng);
+        check_display::<u128>(&mut rng);
 
-        check_display::<CurrentEnvironment, i8>(&mut rng);
-        check_display::<CurrentEnvironment, i16>(&mut rng);
-        check_display::<CurrentEnvironment, i32>(&mut rng);
-        check_display::<CurrentEnvironment, i64>(&mut rng);
-        check_display::<CurrentEnvironment, i128>(&mut rng);
+        check_display::<i8>(&mut rng);
+        check_display::<i16>(&mut rng);
+        check_display::<i32>(&mut rng);
+        check_display::<i64>(&mut rng);
+        check_display::<i128>(&mut rng);
     }
 
     #[test]
     fn test_display_zero() {
         let zero = i8::zero();
 
-        let candidate = Integer::<CurrentEnvironment, i8>::new(zero);
+        let candidate = Integer::<i8>::new(zero);
         assert_eq!("0i8", &format!("{candidate}"));
     }
 
@@ -133,7 +130,7 @@ mod tests {
     fn test_display_one() {
         let one = i8::one();
 
-        let candidate = Integer::<CurrentEnvironment, i8>::new(one);
+        let candidate = Integer::<i8>::new(one);
         assert_eq!("1i8", &format!("{candidate}"));
     }
 
@@ -142,7 +139,7 @@ mod tests {
         let one = i8::one();
         let two = one + one;
 
-        let candidate = Integer::<CurrentEnvironment, i8>::new(two);
+        let candidate = Integer::<i8>::new(two);
         assert_eq!("2i8", &format!("{candidate}"));
     }
 }

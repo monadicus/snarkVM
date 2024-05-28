@@ -20,7 +20,7 @@ use snarkvm_console_types::{prelude::*, Field};
 use snarkvm_fields::PoseidonParameters;
 
 use smallvec::SmallVec;
-use std::{ops::DerefMut, sync::Arc};
+use std::sync::Arc;
 
 /// A duplex sponge based using the Poseidon permutation.
 ///
@@ -29,19 +29,17 @@ use std::{ops::DerefMut, sync::Arc};
 ///
 /// [cos]: https://eprint.iacr.org/2019/1076
 #[derive(Clone, Debug)]
-pub struct PoseidonSponge<E: Environment, const RATE: usize, const CAPACITY: usize> {
+pub struct PoseidonSponge<const RATE: usize, const CAPACITY: usize> {
     /// Sponge Parameters
-    parameters: Arc<PoseidonParameters<E::Field, RATE, CAPACITY>>,
+    parameters: Arc<PoseidonParameters<ConsoleField, RATE, CAPACITY>>,
     /// Current sponge's state (current elements in the permutation block)
-    state: State<E, RATE, CAPACITY>,
+    state: State<RATE, CAPACITY>,
     /// Current mode (whether its absorbing or squeezing)
     pub(in crate::poseidon) mode: DuplexSpongeMode,
 }
 
-impl<E: Environment, const RATE: usize, const CAPACITY: usize> AlgebraicSponge<E, RATE, CAPACITY>
-    for PoseidonSponge<E, RATE, CAPACITY>
-{
-    type Parameters = Arc<PoseidonParameters<E::Field, RATE, CAPACITY>>;
+impl<const RATE: usize, const CAPACITY: usize> AlgebraicSponge<RATE, CAPACITY> for PoseidonSponge<RATE, CAPACITY> {
+    type Parameters = Arc<PoseidonParameters<ConsoleField, RATE, CAPACITY>>;
 
     fn new(parameters: &Self::Parameters) -> Self {
         Self {
@@ -51,7 +49,7 @@ impl<E: Environment, const RATE: usize, const CAPACITY: usize> AlgebraicSponge<E
         }
     }
 
-    fn absorb(&mut self, input: &[Field<E>]) {
+    fn absorb(&mut self, input: &[Field]) {
         if !input.is_empty() {
             match self.mode {
                 DuplexSpongeMode::Absorbing { mut next_absorb_index } => {
@@ -69,14 +67,14 @@ impl<E: Environment, const RATE: usize, const CAPACITY: usize> AlgebraicSponge<E
         }
     }
 
-    fn squeeze(&mut self, num_elements: u16) -> SmallVec<[Field<E>; 10]> {
+    fn squeeze(&mut self, num_elements: u16) -> SmallVec<[Field; 10]> {
         if num_elements == 0 {
             return SmallVec::new();
         }
         let mut output = if num_elements <= 10 {
-            smallvec::smallvec_inline![Field::<E>::zero(); 10]
+            smallvec::smallvec_inline![Field::zero(); 10]
         } else {
-            smallvec::smallvec![Field::<E>::zero(); num_elements as usize]
+            smallvec::smallvec![Field::zero(); num_elements as usize]
         };
 
         match self.mode {
@@ -98,11 +96,11 @@ impl<E: Environment, const RATE: usize, const CAPACITY: usize> AlgebraicSponge<E
     }
 }
 
-impl<E: Environment, const RATE: usize, const CAPACITY: usize> PoseidonSponge<E, RATE, CAPACITY> {
+impl<const RATE: usize, const CAPACITY: usize> PoseidonSponge<RATE, CAPACITY> {
     #[inline]
     fn apply_ark(&mut self, round_number: usize) {
         for (state_elem, ark_elem) in self.state.iter_mut().zip(&self.parameters.ark[round_number]) {
-            *state_elem += Field::<E>::new(*ark_elem);
+            *state_elem += Field::new(*ark_elem);
         }
     }
 
@@ -126,7 +124,7 @@ impl<E: Environment, const RATE: usize, const CAPACITY: usize> PoseidonSponge<E,
     fn apply_mds(&mut self) {
         let mut new_state = State::default();
         new_state.iter_mut().zip(&self.parameters.mds).for_each(|(new_elem, mds_row)| {
-            *new_elem = Field::new(E::Field::sum_of_products(self.state.iter().map(|e| e.deref()), mds_row.iter()));
+            *new_elem = Field::new(ConsoleField::sum_of_products(self.state.iter().map(|e| e.deref()), mds_row.iter()));
         });
         self.state = new_state;
     }
@@ -150,7 +148,7 @@ impl<E: Environment, const RATE: usize, const CAPACITY: usize> PoseidonSponge<E,
 
     /// Absorbs everything in elements, this does not end in an absorption.
     #[inline]
-    fn absorb_internal(&mut self, mut rate_start: usize, input: &[Field<E>]) {
+    fn absorb_internal(&mut self, mut rate_start: usize, input: &[Field]) {
         if !input.is_empty() {
             let first_chunk_size = std::cmp::min(RATE - rate_start, input.len());
             let num_elements_remaining = input.len() - first_chunk_size;
@@ -186,7 +184,7 @@ impl<E: Environment, const RATE: usize, const CAPACITY: usize> PoseidonSponge<E,
 
     /// Squeeze |output| many elements. This does not end in a squeeze
     #[inline]
-    fn squeeze_internal(&mut self, mut rate_start: usize, output: &mut [Field<E>]) {
+    fn squeeze_internal(&mut self, mut rate_start: usize, output: &mut [Field]) {
         let output_size = output.len();
         if output_size != 0 {
             let first_chunk_size = std::cmp::min(RATE - rate_start, output.len());

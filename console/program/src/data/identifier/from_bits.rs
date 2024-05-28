@@ -14,13 +14,13 @@
 
 use super::*;
 
-impl<N: Network> FromBits for Identifier<N> {
+impl FromBits for Identifier {
     /// Initializes a new identifier from a list of little-endian bits *without* trailing zeros.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
         // Ensure the number of bits does not exceed the size in bits of the field.
         // This check is not sufficient to ensure the identifier is of valid size,
         // the final step checks the byte-aligned field element is within the data capacity.
-        ensure!(bits_le.len() <= Field::<N>::size_in_bits(), "Identifier exceeds the maximum bits allowed");
+        ensure!(bits_le.len() <= Field::size_in_bits(), "Identifier exceeds the maximum bits allowed");
 
         // Convert the bits to bytes, and parse the bytes as a UTF-8 string.
         let bytes = bits_le.chunks(8).map(u8::from_bits_le).collect::<Result<Vec<u8>>>()?;
@@ -46,9 +46,6 @@ impl<N: Network> FromBits for Identifier<N> {
 mod tests {
     use super::*;
     use crate::data::identifier::tests::sample_identifier;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: usize = 100;
 
@@ -58,7 +55,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric identifier, that always starts with an alphabetic character.
-            let identifier = sample_identifier::<CurrentNetwork>(&mut rng)?;
+            let identifier = sample_identifier(&mut rng)?;
             assert_eq!(identifier, Identifier::from_bits_le(&identifier.to_bits_le())?);
         }
         Ok(())
@@ -70,7 +67,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric identifier, that always starts with an alphabetic character.
-            let identifier = sample_identifier::<CurrentNetwork>(&mut rng)?;
+            let identifier = sample_identifier(&mut rng)?;
             assert_eq!(identifier, Identifier::from_bits_be(&identifier.to_bits_be())?);
         }
         Ok(())

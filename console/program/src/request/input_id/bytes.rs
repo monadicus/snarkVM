@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for InputID<N> {
+impl FromBytes for InputID {
     /// Reads the input ID from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the variant.
@@ -48,7 +48,7 @@ impl<N: Network> FromBytes for InputID<N> {
     }
 }
 
-impl<N: Network> ToBytes for InputID<N> {
+impl ToBytes for InputID {
     /// Writes the input ID to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {

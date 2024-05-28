@@ -21,78 +21,77 @@ mod to_bits;
 mod to_fields;
 
 use crate::{Access, Argument, Entry, Future, Literal, Plaintext, Record};
-use snarkvm_console_network::Network;
 use snarkvm_console_types::prelude::*;
 
 #[derive(Clone)]
-pub enum Value<N: Network> {
+pub enum Value {
     /// A plaintext value.
-    Plaintext(Plaintext<N>),
+    Plaintext(Plaintext),
     /// A record value.
-    Record(Record<N, Plaintext<N>>),
+    Record(Record<Plaintext>),
     /// A future.
-    Future(Future<N>),
+    Future(Future),
 }
 
-impl<N: Network> From<Literal<N>> for Value<N> {
+impl From<Literal> for Value {
     /// Initializes the value from a literal.
-    fn from(literal: Literal<N>) -> Self {
+    fn from(literal: Literal) -> Self {
         Self::Plaintext(Plaintext::from(literal))
     }
 }
 
-impl<N: Network> From<&Literal<N>> for Value<N> {
+impl From<&Literal> for Value {
     /// Initializes the value from a literal.
-    fn from(literal: &Literal<N>) -> Self {
+    fn from(literal: &Literal) -> Self {
         Self::from(Plaintext::from(literal))
     }
 }
 
-impl<N: Network> From<Plaintext<N>> for Value<N> {
+impl From<Plaintext> for Value {
     /// Initializes the value from a plaintext.
-    fn from(plaintext: Plaintext<N>) -> Self {
+    fn from(plaintext: Plaintext) -> Self {
         Self::Plaintext(plaintext)
     }
 }
 
-impl<N: Network> From<&Plaintext<N>> for Value<N> {
+impl From<&Plaintext> for Value {
     /// Initializes the value from a plaintext.
-    fn from(plaintext: &Plaintext<N>) -> Self {
+    fn from(plaintext: &Plaintext) -> Self {
         Self::from(plaintext.clone())
     }
 }
 
-impl<N: Network> From<Record<N, Plaintext<N>>> for Value<N> {
+impl From<Record<Plaintext>> for Value {
     /// Initializes the value from a record.
-    fn from(record: Record<N, Plaintext<N>>) -> Self {
+    fn from(record: Record<Plaintext>) -> Self {
         Self::Record(record)
     }
 }
 
-impl<N: Network> From<&Record<N, Plaintext<N>>> for Value<N> {
+impl From<&Record<Plaintext>> for Value {
     /// Initializes the value from a record.
-    fn from(record: &Record<N, Plaintext<N>>) -> Self {
+    fn from(record: &Record<Plaintext>) -> Self {
         Self::from(record.clone())
     }
 }
 
-impl<N: Network> From<Future<N>> for Value<N> {
+impl From<Future> for Value {
     /// Initializes the value from a future.
-    fn from(future: Future<N>) -> Self {
+    fn from(future: Future) -> Self {
         Self::Future(future)
     }
 }
 
-impl<N: Network> From<&Future<N>> for Value<N> {
+impl From<&Future> for Value {
     /// Initializes the value from a future.
-    fn from(future: &Future<N>) -> Self {
+    fn from(future: &Future) -> Self {
         Self::from(future.clone())
     }
 }
 
-impl<N: Network> From<Argument<N>> for Value<N> {
+impl From<Argument> for Value {
     /// Initializes the value from an argument.
-    fn from(argument: Argument<N>) -> Self {
+    fn from(argument: Argument) -> Self {
         match argument {
             Argument::Plaintext(plaintext) => Self::Plaintext(plaintext),
             Argument::Future(future) => Self::Future(future),
@@ -100,30 +99,30 @@ impl<N: Network> From<Argument<N>> for Value<N> {
     }
 }
 
-impl<N: Network> From<&Argument<N>> for Value<N> {
+impl From<&Argument> for Value {
     /// Initializes the value from an argument.
-    fn from(argument: &Argument<N>) -> Self {
+    fn from(argument: &Argument) -> Self {
         Self::from(argument.clone())
     }
 }
 
-impl<N: Network> From<&Value<N>> for Value<N> {
+impl From<&Value> for Value {
     /// Returns a clone of the value.
-    fn from(value: &Value<N>) -> Self {
+    fn from(value: &Value) -> Self {
         value.clone()
     }
 }
 
-impl<N: Network> TryFrom<Result<Value<N>>> for Value<N> {
+impl TryFrom<Result<Value>> for Value {
     type Error = Error;
 
     /// Initializes a value from a result.
-    fn try_from(value: Result<Value<N>>) -> Result<Self> {
+    fn try_from(value: Result<Value>) -> Result<Self> {
         value
     }
 }
 
-impl<N: Network> TryFrom<String> for Value<N> {
+impl TryFrom<String> for Value {
     type Error = Error;
 
     /// Initializes a value from a string.
@@ -132,7 +131,7 @@ impl<N: Network> TryFrom<String> for Value<N> {
     }
 }
 
-impl<N: Network> TryFrom<&String> for Value<N> {
+impl TryFrom<&String> for Value {
     type Error = Error;
 
     /// Initializes a value from a string.
@@ -141,7 +140,7 @@ impl<N: Network> TryFrom<&String> for Value<N> {
     }
 }
 
-impl<N: Network> TryFrom<&str> for Value<N> {
+impl TryFrom<&str> for Value {
     type Error = Error;
 
     /// Initializes a value from a string.

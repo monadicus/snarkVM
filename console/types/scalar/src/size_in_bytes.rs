@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBytes for Scalar<E> {
+impl SizeInBytes for Scalar {
     /// Returns the scalar size in bytes.
     #[inline]
     fn size_in_bytes() -> usize {

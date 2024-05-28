@@ -22,18 +22,18 @@ use snarkvm_console_network::prelude::*;
 use enum_index::EnumIndex;
 
 #[derive(Clone, PartialEq, Eq, Hash, EnumIndex)]
-pub enum EntryType<N: Network> {
+pub enum EntryType {
     /// A constant type.
-    Constant(PlaintextType<N>),
+    Constant(PlaintextType),
     /// A publicly-visible type.
-    Public(PlaintextType<N>),
+    Public(PlaintextType),
     /// A private type.
-    Private(PlaintextType<N>),
+    Private(PlaintextType),
 }
 
-impl<N: Network> EntryType<N> {
+impl EntryType {
     /// Returns the plaintext type.
-    pub const fn plaintext_type(&self) -> &PlaintextType<N> {
+    pub const fn plaintext_type(&self) -> &PlaintextType {
         match self {
             EntryType::Constant(plaintext_type) => plaintext_type,
             EntryType::Public(plaintext_type) => plaintext_type,

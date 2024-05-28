@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> ToField for Identifier<N> {
-    type Field = Field<N>;
+impl ToField for Identifier {
+    type Field = Field;
 
     /// Returns the identifier as a field element.
     fn to_field(&self) -> Result<Self::Field> {
@@ -23,8 +23,8 @@ impl<N: Network> ToField for Identifier<N> {
     }
 }
 
-impl<N: Network> ToField for &Identifier<N> {
-    type Field = Field<N>;
+impl ToField for &Identifier {
+    type Field = Field;
 
     /// Returns the identifier as a field element.
     fn to_field(&self) -> Result<Self::Field> {
@@ -48,11 +48,11 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_string = sample_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_string = sample_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_field = Field::<CurrentNetwork>::from_bits_le(&expected_string.to_bits_le())?;
+            let expected_field = Field::from_bits_le(&expected_string.to_bits_le())?;
 
-            let candidate = Identifier::<CurrentNetwork>::from_str(&expected_string)?;
+            let candidate = Identifier::from_str(&expected_string)?;
             assert_eq!(expected_field, candidate.to_field()?);
         }
         Ok(())

@@ -20,11 +20,11 @@ use snarkvm_console_types::prelude::*;
 use snarkvm_utilities::{TestRng, Uniform};
 
 use criterion::Criterion;
-type F = Field<Console>;
+type F = Field;
 
 fn poseidon2(c: &mut Criterion) {
     let rng = &mut TestRng::default();
-    let hash = Poseidon2::<Console>::setup("Poseidon2").unwrap();
+    let hash = Poseidon2::setup("Poseidon2").unwrap();
 
     let input = [F::rand(rng), F::rand(rng), F::rand(rng), F::rand(rng)];
     c.bench_function("Poseidon2 Hash 4 -> 1", |b| b.iter(|| hash.hash(&input)));
@@ -38,7 +38,7 @@ fn poseidon2(c: &mut Criterion) {
 
 fn poseidon4(c: &mut Criterion) {
     let rng = &mut TestRng::default();
-    let hash = Poseidon4::<Console>::setup("Poseidon4").unwrap();
+    let hash = Poseidon4::setup("Poseidon4").unwrap();
 
     let input = [F::rand(rng), F::rand(rng), F::rand(rng), F::rand(rng)];
     c.bench_function("Poseidon4 Hash 4 -> 1", |b| b.iter(|| hash.hash(&input)));
@@ -52,7 +52,7 @@ fn poseidon4(c: &mut Criterion) {
 
 fn poseidon8(c: &mut Criterion) {
     let rng = &mut TestRng::default();
-    let hash = Poseidon8::<Console>::setup("Poseidon8").unwrap();
+    let hash = Poseidon8::setup("Poseidon8").unwrap();
 
     let input = [F::rand(rng), F::rand(rng), F::rand(rng), F::rand(rng)];
     c.bench_function("Poseidon8 Hash 4 -> 1", |b| b.iter(|| hash.hash(&input)));

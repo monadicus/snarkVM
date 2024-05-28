@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Identifier<N> {
+impl FromBytes for Identifier {
     /// Reads in an identifier from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the number of bytes.
@@ -31,7 +31,7 @@ impl<N: Network> FromBytes for Identifier<N> {
     }
 }
 
-impl<N: Network> ToBytes for Identifier<N> {
+impl ToBytes for Identifier {
     /// Writes an identifier to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Convert the identifier to a string.
@@ -41,13 +41,13 @@ impl<N: Network> ToBytes for Identifier<N> {
         }
 
         // Ensure identifier fits within the data capacity of the base field.
-        let max_bytes = Field::<N>::size_in_data_bits() / 8; // Note: This intentionally rounds down.
+        let max_bytes = Field::size_in_data_bits() / 8; // Note: This intentionally rounds down.
         if string.len() > max_bytes {
             return Err(error(format!("Identifier is too large. Identifiers must be <= {max_bytes} bytes long")));
         }
 
         // Write the identifier to a buffer.
-        u8::try_from(string.len()).or_halt_with::<N>("Invalid identifier length").write_le(&mut writer)?;
+        u8::try_from(string.len()).or_halt_with("Invalid identifier length").write_le(&mut writer)?;
         string.as_bytes().write_le(&mut writer)
     }
 }

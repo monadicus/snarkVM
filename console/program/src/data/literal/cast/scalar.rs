@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Cast<Address<E>> for Scalar<E> {
+impl Cast<Address> for Scalar {
     /// Casts a `Scalar` to an `Address`.
     ///
     /// This operation converts the scalar to a field element, and then attempts to recover
@@ -23,18 +23,18 @@ impl<E: Environment> Cast<Address<E>> for Scalar<E> {
     ///
     /// To cast arbitrary scalars to addresses, use `Scalar::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Address<E>> {
-        let field: Field<E> = self.cast()?;
+    fn cast(&self) -> Result<Address> {
+        let field: Field = self.cast()?;
         Address::from_field(&field)
     }
 }
 
-impl<E: Environment> Cast<Boolean<E>> for Scalar<E> {
+impl Cast<Boolean> for Scalar {
     /// Casts a `Scalar` to a `Boolean`, if the scalar is zero or one.
     ///
     /// To cast arbitrary scalars to booleans, use `Scalar::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Boolean<E>> {
+    fn cast(&self) -> Result<Boolean> {
         if self.is_zero() {
             Ok(Boolean::new(false))
         } else if self.is_one() {
@@ -45,7 +45,7 @@ impl<E: Environment> Cast<Boolean<E>> for Scalar<E> {
     }
 }
 
-impl<E: Environment> Cast<Group<E>> for Scalar<E> {
+impl Cast<Group> for Scalar {
     /// Casts a `Scalar` to a `Group`.
     ///
     /// This operation converts the scalar to a field element, and then attempts to recover
@@ -53,35 +53,35 @@ impl<E: Environment> Cast<Group<E>> for Scalar<E> {
     ///
     /// To cast arbitrary scalars to groups, use `Scalar::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Group<E>> {
-        let field: Field<E> = self.cast()?;
+    fn cast(&self) -> Result<Group> {
+        let field: Field = self.cast()?;
         Group::from_field(&field)
     }
 }
 
-impl<E: Environment> Cast<Field<E>> for Scalar<E> {
+impl Cast<Field> for Scalar {
     /// Casts a `Scalar` to a `Field`.
     #[inline]
-    fn cast(&self) -> Result<Field<E>> {
+    fn cast(&self) -> Result<Field> {
         self.to_field()
     }
 }
 
-impl<E: Environment, I: IntegerType> Cast<Integer<E, I>> for Scalar<E> {
+impl<I: IntegerType> Cast<Integer<I>> for Scalar {
     /// Casts a `Scalar` to an `Integer`, if the scalar is in the range of the integer.
     ///
     /// To cast arbitrary scalars to integers, via truncation, use `Scalar::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Integer<E, I>> {
+    fn cast(&self) -> Result<Integer<I>> {
         let bits_le = self.to_bits_le();
-        Integer::<E, I>::from_bits_le(&bits_le)
+        Integer::<I>::from_bits_le(&bits_le)
     }
 }
 
-impl<E: Environment> Cast<Scalar<E>> for Scalar<E> {
+impl Cast<Scalar> for Scalar {
     /// Casts a `Scalar` to a `Scalar`.
     #[inline]
-    fn cast(&self) -> Result<Scalar<E>> {
+    fn cast(&self) -> Result<Scalar> {
         Ok(*self)
     }
 }

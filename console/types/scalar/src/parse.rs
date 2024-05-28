@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Parser for Scalar<E> {
+impl Parser for Scalar {
     /// Parses a string into a scalar circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -23,7 +23,7 @@ impl<E: Environment> Parser for Scalar<E> {
         // Parse the digits from the string.
         let (string, primitive) = recognize(many1(terminated(one_of("0123456789"), many0(char('_')))))(string)?;
         // Parse the value from the string.
-        let (string, value): (&str, E::Scalar) =
+        let (string, value): (&str, ConsoleScalar) =
             map_res(tag(Self::type_name()), |_| primitive.replace('_', "").parse())(string)?;
         // Negate the value if the negative sign was present.
         let value = match negation {
@@ -35,7 +35,7 @@ impl<E: Environment> Parser for Scalar<E> {
     }
 }
 
-impl<E: Environment> FromStr for Scalar<E> {
+impl FromStr for Scalar {
     type Err = Error;
 
     /// Parses a string into a scalar.
@@ -53,13 +53,13 @@ impl<E: Environment> FromStr for Scalar<E> {
     }
 }
 
-impl<E: Environment> Debug for Scalar<E> {
+impl Debug for Scalar {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<E: Environment> Display for Scalar<E> {
+impl Display for Scalar {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}{}", self.scalar, Self::type_name())
     }
@@ -68,9 +68,6 @@ impl<E: Environment> Display for Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -79,15 +76,15 @@ mod tests {
         let rng = &mut TestRng::default();
 
         // Ensure empty value fails.
-        assert!(Scalar::<CurrentEnvironment>::parse(Scalar::<CurrentEnvironment>::type_name()).is_err());
-        assert!(Scalar::<CurrentEnvironment>::parse("").is_err());
+        assert!(Scalar::parse(Scalar::type_name()).is_err());
+        assert!(Scalar::parse("").is_err());
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let scalar: <CurrentEnvironment as Environment>::Scalar = Uniform::rand(rng);
+            let scalar: ConsoleScalar = Uniform::rand(rng);
 
-            let expected = format!("{}{}", scalar, Scalar::<CurrentEnvironment>::type_name());
-            let (remainder, candidate) = Scalar::<CurrentEnvironment>::parse(&expected).unwrap();
+            let expected = format!("{}{}", scalar, Scalar::type_name());
+            let (remainder, candidate) = Scalar::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!("", remainder);
         }
@@ -98,11 +95,11 @@ mod tests {
     fn test_display() {
         /// Attempts to construct a scalar from the given element,
         /// format it in display mode, and recover a scalar from it.
-        fn check_display<E: Environment>(element: E::Scalar) {
-            let candidate = Scalar::<E>::new(element);
-            assert_eq!(format!("{element}{}", Scalar::<E>::type_name()), format!("{candidate}"));
+        fn check_display(element: ConsoleScalar) {
+            let candidate = Scalar::new(element);
+            assert_eq!(format!("{element}{}", Scalar::type_name()), format!("{candidate}"));
 
-            let candidate_recovered = Scalar::<E>::from_str(&format!("{candidate}")).unwrap();
+            let candidate_recovered = Scalar::from_str(&format!("{candidate}")).unwrap();
             assert_eq!(candidate, candidate_recovered);
         }
 
@@ -111,7 +108,7 @@ mod tests {
         for _ in 0..ITERATIONS {
             let element = Uniform::rand(&mut rng);
 
-            check_display::<CurrentEnvironment>(element);
+            check_display(element);
         }
     }
 
@@ -119,7 +116,7 @@ mod tests {
     fn test_display_zero() {
         let zero = <CurrentEnvironment as Environment>::Scalar::zero();
 
-        let candidate = Scalar::<CurrentEnvironment>::new(zero);
+        let candidate = Scalar::new(zero);
         assert_eq!("0scalar", &format!("{candidate}"));
     }
 
@@ -127,7 +124,7 @@ mod tests {
     fn test_display_one() {
         let one = <CurrentEnvironment as Environment>::Scalar::one();
 
-        let candidate = Scalar::<CurrentEnvironment>::new(one);
+        let candidate = Scalar::new(one);
         assert_eq!("1scalar", &format!("{candidate}"));
     }
 
@@ -136,7 +133,7 @@ mod tests {
         let one = <CurrentEnvironment as Environment>::Scalar::one();
         let two = one + one;
 
-        let candidate = Scalar::<CurrentEnvironment>::new(two);
+        let candidate = Scalar::new(two);
         assert_eq!("2scalar", &format!("{candidate}"));
     }
 }

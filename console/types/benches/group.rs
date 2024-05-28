@@ -19,13 +19,11 @@ use criterion::Criterion;
 use snarkvm_console_network::{environment::prelude::*, MainnetV0};
 use snarkvm_console_types::{Field, Group};
 
-type CurrentNetwork = MainnetV0;
-
 fn group_from_field(c: &mut Criterion) {
     let rng = &mut TestRng::default();
 
     c.bench_function("group_from_field", move |b| {
-        let fields: Vec<Field<CurrentNetwork>> = (0..1000).map(|_| rng.gen()).collect();
+        let fields: Vec<Field> = (0..1000).map(|_| rng.gen()).collect();
 
         b.iter(|| {
             for field in &fields {
@@ -40,9 +38,9 @@ fn group_from_field_on_curve(c: &mut Criterion) {
     let rng = &mut TestRng::default();
 
     c.bench_function("group_from_field_on_curve", move |b| {
-        type Projective = <CurrentNetwork as Environment>::Projective;
+        type Projective = ConsoleProjective;
 
-        let fields: Vec<Field<CurrentNetwork>> =
+        let fields: Vec<Field> =
             (0..1000).map(|_| rng.gen::<Projective>().to_affine().to_x_coordinate()).map(Field::new).collect();
 
         b.iter(|| {
@@ -58,10 +56,10 @@ fn group_from_field_off_curve(c: &mut Criterion) {
     let rng = &mut TestRng::default();
 
     c.bench_function("group_from_field_off_curve", move |b| {
-        type Affine = <CurrentNetwork as Environment>::Affine;
+        type Affine = ConsoleAffine;
 
         let fields: Vec<_> = std::iter::repeat(())
-            .map(|_| rng.gen::<Field<CurrentNetwork>>())
+            .map(|_| rng.gen::<Field>())
             .filter(|&field| Affine::from_x_coordinate(*field, true).is_none())
             .take(1000)
             .collect();

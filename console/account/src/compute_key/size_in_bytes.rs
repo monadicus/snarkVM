@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<N: Network> SizeInBytes for ComputeKey<N> {
+impl SizeInBytes for ComputeKey {
     /// Returns the compute key size in bytes.
     #[inline]
     fn size_in_bytes() -> usize {
-        Group::<N>::size_in_bytes() + Group::<N>::size_in_bytes()
+        Group::size_in_bytes() + Group::size_in_bytes()
     }
 }

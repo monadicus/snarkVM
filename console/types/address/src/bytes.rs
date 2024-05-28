@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> FromBytes for Address<E> {
+impl FromBytes for Address {
     /// Reads in an account address from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -22,7 +22,7 @@ impl<E: Environment> FromBytes for Address<E> {
     }
 }
 
-impl<E: Environment> ToBytes for Address<E> {
+impl ToBytes for Address {
     /// Writes an account address to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.address.write_le(&mut writer)
@@ -32,9 +32,6 @@ impl<E: Environment> ToBytes for Address<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -44,12 +41,12 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new address.
-            let expected = Address::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Address::rand(&mut rng);
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, Address::read_le(&expected_bytes[..])?);
-            assert!(Address::<CurrentEnvironment>::read_le(&expected_bytes[1..]).is_err());
+            assert!(Address::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

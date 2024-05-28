@@ -14,16 +14,21 @@
 
 use super::*;
 
-impl<N: Network> Request<N> {
+impl Request {
     /// Returns `true` if the request is valid, and `false` otherwise.
     ///
     /// Verifies (challenge == challenge') && (address == address') && (serial_numbers == serial_numbers') where:
     ///     challenge' := HashToScalar(r * G, pk_sig, pr_sig, signer, \[tvk, tcm, function ID, input IDs\])
-    pub fn verify(&self, input_types: &[ValueType<N>], is_root: bool) -> bool {
+    pub fn verify<N: Network>(&self, input_types: &[ValueType], is_root: bool) -> bool {
+        if *self.network_id != N::ID {
+            eprintln!("Invalid network ID. Expected {}, found {}", N::ID, *self.network_id);
+            return false;
+        }
+
         // Verify the transition public key, transition view key, and transition commitment are well-formed.
         {
             // Compute the transition commitment `tcm` as `Hash(tvk)`.
-            match N::hash_psd2(&[self.tvk]) {
+            match AleoNetwork::hash_psd2(&[self.tvk]) {
                 Ok(tcm) => {
                     // Ensure the computed transition commitment matches.
                     if tcm != self.tcm {
@@ -53,7 +58,7 @@ impl<N: Network> Request<N> {
         };
 
         // Compute the 'is_root' field.
-        let is_root = if is_root { Field::<N>::one() } else { Field::<N>::zero() };
+        let is_root = if is_root { Field::one() } else { Field::zero() };
 
         // Construct the signature message as `[tvk, tcm, function ID, input IDs]`.
         let mut message = Vec::with_capacity(3 + self.input_ids.len());
@@ -71,7 +76,7 @@ impl<N: Network> Request<N> {
                         ensure!(matches!(input, Value::Plaintext(..)), "Expected a plaintext input");
 
                         // Construct the (console) input index as a field element.
-                        let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                        let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                         // Construct the preimage as `(function ID || input || tcm || index)`.
                         let mut preimage = Vec::new();
                         preimage.push(function_id);
@@ -79,7 +84,7 @@ impl<N: Network> Request<N> {
                         preimage.push(self.tcm);
                         preimage.push(index);
                         // Hash the input to a field element.
-                        let candidate_hash = N::hash_psd8(&preimage)?;
+                        let candidate_hash = AleoNetwork::hash_psd8(&preimage)?;
                         // Ensure the input hash matches.
                         ensure!(*input_hash == candidate_hash, "Expected a constant input with the same hash");
 
@@ -92,7 +97,7 @@ impl<N: Network> Request<N> {
                         ensure!(matches!(input, Value::Plaintext(..)), "Expected a plaintext input");
 
                         // Construct the (console) input index as a field element.
-                        let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                        let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                         // Construct the preimage as `(function ID || input || tcm || index)`.
                         let mut preimage = Vec::new();
                         preimage.push(function_id);
@@ -100,7 +105,7 @@ impl<N: Network> Request<N> {
                         preimage.push(self.tcm);
                         preimage.push(index);
                         // Hash the input to a field element.
-                        let candidate_hash = N::hash_psd8(&preimage)?;
+                        let candidate_hash = AleoNetwork::hash_psd8(&preimage)?;
                         // Ensure the input hash matches.
                         ensure!(*input_hash == candidate_hash, "Expected a public input with the same hash");
 
@@ -113,9 +118,9 @@ impl<N: Network> Request<N> {
                         ensure!(matches!(input, Value::Plaintext(..)), "Expected a plaintext input");
 
                         // Construct the (console) input index as a field element.
-                        let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                        let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                         // Compute the input view key as `Hash(function ID || tvk || index)`.
-                        let input_view_key = N::hash_psd4(&[function_id, self.tvk, index])?;
+                        let input_view_key = AleoNetwork::hash_psd4(&[function_id, self.tvk, index])?;
                         // Compute the ciphertext.
                         let ciphertext = match &input {
                             Value::Plaintext(plaintext) => plaintext.encrypt_symmetric(input_view_key)?,
@@ -124,7 +129,7 @@ impl<N: Network> Request<N> {
                             Value::Future(..) => bail!("Expected a plaintext input, found a future input"),
                         };
                         // Hash the ciphertext to a field element.
-                        let candidate_hash = N::hash_psd8(&ciphertext.to_fields()?)?;
+                        let candidate_hash = AleoNetwork::hash_psd8(&ciphertext.to_fields()?)?;
                         // Ensure the input hash matches.
                         ensure!(*input_hash == candidate_hash, "Expected a private input with the same commitment");
 
@@ -150,22 +155,22 @@ impl<N: Network> Request<N> {
                         ensure!(**record.owner() == self.signer, "Input record does not belong to the signer");
 
                         // Compute the record commitment.
-                        let candidate_cm = record.to_commitment(&self.program_id, record_name)?;
+                        let candidate_cm = record.to_commitment(&self.program_id, &record_name)?;
                         // Ensure the commitment matches.
                         ensure!(*commitment == candidate_cm, "Expected a record input with the same commitment");
 
                         // Compute the `candidate_sn` from `gamma`.
-                        let candidate_sn = Record::<N, Plaintext<N>>::serial_number_from_gamma(gamma, *commitment)?;
+                        let candidate_sn = Record::<Plaintext>::serial_number_from_gamma(&gamma, *commitment)?;
                         // Ensure the serial number matches.
                         ensure!(*serial_number == candidate_sn, "Expected a record input with the same serial number");
 
                         // Compute the generator `H` as `HashToGroup(commitment)`.
-                        let h = N::hash_to_group_psd2(&[N::serial_number_domain(), *commitment])?;
+                        let h = AleoNetwork::hash_to_group_psd2(&[AleoNetwork::serial_number_domain(), *commitment])?;
                         // Compute `h_r` as `(challenge * gamma) + (response * H)`, equivalent to `r * H`.
                         let h_r = (*gamma * challenge) + (h * response);
 
                         // Compute the tag as `Hash(sk_tag || commitment)`.
-                        let candidate_tag = N::hash_psd2(&[self.sk_tag, *commitment])?;
+                        let candidate_tag = AleoNetwork::hash_psd2(&[self.sk_tag, *commitment])?;
                         // Ensure the tag matches.
                         ensure!(*tag == candidate_tag, "Expected a record input with the same tag");
 
@@ -179,7 +184,7 @@ impl<N: Network> Request<N> {
                         ensure!(matches!(input, Value::Record(..)), "Expected a record input");
 
                         // Construct the (console) input index as a field element.
-                        let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                        let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                         // Construct the preimage as `(function ID || input || tvk || index)`.
                         let mut preimage = Vec::new();
                         preimage.push(function_id);
@@ -187,7 +192,7 @@ impl<N: Network> Request<N> {
                         preimage.push(self.tvk);
                         preimage.push(index);
                         // Hash the input to a field element.
-                        let candidate_hash = N::hash_psd8(&preimage)?;
+                        let candidate_hash = AleoNetwork::hash_psd8(&preimage)?;
                         // Ensure the input hash matches.
                         ensure!(*input_hash == candidate_hash, "Expected a locator input with the same hash");
 

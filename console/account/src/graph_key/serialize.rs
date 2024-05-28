@@ -14,17 +14,17 @@
 
 use super::*;
 
-impl<N: Network> Serialize for GraphKey<N> {
+impl Serialize for GraphKey {
     /// Serializes an account graph key into bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         ToBytesSerializer::serialize(self, serializer)
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for GraphKey<N> {
+impl<'de> Deserialize<'de> for GraphKey {
     /// Deserializes an account graph key from bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        FromBytesDeserializer::<Self>::deserialize(deserializer, "graph key", (N::Field::size_in_bits() + 7) / 8)
+        FromBytesDeserializer::<Self>::deserialize(deserializer, "graph key", (Field::size_in_bits() + 7) / 8)
     }
 }
 
@@ -32,9 +32,6 @@ impl<'de, N: Network> Deserialize<'de> for GraphKey<N> {
 mod tests {
     use super::*;
     use crate::PrivateKey;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -44,7 +41,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new graph key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let view_key = ViewKey::try_from(private_key)?;
             let expected = GraphKey::try_from(view_key)?;
 

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> FromBytes for Group<E> {
+impl FromBytes for Group {
     /// Reads the group from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -22,7 +22,7 @@ impl<E: Environment> FromBytes for Group<E> {
     }
 }
 
-impl<E: Environment> ToBytes for Group<E> {
+impl ToBytes for Group {
     /// Writes the group to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
@@ -33,9 +33,6 @@ impl<E: Environment> ToBytes for Group<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -45,12 +42,12 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new group.
-            let expected = Group::<CurrentEnvironment>::new(Uniform::rand(&mut rng));
+            let expected = Group::new(Uniform::rand(&mut rng));
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, Group::read_le(&expected_bytes[..])?);
-            assert!(Group::<CurrentEnvironment>::read_le(&expected_bytes[1..]).is_err());
+            assert!(Group::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

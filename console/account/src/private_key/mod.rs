@@ -26,16 +26,16 @@ use snarkvm_console_types::{Field, Scalar};
 use zeroize::Zeroize;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Zeroize)]
-pub struct PrivateKey<N: Network> {
+pub struct PrivateKey {
     /// The account seed that derives the full private key.
-    seed: Field<N>,
+    seed: Field,
     /// The derived signature secret key.
-    sk_sig: Scalar<N>,
+    sk_sig: Scalar,
     /// The derived signature randomizer.
-    r_sig: Scalar<N>,
+    r_sig: Scalar,
 }
 
-impl<N: Network> PrivateKey<N> {
+impl PrivateKey {
     /// Samples a new random private key.
     #[inline]
     pub fn new<R: Rng + CryptoRng>(rng: &mut R) -> Result<Self> {
@@ -44,17 +44,17 @@ impl<N: Network> PrivateKey<N> {
     }
 
     /// Returns the account seed.
-    pub const fn seed(&self) -> Field<N> {
+    pub const fn seed(&self) -> Field {
         self.seed
     }
 
     /// Returns the signature secret key.
-    pub const fn sk_sig(&self) -> Scalar<N> {
+    pub const fn sk_sig(&self) -> Scalar {
         self.sk_sig
     }
 
     /// Returns the signature randomizer.
-    pub const fn r_sig(&self) -> Scalar<N> {
+    pub const fn r_sig(&self) -> Scalar {
         self.r_sig
     }
 }

@@ -21,14 +21,14 @@ use snarkvm_console_network::prelude::*;
 
 /// A register contains the location data to a value in memory.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub enum Register<N: Network> {
+pub enum Register {
     /// A register contains its locator in memory.
     Locator(u64),
     /// A register access contains its locator and access(es) in memory.
-    Access(u64, Vec<Access<N>>),
+    Access(u64, Vec<Access>),
 }
 
-impl<N: Network> Register<N> {
+impl Register {
     /// Returns the locator of the register.
     #[inline]
     pub const fn locator(&self) -> u64 {
@@ -39,14 +39,14 @@ impl<N: Network> Register<N> {
     }
 }
 
-impl<N: Network> Ord for Register<N> {
+impl Ord for Register {
     /// Ordering is determined by the register locator (any accesses are ignored).
     fn cmp(&self, other: &Self) -> Ordering {
         self.locator().cmp(&other.locator())
     }
 }
 
-impl<N: Network> PartialOrd for Register<N> {
+impl PartialOrd for Register {
     /// Ordering is determined by the register locator (any accesses are ignored).
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))

@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<N: Network> Record<N, Plaintext<N>> {
+impl Record<Plaintext> {
     /// Encrypts `self` for the record owner under the given randomizer.
-    pub fn encrypt(&self, randomizer: Scalar<N>) -> Result<Record<N, Ciphertext<N>>> {
+    pub fn encrypt(&self, randomizer: Scalar) -> Result<Record<Ciphertext>> {
         // Ensure the randomizer corresponds to the record nonce.
-        if self.nonce == N::g_scalar_multiply(&randomizer) {
+        if self.nonce == AleoNetwork::g_scalar_multiply(&randomizer) {
             // Compute the record view key.
             let record_view_key = (**self.owner * randomizer).to_x_coordinate();
             // Encrypt the record.
@@ -31,17 +31,18 @@ impl<N: Network> Record<N, Plaintext<N>> {
     /// Encrypts `self` under the given record view key.
     /// Note: This method does not check that the record view key corresponds to the record owner.
     /// Use `Self::encrypt` for the checked variant.
-    pub fn encrypt_symmetric_unchecked(&self, record_view_key: &Field<N>) -> Result<Record<N, Ciphertext<N>>> {
+    pub fn encrypt_symmetric_unchecked(&self, record_view_key: &Field) -> Result<Record<Ciphertext>> {
         // Determine the number of randomizers needed to encrypt the record.
         let num_randomizers = self.num_randomizers()?;
         // Prepare a randomizer for each field element.
-        let randomizers = N::hash_many_psd8(&[N::encryption_domain(), *record_view_key], num_randomizers);
+        let randomizers =
+            AleoNetwork::hash_many_psd8(&[AleoNetwork::encryption_domain(), *record_view_key], num_randomizers);
         // Encrypt the record.
         self.encrypt_with_randomizers(&randomizers)
     }
 
     /// Encrypts `self` under the given randomizers.
-    fn encrypt_with_randomizers(&self, randomizers: &[Field<N>]) -> Result<Record<N, Ciphertext<N>>> {
+    fn encrypt_with_randomizers(&self, randomizers: &[Field]) -> Result<Record<Ciphertext>> {
         // Initialize an index to keep track of the randomizer index.
         let mut index: usize = 0;
 

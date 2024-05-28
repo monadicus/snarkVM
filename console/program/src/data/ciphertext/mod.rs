@@ -32,10 +32,10 @@ use snarkvm_console_types::{Boolean, Field, Group};
 use core::ops::Deref;
 
 #[derive(Clone)]
-pub struct Ciphertext<N: Network>(Vec<Field<N>>);
+pub struct Ciphertext(Vec<Field>);
 
-impl<N: Network> Deref for Ciphertext<N> {
-    type Target = [Field<N>];
+impl Deref for Ciphertext {
+    type Target = [Field];
 
     fn deref(&self) -> &Self::Target {
         &self.0

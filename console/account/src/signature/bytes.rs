@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Signature<N> {
+impl FromBytes for Signature {
     /// Reads an account signature from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -25,7 +25,7 @@ impl<N: Network> FromBytes for Signature<N> {
     }
 }
 
-impl<N: Network> ToBytes for Signature<N> {
+impl ToBytes for Signature {
     /// Writes an account signature to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
@@ -38,9 +38,6 @@ impl<N: Network> ToBytes for Signature<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 100;
 
@@ -55,7 +52,7 @@ mod tests {
             // Check the byte representation.
             let signature_bytes = signature.to_bytes_le()?;
             assert_eq!(signature, Signature::read_le(&signature_bytes[..])?);
-            assert!(Signature::<CurrentNetwork>::read_le(&signature_bytes[1..]).is_err());
+            assert!(Signature:::read_le(&signature_bytes[1..]).is_err());
         }
         Ok(())
     }

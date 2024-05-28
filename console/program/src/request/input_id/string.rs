@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for InputID<N> {
+impl FromStr for InputID {
     type Err = Error;
 
     /// Initializes the input ID from a JSON-string.
@@ -23,14 +23,14 @@ impl<N: Network> FromStr for InputID<N> {
     }
 }
 
-impl<N: Network> Debug for InputID<N> {
+impl Debug for InputID {
     /// Prints the input ID as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for InputID<N> {
+impl Display for InputID {
     /// Displays the input ID as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", serde_json::to_string(self).map_err::<fmt::Error, _>(ser::Error::custom)?)

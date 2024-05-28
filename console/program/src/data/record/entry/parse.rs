@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> Parser for Entry<N, Plaintext<N>> {
+impl Parser for Entry<Plaintext> {
     /// Parses a string into the entry.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -27,7 +29,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
         }
 
         /// Parses a sanitized pair: `identifier: entry`.
-        fn parse_pair<N: Network>(string: &str) -> ParserResult<(Identifier<N>, Plaintext<N>, Mode)> {
+        fn parse_pair(string: &str) -> ParserResult<(Identifier, Plaintext, Mode)> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the identifier from the string.
@@ -54,7 +56,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
         }
 
         /// Parses an entry as a literal: `literal.visibility`.
-        fn parse_literal<N: Network>(string: &str) -> ParserResult<(Plaintext<N>, Mode)> {
+        fn parse_literal(string: &str) -> ParserResult<(Plaintext, Mode)> {
             alt((
                 map(pair(Literal::parse, tag(".constant")), |(literal, _)| (Plaintext::from(literal), Mode::Constant)),
                 map(pair(Literal::parse, tag(".public")), |(literal, _)| (Plaintext::from(literal), Mode::Public)),
@@ -64,7 +66,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
 
         /// Parses an entry as a struct: `{ identifier_0: plaintext_0.visibility, ..., identifier_n: plaintext_n.visibility }`.
         /// Observe the `visibility` is the same for all members of the plaintext value.
-        fn parse_struct<N: Network>(string: &str) -> ParserResult<(Plaintext<N>, Mode)> {
+        fn parse_struct(string: &str) -> ParserResult<(Plaintext, Mode)> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the "{" from the string.
@@ -84,7 +86,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
                     false => return Err(error("Members of struct in entry have different visibilities")),
                 };
                 // Ensure the number of structs is within the maximum limit.
-                match members.len() <= N::MAX_STRUCT_ENTRIES {
+                match members.len() <= AleoNetwork::MAX_STRUCT_ENTRIES {
                     // Return the members and the visibility.
                     true => Ok((members.into_iter().map(|(i, p, _)| (i, p)).collect::<Vec<_>>(), mode)),
                     false => Err(error(format!("Found a struct that exceeds size ({})", members.len()))),
@@ -100,7 +102,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
 
         /// Parses an entry as an array: `[plaintext_0.visibility, ..., plaintext_n.visibility]`.
         /// Observe the `visibility` is the same for all members of the plaintext value.
-        fn parse_array<N: Network>(string: &str) -> ParserResult<(Plaintext<N>, Mode)> {
+        fn parse_array(string: &str) -> ParserResult<(Plaintext, Mode)> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the "[" from the string.
@@ -113,7 +115,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
                     pair(Sanitizer::parse_whitespaces, pair(tag(","), Sanitizer::parse_whitespaces)),
                     alt((parse_literal, parse_struct, parse_array)),
                 ),
-                |members: Vec<(Plaintext<N>, Mode)>| {
+                |members: Vec<(Plaintext, Mode)>| {
                     // Ensure the members all have the same visibility.
                     let mode = members.iter().map(|(_, mode)| mode).dedup().collect::<Vec<_>>();
                     let mode = match mode.len() == 1 {
@@ -121,7 +123,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
                         false => return Err(error("Members of an array have different visibilities")),
                     };
                     // Ensure the number of array elements is within the maximum limit.
-                    match members.len() <= N::MAX_ARRAY_ELEMENTS {
+                    match members.len() <= AleoNetwork::MAX_ARRAY_ELEMENTS {
                         // Return the members and the visibility.
                         true => Ok((members.into_iter().map(|(p, _)| p).collect::<Vec<_>>(), mode)),
                         false => Err(error(format!("Found an array that exceeds size ({})", members.len()))),
@@ -157,7 +159,7 @@ impl<N: Network> Parser for Entry<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network> FromStr for Entry<N, Plaintext<N>> {
+impl FromStr for Entry<Plaintext> {
     type Err = Error;
 
     /// Returns the entry from a string literal.
@@ -174,21 +176,21 @@ impl<N: Network> FromStr for Entry<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network> Debug for Entry<N, Plaintext<N>> {
+impl Debug for Entry<Plaintext> {
     /// Prints the entry as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Entry<N, Plaintext<N>> {
+impl Display for Entry<Plaintext> {
     /// Prints the entry as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         self.fmt_internal(f, 0)
     }
 }
 
-impl<N: Network> Entry<N, Plaintext<N>> {
+impl Entry<Plaintext> {
     /// Prints the entry with the given indentation depth.
     pub(in crate::data::record) fn fmt_internal(&self, f: &mut Formatter, depth: usize) -> fmt::Result {
         /// The number of spaces to indent.

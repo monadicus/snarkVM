@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Neg for Group<E> {
-    type Output = Group<E>;
+impl Neg for Group {
+    type Output = Group;
 
     /// Returns the `negation` of `self`.
     #[inline]
@@ -24,136 +24,136 @@ impl<E: Environment> Neg for Group<E> {
     }
 }
 
-impl<E: Environment> Add<Group<E>> for Group<E> {
-    type Output = Group<E>;
+impl Add<Group> for Group {
+    type Output = Group;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: Group<E>) -> Self::Output {
+    fn add(self, other: Group) -> Self::Output {
         Group::from_projective(self.group + other.group)
     }
 }
 
-impl<E: Environment> Add<&Group<E>> for Group<E> {
-    type Output = Group<E>;
+impl Add<&Group> for Group {
+    type Output = Group;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: &Group<E>) -> Self::Output {
+    fn add(self, other: &Group) -> Self::Output {
         Group::from_projective(self.group + other.group)
     }
 }
 
-impl<E: Environment> AddAssign<Group<E>> for Group<E> {
+impl AddAssign<Group> for Group {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: Group<E>) {
+    fn add_assign(&mut self, other: Group) {
         self.group += other.group;
     }
 }
 
-impl<E: Environment> AddAssign<&Group<E>> for Group<E> {
+impl AddAssign<&Group> for Group {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: &Group<E>) {
+    fn add_assign(&mut self, other: &Group) {
         self.group += other.group;
     }
 }
 
-impl<E: Environment> Sub<Group<E>> for Group<E> {
-    type Output = Group<E>;
+impl Sub<Group> for Group {
+    type Output = Group;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: Group<E>) -> Self::Output {
+    fn sub(self, other: Group) -> Self::Output {
         Group::from_projective(self.group - other.group)
     }
 }
 
-impl<E: Environment> Sub<&Group<E>> for Group<E> {
-    type Output = Group<E>;
+impl Sub<&Group> for Group {
+    type Output = Group;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: &Group<E>) -> Self::Output {
+    fn sub(self, other: &Group) -> Self::Output {
         Group::from_projective(self.group - other.group)
     }
 }
 
-impl<E: Environment> SubAssign<Group<E>> for Group<E> {
+impl SubAssign<Group> for Group {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: Group<E>) {
+    fn sub_assign(&mut self, other: Group) {
         self.group -= other.group;
     }
 }
 
-impl<E: Environment> SubAssign<&Group<E>> for Group<E> {
+impl SubAssign<&Group> for Group {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: &Group<E>) {
+    fn sub_assign(&mut self, other: &Group) {
         self.group -= other.group;
     }
 }
 
-impl<E: Environment> Mul<Scalar<E>> for Group<E> {
-    type Output = Group<E>;
+impl Mul<Scalar> for Group {
+    type Output = Group;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: Scalar<E>) -> Self::Output {
+    fn mul(self, other: Scalar) -> Self::Output {
         Group::from_projective(self.group * *other)
     }
 }
 
-impl<E: Environment> Mul<&Scalar<E>> for Group<E> {
-    type Output = Group<E>;
+impl Mul<&Scalar> for Group {
+    type Output = Group;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: &Scalar<E>) -> Self::Output {
+    fn mul(self, other: &Scalar) -> Self::Output {
         Group::from_projective(self.group * **other)
     }
 }
 
-impl<E: Environment> Mul<Group<E>> for Scalar<E> {
-    type Output = Group<E>;
+impl Mul<Group> for Scalar {
+    type Output = Group;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: Group<E>) -> Self::Output {
+    fn mul(self, other: Group) -> Self::Output {
         Group::from_projective(other.group * *self)
     }
 }
 
-impl<E: Environment> Mul<&Group<E>> for Scalar<E> {
-    type Output = Group<E>;
+impl Mul<&Group> for Scalar {
+    type Output = Group;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: &Group<E>) -> Self::Output {
+    fn mul(self, other: &Group) -> Self::Output {
         Group::from_projective(other.group * *self)
     }
 }
 
-impl<E: Environment> MulAssign<Scalar<E>> for Group<E> {
+impl MulAssign<Scalar> for Group {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: Scalar<E>) {
+    fn mul_assign(&mut self, other: Scalar) {
         self.group *= *other;
     }
 }
 
-impl<E: Environment> MulAssign<&Scalar<E>> for Group<E> {
+impl MulAssign<&Scalar> for Group {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: &Scalar<E>) {
+    fn mul_assign(&mut self, other: &Scalar) {
         self.group *= **other;
     }
 }
 
-impl<E: Environment> Double for Group<E> {
-    type Output = Group<E>;
+impl Double for Group {
+    type Output = Group;
 
     /// Returns the `double` of `self`.
     #[inline]
@@ -162,18 +162,18 @@ impl<E: Environment> Double for Group<E> {
     }
 }
 
-impl<E: Environment> Sum<Group<E>> for Group<E> {
+impl Sum<Group> for Group {
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn sum<I: Iterator<Item = Group<E>>>(iter: I) -> Self {
+    fn sum<I: Iterator<Item = Group>>(iter: I) -> Self {
         iter.fold(Group::zero(), |a, b| a + b)
     }
 }
 
-impl<'a, E: Environment> Sum<&'a Group<E>> for Group<E> {
+impl<'a> Sum<&'a Group> for Group {
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn sum<I: Iterator<Item = &'a Group<E>>>(iter: I) -> Self {
+    fn sum<I: Iterator<Item = &'a Group>>(iter: I) -> Self {
         iter.fold(Group::zero(), |a, b| a + b)
     }
 }

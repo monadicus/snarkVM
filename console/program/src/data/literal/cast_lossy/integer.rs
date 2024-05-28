@@ -14,67 +14,67 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> CastLossy<Address<E>> for Integer<E, I> {
+impl<I: IntegerType> CastLossy<Address> for Integer<I> {
     /// Casts an `Integer` to an `Address`.
     ///
     /// This operation converts the integer into a field element, and then attempts to recover
     /// the group element to construct the address. See the documentation of `Field::cast_lossy`
     /// on the `Group` type for more details.
     #[inline]
-    fn cast_lossy(&self) -> Address<E> {
-        let field: Field<E> = self.cast_lossy();
+    fn cast_lossy(&self) -> Address {
+        let field: Field = self.cast_lossy();
         field.cast_lossy()
     }
 }
 
-impl<E: Environment, I: IntegerType> CastLossy<Boolean<E>> for Integer<E, I> {
+impl<I: IntegerType> CastLossy<Boolean> for Integer<I> {
     /// Casts an `Integer` to a `Boolean`, with lossy truncation.
     /// This operation returns the least significant bit of the field.
     #[inline]
-    fn cast_lossy(&self) -> Boolean<E> {
+    fn cast_lossy(&self) -> Boolean {
         let bits_le = self.to_bits_le();
         debug_assert!(!bits_le.is_empty(), "An integer must have at least one bit");
         Boolean::new(bits_le[0])
     }
 }
 
-impl<E: Environment, I: IntegerType> CastLossy<Field<E>> for Integer<E, I> {
+impl<I: IntegerType> CastLossy<Field> for Integer<I> {
     /// Casts an `Integer` to a `Field`.
     /// This is safe because casting from an integer to a field is **always** lossless.
     #[inline]
-    fn cast_lossy(&self) -> Field<E> {
+    fn cast_lossy(&self) -> Field {
         let result = self.to_field();
         debug_assert!(result.is_ok(), "Casting an integer to field cannot fail");
         result.unwrap()
     }
 }
 
-impl<E: Environment, I: IntegerType> CastLossy<Group<E>> for Integer<E, I> {
+impl<I: IntegerType> CastLossy<Group> for Integer<I> {
     /// Casts an `Integer` to a `Group`.
     ///
     /// This operation converts the integer into a field element, and then attempts to recover
     /// the group element. See the documentation of `Field::cast_lossy` on the `Group` type
     /// for more details.
     #[inline]
-    fn cast_lossy(&self) -> Group<E> {
-        let field: Field<E> = self.cast_lossy();
+    fn cast_lossy(&self) -> Group {
+        let field: Field = self.cast_lossy();
         field.cast_lossy()
     }
 }
 
-impl<E: Environment, I0: IntegerType + AsPrimitive<I1>, I1: IntegerType> CastLossy<Integer<E, I1>> for Integer<E, I0> {
+impl<I0: IntegerType + AsPrimitive<I1>, I1: IntegerType> CastLossy<Integer<I1>> for Integer<I0> {
     /// Casts an `Integer` to an `Integer` of a different type, with lossy truncation.
     #[inline]
-    fn cast_lossy(&self) -> Integer<E, I1> {
+    fn cast_lossy(&self) -> Integer<I1> {
         Integer::new((**self).as_())
     }
 }
 
-impl<E: Environment, I: IntegerType> CastLossy<Scalar<E>> for Integer<E, I> {
+impl<I: IntegerType> CastLossy<Scalar> for Integer<I> {
     /// Casts an `Integer` to a `Scalar`.
     /// This is safe because casting from an integer to a scalar is **always** lossless.
     #[inline]
-    fn cast_lossy(&self) -> Scalar<E> {
+    fn cast_lossy(&self) -> Scalar {
         self.to_scalar()
     }
 }
@@ -93,23 +93,23 @@ mod tests {
             ($type:ty) => {
                 let rng = &mut TestRng::default();
 
-                let integer = Integer::<CurrentEnvironment, $type>::one();
-                let address: Address<CurrentEnvironment> = integer.cast_lossy();
+                let integer = Integer::<$type>::one();
+                let address: Address = integer.cast_lossy();
                 assert_eq!(address, Address::new(Group::generator()));
                 assert_eq!(address.to_group(), &Group::generator());
 
-                let integer = Integer::<CurrentEnvironment, $type>::zero();
-                let address: Address<CurrentEnvironment> = integer.cast_lossy();
+                let integer = Integer::<$type>::zero();
+                let address: Address = integer.cast_lossy();
                 assert_eq!(address, Address::zero());
                 assert_eq!(address.to_group(), &Group::zero());
 
                 for _ in 0..ITERATIONS {
                     // Sample a random integer.
-                    let integer = Integer::<CurrentEnvironment, $type>::rand(rng);
+                    let integer = Integer::<$type>::rand(rng);
                     // Perform the operation.
-                    let candidate: Address<CurrentEnvironment> = integer.cast_lossy();
+                    let candidate: Address = integer.cast_lossy();
                     // Compare the result against the group element. (This is the most we can do.)
-                    let expected: Group<CurrentEnvironment> = integer.cast_lossy();
+                    let expected: Group = integer.cast_lossy();
                     assert_eq!(Address::new(expected), candidate);
                 }
             };
@@ -133,19 +133,19 @@ mod tests {
             ($type:ty) => {
                 let rng = &mut TestRng::default();
 
-                let integer = Integer::<CurrentEnvironment, $type>::one();
-                let boolean: Boolean<CurrentEnvironment> = integer.cast_lossy();
+                let integer = Integer::<$type>::one();
+                let boolean: Boolean = integer.cast_lossy();
                 assert_eq!(boolean, Boolean::new(true));
 
-                let integer = Integer::<CurrentEnvironment, $type>::zero();
-                let boolean: Boolean<CurrentEnvironment> = integer.cast_lossy();
+                let integer = Integer::<$type>::zero();
+                let boolean: Boolean = integer.cast_lossy();
                 assert_eq!(boolean, Boolean::new(false));
 
                 for _ in 0..ITERATIONS {
                     // Sample a random integer.
-                    let integer = Integer::<CurrentEnvironment, $type>::rand(rng);
+                    let integer = Integer::<$type>::rand(rng);
                     // Perform the operation.
-                    let candidate: Boolean<CurrentEnvironment> = integer.cast_lossy();
+                    let candidate: Boolean = integer.cast_lossy();
                     // Compare the result against the least significant bit of the integer.
                     let expected = Boolean::new(integer.to_bits_be().pop().unwrap());
                     assert_eq!(expected, candidate);
@@ -173,9 +173,9 @@ mod tests {
 
                 for _ in 0..ITERATIONS {
                     // Sample a random integer.
-                    let integer = Integer::<CurrentEnvironment, $type>::rand(rng);
+                    let integer = Integer::<$type>::rand(rng);
                     // Perform the operation.
-                    let candidate: Field<CurrentEnvironment> = integer.cast_lossy();
+                    let candidate: Field = integer.cast_lossy();
                     // Compare the result against the field representation of the integer.
                     let expected = integer.to_field().unwrap();
                     assert_eq!(expected, candidate);
@@ -201,21 +201,21 @@ mod tests {
             ($type:ty) => {
                 let rng = &mut TestRng::default();
 
-                let integer = Integer::<CurrentEnvironment, $type>::one();
-                let group: Group<CurrentEnvironment> = integer.cast_lossy();
+                let integer = Integer::<$type>::one();
+                let group: Group = integer.cast_lossy();
                 assert_eq!(group, Group::generator());
 
-                let integer = Integer::<CurrentEnvironment, $type>::zero();
-                let group: Group<CurrentEnvironment> = integer.cast_lossy();
+                let integer = Integer::<$type>::zero();
+                let group: Group = integer.cast_lossy();
                 assert_eq!(group, Group::zero());
 
                 for _ in 0..ITERATIONS {
                     // Sample a random integer.
-                    let integer = Integer::<CurrentEnvironment, $type>::rand(rng);
+                    let integer = Integer::<$type>::rand(rng);
                     // Perform the operation.
-                    let candidate: Group<CurrentEnvironment> = integer.cast_lossy();
+                    let candidate: Group = integer.cast_lossy();
                     // Compare the result against the group representation of the integer.
-                    let expected: Group<CurrentEnvironment> = integer.to_field().unwrap().cast_lossy();
+                    let expected: Group = integer.to_field().unwrap().cast_lossy();
                     assert_eq!(expected, candidate);
                 }
             };
@@ -241,9 +241,9 @@ mod tests {
 
                 for _ in 0..ITERATIONS {
                     // Sample a random integer.
-                    let integer = Integer::<CurrentEnvironment, $type>::rand(rng);
+                    let integer = Integer::<$type>::rand(rng);
                     // Perform the operation.
-                    let candidate: Scalar<CurrentEnvironment> = integer.cast_lossy();
+                    let candidate: Scalar = integer.cast_lossy();
                     // Compare the result against the scalar representation of the integer.
                     let expected = integer.to_scalar();
                     assert_eq!(expected, candidate);
@@ -273,9 +273,9 @@ mod tests {
 
                 for _ in 0..ITERATIONS {
                     // Sample a random integer.
-                    let integer = Integer::<CurrentEnvironment, $type_a>::rand(rng);
+                    let integer = Integer::<$type_a>::rand(rng);
                     // Perform the operation.
-                    let candidate: Integer<CurrentEnvironment, $type_b> = integer.cast_lossy();
+                    let candidate: Integer<$type_b> = integer.cast_lossy();
 
                     // Retrieve the lesser number of bits of the two types.
                     let data_bits = std::cmp::min(<$type_a>::BITS, <$type_b>::BITS) as usize;

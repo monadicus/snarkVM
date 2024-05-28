@@ -14,18 +14,18 @@
 
 use super::*;
 
-impl<N: Network> ToBits for Ciphertext<N> {
+impl ToBits for Ciphertext {
     /// Returns this ciphertext as a list of **little-endian** bits.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         let initial_len = vec.len();
         self.0.write_bits_le(vec);
-        assert_eq!(self.0.len() * Field::<N>::size_in_bits(), vec.len() - initial_len);
+        assert_eq!(self.0.len() * Field::size_in_bits(), vec.len() - initial_len);
     }
 
     /// Returns this ciphertext as a list of **big-endian** bits.
     fn write_bits_be(&self, vec: &mut Vec<bool>) {
         let initial_len = vec.len();
         self.0.write_bits_be(vec);
-        assert_eq!(self.0.len() * Field::<N>::size_in_bits(), vec.len() - initial_len);
+        assert_eq!(self.0.len() * Field::size_in_bits(), vec.len() - initial_len);
     }
 }

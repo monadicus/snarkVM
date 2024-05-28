@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const RATE: usize> HashToScalar for Poseidon<E, RATE> {
-    type Input = Field<E>;
-    type Output = Scalar<E>;
+impl<const RATE: usize> HashToScalar for Poseidon<RATE> {
+    type Input = Field;
+    type Output = Scalar;
 
     /// Returns a scalar from hashing the input.
     /// This method uses truncation (up to data bits) to project onto the scalar field.

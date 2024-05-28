@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Value<N> {
+impl Serialize for Value {
     /// Serializes the value into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Value<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Value<N> {
+impl<'de> Deserialize<'de> for Value {
     /// Deserializes the value from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, N: Network> Deserialize<'de> for Value<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     #[test]
     fn test_serde_json() -> Result<()> {
@@ -50,7 +47,7 @@ mod tests {
   token_amount: 100u64
 }";
             // Construct a new plaintext value.
-            let expected = Value::<CurrentNetwork>::from_str(string).unwrap();
+            let expected = Value::from_str(string).unwrap();
             assert!(matches!(expected, Value::Plaintext(..)));
 
             // Serialize
@@ -70,7 +67,7 @@ mod tests {
   _nonce: 6122363155094913586073041054293642159180066699840940609722305038224296461351group.public
 }";
             // Construct a new record value.
-            let expected = Value::<CurrentNetwork>::from_str(string).unwrap();
+            let expected = Value::from_str(string).unwrap();
             assert!(matches!(expected, Value::Record(..)));
 
             // Serialize
@@ -94,7 +91,7 @@ mod tests {
   token_amount: 100u64
 }";
             // Construct a new plaintext value.
-            let expected = Value::<CurrentNetwork>::from_str(string).unwrap();
+            let expected = Value::from_str(string).unwrap();
             assert!(matches!(expected, Value::Plaintext(..)));
 
             // Serialize
@@ -114,7 +111,7 @@ mod tests {
   _nonce: 6122363155094913586073041054293642159180066699840940609722305038224296461351group.public
 }";
             // Construct a new record value.
-            let expected = Value::<CurrentNetwork>::from_str(string).unwrap();
+            let expected = Value::from_str(string).unwrap();
             assert!(matches!(expected, Value::Record(..)));
 
             // Serialize

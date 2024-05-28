@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_BITS: u8> HashUncompressed for Pedersen<E, NUM_BITS> {
+impl<const NUM_BITS: u8> HashUncompressed for Pedersen<NUM_BITS> {
     type Input = bool;
-    type Output = Group<E>;
+    type Output = Group;
 
     /// Returns the Pedersen hash of the given input as a group element.
     fn hash_uncompressed(&self, input: &[Self::Input]) -> Result<Self::Output> {

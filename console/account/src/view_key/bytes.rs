@@ -14,14 +14,14 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for ViewKey<N> {
+impl FromBytes for ViewKey {
     /// Reads an account view key from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         Ok(Self::from_scalar(Scalar::new(FromBytes::read_le(&mut reader)?)))
     }
 }
 
-impl<N: Network> ToBytes for ViewKey<N> {
+impl ToBytes for ViewKey {
     /// Writes an account view key to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.0.write_le(&mut writer)
@@ -31,9 +31,6 @@ impl<N: Network> ToBytes for ViewKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -43,13 +40,13 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new view key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let expected = ViewKey::try_from(private_key)?;
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, ViewKey::read_le(&expected_bytes[..])?);
-            assert!(ViewKey::<CurrentNetwork>::read_le(&expected_bytes[1..]).is_err());
+            assert!(ViewKey::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

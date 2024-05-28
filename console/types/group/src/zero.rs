@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment> Zero for Group<E> {
+impl Zero for Group {
     /// Returns the `0` element of the group.
     fn zero() -> Self {
-        Self::from_projective(E::Projective::zero())
+        Self::from_projective(ConsoleProjective::zero())
     }
 
     /// Returns `true` if the element is zero.
@@ -29,15 +29,12 @@ impl<E: Environment> Zero for Group<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 100;
 
     #[test]
     fn test_zero() {
-        let zero = Group::<CurrentEnvironment>::zero();
+        let zero = Group::zero();
 
         for bit in zero.to_bits_le().iter() {
             assert!(!bit)
@@ -46,13 +43,13 @@ mod tests {
 
     #[test]
     fn test_is_zero() {
-        assert!(Group::<CurrentEnvironment>::zero().is_zero());
+        assert!(Group::zero().is_zero());
 
         let mut rng = TestRng::default();
 
         // Note: This test technically has a `1 / MODULUS` probability of being flaky.
         for _ in 0..ITERATIONS {
-            let group: Group<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let group: Group = Uniform::rand(&mut rng);
             assert!(!group.is_zero());
         }
     }

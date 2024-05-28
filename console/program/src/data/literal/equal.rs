@@ -14,16 +14,16 @@
 
 use super::*;
 
-impl<N: Network> Eq for Literal<N> {}
+impl Eq for Literal {}
 
-impl<N: Network> PartialEq for Literal<N> {
+impl PartialEq for Literal {
     /// Returns `true` if `self` and `other` are equal.
     fn eq(&self, other: &Self) -> bool {
         *self.is_equal(other)
     }
 }
 
-impl<N: Network> core::hash::Hash for Literal<N> {
+impl core::hash::Hash for Literal {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         match self {
             Self::Address(a) => a.hash(state),
@@ -47,8 +47,8 @@ impl<N: Network> core::hash::Hash for Literal<N> {
     }
 }
 
-impl<N: Network> Equal for Literal<N> {
-    type Output = Boolean<N>;
+impl Equal for Literal {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

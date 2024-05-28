@@ -21,25 +21,25 @@ use snarkvm_console_network::prelude::*;
 
 /// A helper type for accessing an entry in a register, struct, array, or record.
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub enum Access<N: Network> {
+pub enum Access {
     /// Access a member of a register, struct, or record.
-    Member(Identifier<N>),
+    Member(Identifier),
     /// Access an element of an array.
-    Index(U32<N>),
+    Index(U32),
 }
 
-impl<N: Network> From<Identifier<N>> for Access<N> {
+impl From<Identifier> for Access {
     /// Initializes a new member access from an identifier.
     #[inline]
-    fn from(identifier: Identifier<N>) -> Self {
+    fn from(identifier: Identifier) -> Self {
         Self::Member(identifier)
     }
 }
 
-impl<N: Network> From<U32<N>> for Access<N> {
+impl From<U32> for Access {
     /// Initializes a new index access from a u32.
     #[inline]
-    fn from(index: U32<N>) -> Self {
+    fn from(index: U32) -> Self {
         Self::Index(index)
     }
 }

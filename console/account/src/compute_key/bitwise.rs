@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> Equal for ComputeKey<N> {
-    type Output = Boolean<N>;
+impl Equal for ComputeKey {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -28,8 +28,8 @@ impl<N: Network> Equal for ComputeKey<N> {
     }
 }
 
-impl<N: Network> Ternary for ComputeKey<N> {
-    type Boolean = Boolean<N>;
+impl Ternary for ComputeKey {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.

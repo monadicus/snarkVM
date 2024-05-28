@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for TransitionLeaf<N> {
+impl FromBytes for TransitionLeaf {
     /// Reads the transition leaf from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the version.
@@ -34,7 +34,7 @@ impl<N: Network> FromBytes for TransitionLeaf<N> {
     }
 }
 
-impl<N: Network> ToBytes for TransitionLeaf<N> {
+impl ToBytes for TransitionLeaf {
     /// Writes the transition leaf to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the version.

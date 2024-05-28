@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<N: Network> Record<N, Ciphertext<N>> {
+impl Record<Ciphertext> {
     /// Decrypts `self` into plaintext using the given view key and checks that the owner matches the view key.
-    pub fn decrypt(&self, view_key: &ViewKey<N>) -> Result<Record<N, Plaintext<N>>> {
+    pub fn decrypt(&self, view_key: &ViewKey) -> Result<Record<Plaintext>> {
         // Compute the record view key.
         let record_view_key = (self.nonce * **view_key).to_x_coordinate();
         // Decrypt the record.
@@ -31,17 +31,18 @@ impl<N: Network> Record<N, Ciphertext<N>> {
     /// Decrypts `self` into plaintext using the given record view key.
     /// Note: This method does not check that the record view key corresponds to the record owner.
     /// Use `Self::decrypt` for the checked variant.
-    pub fn decrypt_symmetric_unchecked(&self, record_view_key: &Field<N>) -> Result<Record<N, Plaintext<N>>> {
+    pub fn decrypt_symmetric_unchecked(&self, record_view_key: &Field) -> Result<Record<Plaintext>> {
         // Determine the number of randomizers needed to encrypt the record.
         let num_randomizers = self.num_randomizers()?;
         // Prepare a randomizer for each field element.
-        let randomizers = N::hash_many_psd8(&[N::encryption_domain(), *record_view_key], num_randomizers);
+        let randomizers =
+            AleoNetwork::hash_many_psd8(&[AleoNetwork::encryption_domain(), *record_view_key], num_randomizers);
         // Decrypt the record.
         self.decrypt_with_randomizers(&randomizers)
     }
 
     /// Decrypts `self` into plaintext using the given randomizers.
-    fn decrypt_with_randomizers(&self, randomizers: &[Field<N>]) -> Result<Record<N, Plaintext<N>>> {
+    fn decrypt_with_randomizers(&self, randomizers: &[Field]) -> Result<Record<Plaintext>> {
         // Initialize an index to keep track of the randomizer index.
         let mut index: usize = 0;
 
@@ -103,11 +104,7 @@ mod tests {
 
     const ITERATIONS: u64 = 1000;
 
-    fn check_encrypt_and_decrypt<N: Network>(
-        view_key: ViewKey<N>,
-        owner: Owner<N, Plaintext<N>>,
-        rng: &mut TestRng,
-    ) -> Result<()> {
+    fn check_encrypt_and_decrypt(view_key: ViewKey, owner: Owner<Plaintext>, rng: &mut TestRng) -> Result<()> {
         // Prepare the record.
         let randomizer = Scalar::rand(rng);
         let record = Record {
@@ -116,7 +113,7 @@ mod tests {
                 (Identifier::from_str("a")?, Entry::Private(Plaintext::from(Literal::Field(Field::rand(rng))))),
                 (Identifier::from_str("b")?, Entry::Private(Plaintext::from(Literal::Scalar(Scalar::rand(rng))))),
             ]),
-            nonce: N::g_scalar_multiply(&randomizer),
+            nonce: AleoNetwork::g_scalar_multiply(&randomizer),
         };
         // Encrypt the record.
         let ciphertext = record.encrypt(randomizer)?;
@@ -124,7 +121,7 @@ mod tests {
         assert_eq!(record, ciphertext.decrypt(&view_key)?);
 
         // Generate a new random private key.
-        let incorrect_private_key = PrivateKey::<N>::new(rng)?;
+        let incorrect_private_key = PrivateKey::new(rng)?;
         // Generate a new view key.
         let incorrect_view_key = ViewKey::try_from(&incorrect_private_key)?;
         // Ensure that decrypting with the incorrect view key fails.

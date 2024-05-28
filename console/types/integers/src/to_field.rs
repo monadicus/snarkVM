@@ -14,15 +14,15 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> ToField for Integer<E, I> {
-    type Field = Field<E>;
+impl<I: IntegerType> ToField for Integer<I> {
+    type Field = Field;
 
     /// Converts an integer into a field element.
     fn to_field(&self) -> Result<Self::Field> {
         // Note: We are reconstituting the integer as a base field.
         // This is safe as the number of bits in the integer is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(I::BITS < Field::<E>::size_in_bits() as u64);
+        debug_assert!(I::BITS < Field::size_in_bits() as u64);
 
         // Reconstruct the bits as a linear combination representing the original field value.
         Field::from_bits_le(&self.to_bits_le())
@@ -32,9 +32,6 @@ impl<E: Environment, I: IntegerType> ToField for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -43,14 +40,14 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random integer.
-            let expected = Integer::<CurrentEnvironment, I>::rand(&mut rng);
+            let expected = Integer::<I>::rand(&mut rng);
 
             // Perform the operation.
             let candidate = expected.to_field()?;
 
             // Extract the bits from the base field representation.
             let candidate_bits_le = candidate.to_bits_le();
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), candidate_bits_le.len());
+            assert_eq!(Field::size_in_bits(), candidate_bits_le.len());
 
             // Ensure all integer bits match with the expected result.
             let i_bits = usize::try_from(I::BITS).unwrap();

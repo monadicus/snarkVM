@@ -14,17 +14,17 @@
 
 use super::*;
 
-impl<N: Network, Private: Visibility<Boolean = Boolean<N>>> Eq for Entry<N, Private> {}
+impl<Private: Visibility<Boolean = Boolean>> Eq for Entry<Private> {}
 
-impl<N: Network, Private: Visibility<Boolean = Boolean<N>>> PartialEq for Entry<N, Private> {
+impl<Private: Visibility<Boolean = Boolean>> PartialEq for Entry<Private> {
     /// Returns `true` if `self` and `other` are equal.
     fn eq(&self, other: &Self) -> bool {
         *self.is_equal(other)
     }
 }
 
-impl<N: Network, Private: Visibility<Boolean = Boolean<N>>> Equal<Self> for Entry<N, Private> {
-    type Output = Boolean<N>;
+impl<Private: Visibility<Boolean = Boolean>> Equal<Self> for Entry<Private> {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

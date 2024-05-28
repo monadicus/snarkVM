@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> FromFields for Integer<E, I> {
-    type Field = Field<E>;
+impl<I: IntegerType> FromFields for Integer<I> {
+    type Field = Field;
 
     /// Initializes a new integer by recovering the **x-coordinate** of an affine group from a field element.
     fn from_fields(fields: &[Self::Field]) -> Result<Self> {
@@ -29,9 +29,6 @@ impl<E: Environment, I: IntegerType> FromFields for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -40,7 +37,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random integer.
-            let expected = Integer::<CurrentEnvironment, I>::rand(&mut rng);
+            let expected = Integer::<I>::rand(&mut rng);
 
             // Perform the operation.
             let candidate = Integer::from_fields(&expected.to_fields()?)?;

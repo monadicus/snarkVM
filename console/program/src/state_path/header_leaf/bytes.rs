@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for HeaderLeaf<N> {
+impl FromBytes for HeaderLeaf {
     /// Reads the header leaf from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the index.
@@ -26,7 +26,7 @@ impl<N: Network> FromBytes for HeaderLeaf<N> {
     }
 }
 
-impl<N: Network> ToBytes for HeaderLeaf<N> {
+impl ToBytes for HeaderLeaf {
     /// Writes the header leaf to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the index.

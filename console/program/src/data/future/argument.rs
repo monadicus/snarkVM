@@ -16,15 +16,15 @@ use super::*;
 
 /// An argument passed into a future.
 #[derive(Clone)]
-pub enum Argument<N: Network> {
+pub enum Argument {
     /// A plaintext value.
-    Plaintext(Plaintext<N>),
+    Plaintext(Plaintext),
     /// A future.
-    Future(Future<N>),
+    Future(Future),
 }
 
-impl<N: Network> Equal<Self> for Argument<N> {
-    type Output = Boolean<N>;
+impl Equal<Self> for Argument {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -45,7 +45,7 @@ impl<N: Network> Equal<Self> for Argument<N> {
     }
 }
 
-impl<N: Network> FromBytes for Argument<N> {
+impl FromBytes for Argument {
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self>
     where
         Self: Sized,
@@ -62,7 +62,7 @@ impl<N: Network> FromBytes for Argument<N> {
     }
 }
 
-impl<N: Network> ToBytes for Argument<N> {
+impl ToBytes for Argument {
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {
             Self::Plaintext(plaintext) => {
@@ -77,7 +77,7 @@ impl<N: Network> ToBytes for Argument<N> {
     }
 }
 
-impl<N: Network> ToBits for Argument<N> {
+impl ToBits for Argument {
     /// Returns the argument as a list of **little-endian** bits.
     #[inline]
     fn write_bits_le(&self, vec: &mut Vec<bool>) {

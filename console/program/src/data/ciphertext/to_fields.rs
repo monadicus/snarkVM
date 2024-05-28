@@ -14,13 +14,13 @@
 
 use super::*;
 
-impl<N: Network> ToFields for Ciphertext<N> {
-    type Field = Field<N>;
+impl ToFields for Ciphertext {
+    type Field = Field;
 
     /// Returns this ciphertext as a list of field elements.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match self.0.len() <= N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match self.0.len() <= AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => Ok(self.0.clone()),
             false => bail!("Ciphertext exceeds maximum allowed size"),
         }

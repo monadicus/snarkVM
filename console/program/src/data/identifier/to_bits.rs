@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBits for Identifier<N> {
+impl ToBits for Identifier {
     /// Returns the little-endian bits of the identifier.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         (&self).write_bits_le(vec);
@@ -26,7 +26,7 @@ impl<N: Network> ToBits for Identifier<N> {
     }
 }
 
-impl<N: Network> ToBits for &Identifier<N> {
+impl ToBits for &Identifier {
     /// Returns the little-endian bits of the identifier.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         let initial_len = vec.len();
@@ -46,9 +46,6 @@ impl<N: Network> ToBits for &Identifier<N> {
 mod tests {
     use super::*;
     use crate::data::identifier::tests::sample_identifier_as_string;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: usize = 100;
 
@@ -58,11 +55,11 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_string = sample_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_string = sample_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_field = Field::<CurrentNetwork>::from_bits_le(&expected_string.to_bits_le())?;
+            let expected_field = Field::from_bits_le(&expected_string.to_bits_le())?;
 
-            let candidate = Identifier::<CurrentNetwork>::from_str(&expected_string)?;
+            let candidate = Identifier::from_str(&expected_string)?;
             assert_eq!(expected_field, candidate.0);
             assert_eq!(expected_field.to_bits_le()[..expected_string.len() * 8], candidate.to_bits_le());
         }
@@ -75,11 +72,11 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_string = sample_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_string = sample_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_field = Field::<CurrentNetwork>::from_bits_le(&expected_string.to_bits_le())?;
+            let expected_field = Field::from_bits_le(&expected_string.to_bits_le())?;
 
-            let candidate = Identifier::<CurrentNetwork>::from_str(&expected_string)?;
+            let candidate = Identifier::from_str(&expected_string)?;
             assert_eq!(expected_field, candidate.0);
             assert_eq!(
                 expected_field.to_bits_le()[..expected_string.len() * 8].iter().rev().copied().collect::<Vec<_>>(),

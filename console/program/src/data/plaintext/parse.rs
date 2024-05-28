@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> Parser for Plaintext<N> {
+impl Parser for Plaintext {
     /// Parses a string into a plaintext value.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         /// Parses a sanitized pair: `identifier: plaintext`.
-        fn parse_pair<N: Network>(string: &str) -> ParserResult<(Identifier<N>, Plaintext<N>)> {
+        fn parse_pair(string: &str) -> ParserResult<(Identifier, Plaintext)> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the identifier from the string.
@@ -37,7 +39,7 @@ impl<N: Network> Parser for Plaintext<N> {
         }
 
         /// Parses a plaintext as a struct: `{ identifier_0: plaintext_0, ..., identifier_n: plaintext_n }`.
-        fn parse_struct<N: Network>(string: &str) -> ParserResult<Plaintext<N>> {
+        fn parse_struct(string: &str) -> ParserResult<Plaintext> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the "{" from the string.
@@ -49,7 +51,7 @@ impl<N: Network> Parser for Plaintext<N> {
                     return Err(error("Duplicate member in struct"));
                 }
                 // Ensure the number of structs is within the maximum limit.
-                match members.len() <= N::MAX_STRUCT_ENTRIES {
+                match members.len() <= AleoNetwork::MAX_STRUCT_ENTRIES {
                     true => Ok(members),
                     false => Err(error(format!("Found a plaintext that exceeds size ({})", members.len()))),
                 }
@@ -63,7 +65,7 @@ impl<N: Network> Parser for Plaintext<N> {
         }
 
         /// Parses a plaintext as an array: `[plaintext_0, ..., plaintext_n]`.
-        fn parse_array<N: Network>(string: &str) -> ParserResult<Plaintext<N>> {
+        fn parse_array(string: &str) -> ParserResult<Plaintext> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the "[" from the string.
@@ -92,7 +94,7 @@ impl<N: Network> Parser for Plaintext<N> {
     }
 }
 
-impl<N: Network> FromStr for Plaintext<N> {
+impl FromStr for Plaintext {
     type Err = Error;
 
     /// Returns a plaintext from a string literal.
@@ -109,21 +111,21 @@ impl<N: Network> FromStr for Plaintext<N> {
     }
 }
 
-impl<N: Network> Debug for Plaintext<N> {
+impl Debug for Plaintext {
     /// Prints the plaintext as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Plaintext<N> {
+impl Display for Plaintext {
     /// Prints the plaintext as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         self.fmt_internal(f, 0)
     }
 }
 
-impl<N: Network> Plaintext<N> {
+impl Plaintext {
     /// Prints the plaintext with the given indentation depth.
     fn fmt_internal(&self, f: &mut Formatter, depth: usize) -> fmt::Result {
         /// The number of spaces to indent.

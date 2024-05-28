@@ -42,8 +42,8 @@ pub trait PathHash: Clone + Send + Sync {
     }
 }
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Hash = Field<E>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Hash = Field;
 
     /// Returns the hash of the given child nodes.
     fn hash_children(&self, children: &[Self::Hash]) -> Result<Self::Hash> {
@@ -58,8 +58,8 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash for 
     }
 }
 
-impl<E: Environment, const RATE: usize> PathHash for Poseidon<E, RATE> {
-    type Hash = Field<E>;
+impl<const RATE: usize> PathHash for Poseidon<RATE> {
+    type Hash = Field;
 
     /// Returns the hash of the given child nodes.
     fn hash_children(&self, children: &[Self::Hash]) -> Result<Self::Hash> {

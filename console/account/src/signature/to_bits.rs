@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBits for Signature<N> {
+impl ToBits for Signature {
     /// Returns the little-endian bits of the signature.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         // Write the challenge bits.
@@ -39,9 +39,6 @@ impl<N: Network> ToBits for Signature<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1_000;
 
@@ -54,7 +51,7 @@ mod tests {
             let signature = test_helpers::sample_signature(i, rng);
 
             let candidate = signature.to_bits_le();
-            assert_eq!(Signature::<CurrentNetwork>::size_in_bits(), candidate.len());
+            assert_eq!(Signature::size_in_bits(), candidate.len());
 
             // Construct the expected bits.
             let mut expected = Vec::new();
@@ -77,7 +74,7 @@ mod tests {
             let signature = test_helpers::sample_signature(i, rng);
 
             let candidate = signature.to_bits_be();
-            assert_eq!(Signature::<CurrentNetwork>::size_in_bits(), candidate.len());
+            assert_eq!(Signature::size_in_bits(), candidate.len());
 
             // Construct the expected bits.
             let mut expected = Vec::new();

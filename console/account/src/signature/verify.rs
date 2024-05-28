@@ -14,12 +14,12 @@
 
 use super::*;
 
-impl<N: Network> Signature<N> {
+impl Signature {
     /// Verifies (challenge == challenge') && (address == address') where:
     ///     challenge' := HashToScalar(G^response pk_sig^challenge, pk_sig, pr_sig, address, message)
-    pub fn verify(&self, address: &Address<N>, message: &[Field<N>]) -> bool {
+    pub fn verify(&self, address: &Address, message: &[Field]) -> bool {
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        if message.len() > N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        if message.len() > AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             eprintln!("Cannot sign the signature: the signed message exceeds maximum allowed size");
             return false;
         }
@@ -30,7 +30,7 @@ impl<N: Network> Signature<N> {
         let pr_sig = self.compute_key.pr_sig();
 
         // Compute `g_r` := (response * G) + (challenge * pk_sig).
-        let g_r = N::g_scalar_multiply(&self.response) + (pk_sig * self.challenge);
+        let g_r = AleoNetwork::g_scalar_multiply(&self.response) + (pk_sig * self.challenge);
 
         // Construct the hash input as (r * G, pk_sig, pr_sig, address, message).
         let mut preimage = Vec::with_capacity(4 + message.len());
@@ -38,7 +38,7 @@ impl<N: Network> Signature<N> {
         preimage.extend(message);
 
         // Hash to derive the verifier challenge, and return `false` if this operation fails.
-        let candidate_challenge = match N::hash_to_scalar_psd8(&preimage) {
+        let candidate_challenge = match AleoNetwork::hash_to_scalar_psd8(&preimage) {
             // Output the computed candidate challenge.
             Ok(candidate_challenge) => candidate_challenge,
             // Return `false` if the challenge errored.
@@ -58,15 +58,15 @@ impl<N: Network> Signature<N> {
     }
 
     /// Verifies a signature for the given address and message (as bytes).
-    pub fn verify_bytes(&self, address: &Address<N>, message: &[u8]) -> bool {
+    pub fn verify_bytes(&self, address: &Address, message: &[u8]) -> bool {
         // Convert the message into bits, and verify the signature.
         self.verify_bits(address, &message.to_bits_le())
     }
 
     /// Verifies a signature for the given address and message (as bits).
-    pub fn verify_bits(&self, address: &Address<N>, message: &[bool]) -> bool {
+    pub fn verify_bits(&self, address: &Address, message: &[bool]) -> bool {
         // Pack the bits into field elements.
-        match message.chunks(Field::<N>::size_in_data_bits()).map(Field::from_bits_le).collect::<Result<Vec<_>>>() {
+        match message.chunks(Field::size_in_data_bits()).map(Field::from_bits_le).collect::<Result<Vec<_>>>() {
             Ok(fields) => self.verify(address, &fields),
             Err(error) => {
                 eprintln!("Failed to verify signature: {error}");
@@ -80,8 +80,6 @@ impl<N: Network> Signature<N> {
 #[cfg(feature = "private_key")]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
     type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 100;
@@ -92,7 +90,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample an address and a private key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let address = Address::try_from(&private_key)?;
 
             // Check that the signature is valid for the message.
@@ -115,7 +113,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample an address and a private key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let address = Address::try_from(&private_key)?;
 
             // Check that the signature is valid for the message.
@@ -138,7 +136,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample an address and a private key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let address = Address::try_from(&private_key)?;
 
             // Check that the signature is valid for the message.

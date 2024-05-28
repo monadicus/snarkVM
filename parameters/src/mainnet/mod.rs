@@ -115,34 +115,34 @@ impl_local!(FeePublicVerifier, "resources/", "fee_public", "verifier");
 
 #[macro_export]
 macro_rules! insert_credit_keys {
-    ($map:ident, $type:ident<$network:ident>, $variant:ident) => {{
+    ($map:ident, $type:ident, $variant:ident) => {{
         paste::paste! {
             let string = stringify!([<$variant:lower>]);
-            $crate::insert_key!($map, string, $type<$network>, ("bond_public", $crate::mainnet::[<BondPublic $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("unbond_public", $crate::mainnet::[<UnbondPublic $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("unbond_delegator_as_validator", $crate::mainnet::[<UnbondDelegatorAsValidator $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("claim_unbond_public", $crate::mainnet::[<ClaimUnbondPublic $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("set_validator_state", $crate::mainnet::[<SetValidatorState $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("transfer_private", $crate::mainnet::[<TransferPrivate $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("transfer_public", $crate::mainnet::[<TransferPublic $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("transfer_public_as_signer", $crate::mainnet::[<TransferPublicAsSigner $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("transfer_private_to_public", $crate::mainnet::[<TransferPrivateToPublic $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("transfer_public_to_private", $crate::mainnet::[<TransferPublicToPrivate $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("join", $crate::mainnet::[<Join $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("split", $crate::mainnet::[<Split $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("fee_private", $crate::mainnet::[<FeePrivate $variant>]::load_bytes()));
-            $crate::insert_key!($map, string, $type<$network>, ("fee_public", $crate::mainnet::[<FeePublic $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("bond_public", $crate::mainnet::[<BondPublic $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("unbond_public", $crate::mainnet::[<UnbondPublic $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("unbond_delegator_as_validator", $crate::mainnet::[<UnbondDelegatorAsValidator $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("claim_unbond_public", $crate::mainnet::[<ClaimUnbondPublic $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("set_validator_state", $crate::mainnet::[<SetValidatorState $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("transfer_private", $crate::mainnet::[<TransferPrivate $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("transfer_public", $crate::mainnet::[<TransferPublic $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("transfer_public_as_signer", $crate::mainnet::[<TransferPublicAsSigner $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("transfer_private_to_public", $crate::mainnet::[<TransferPrivateToPublic $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("transfer_public_to_private", $crate::mainnet::[<TransferPublicToPrivate $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("join", $crate::mainnet::[<Join $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("split", $crate::mainnet::[<Split $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("fee_private", $crate::mainnet::[<FeePrivate $variant>]::load_bytes()));
+            $crate::insert_key!($map, string, $type, ("fee_public", $crate::mainnet::[<FeePublic $variant>]::load_bytes()));
         }
     }};
 }
 
 #[macro_export]
 macro_rules! insert_key {
-    ($map:ident, $string:tt, $type:ident<$network:ident>, ($name:tt, $circuit_key:expr)) => {{
+    ($map:ident, $string:tt, $type:ident, ($name:tt, $circuit_key:expr)) => {{
         // Load the circuit key bytes.
         let key_bytes: Vec<u8> = $circuit_key.expect(&format!("Failed to load {} bytes", $string));
         // Recover the circuit key.
-        let key = $type::<$network>::from_bytes_le(&key_bytes[1..]).expect(&format!("Failed to recover {}", $string));
+        let key = $type::from_bytes_le(&key_bytes[1..]).expect(&format!("Failed to recover {}", $string));
         // Insert the circuit key.
         $map.insert($name.to_string(), std::sync::Arc::new(key));
     }};

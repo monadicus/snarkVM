@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> FromBytes for Plaintext<N> {
+impl FromBytes for Plaintext {
     /// Reads the plaintext from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the index.
@@ -29,7 +31,7 @@ impl<N: Network> FromBytes for Plaintext<N> {
                 let mut members = IndexMap::with_capacity(num_members as usize);
                 for _ in 0..num_members {
                     // Read the identifier.
-                    let identifier = Identifier::<N>::read_le(&mut reader)?;
+                    let identifier = Identifier::read_le(&mut reader)?;
                     // Read the plaintext value (in 2 steps to prevent infinite recursion).
                     let num_bytes = u16::read_le(&mut reader)?;
                     // Read the plaintext bytes.
@@ -46,7 +48,7 @@ impl<N: Network> FromBytes for Plaintext<N> {
             2 => {
                 // Read the length of the array.
                 let num_elements = u32::read_le(&mut reader)?;
-                if num_elements as usize > N::MAX_ARRAY_ELEMENTS {
+                if num_elements as usize > AleoNetwork::MAX_ARRAY_ELEMENTS {
                     return Err(error("Failed to deserialize plaintext: Array exceeds maximum length"));
                 }
                 // Read the elements.
@@ -71,7 +73,7 @@ impl<N: Network> FromBytes for Plaintext<N> {
     }
 }
 
-impl<N: Network> ToBytes for Plaintext<N> {
+impl ToBytes for Plaintext {
     /// Writes the plaintext to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {

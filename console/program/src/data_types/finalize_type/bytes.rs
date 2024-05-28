@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBytes for FinalizeType<N> {
+impl ToBytes for FinalizeType {
     /// Writes the finalize type to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         u8::try_from(self.enum_index()).map_err(error)?.write_le(&mut writer)?;
@@ -25,7 +25,7 @@ impl<N: Network> ToBytes for FinalizeType<N> {
     }
 }
 
-impl<N: Network> FromBytes for FinalizeType<N> {
+impl FromBytes for FinalizeType {
     /// Reads the finalize type from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let variant = u8::read_le(&mut reader)?;

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Plaintext<N> {
+impl Serialize for Plaintext {
     /// Serializes the plaintext into a string or as bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Plaintext<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Plaintext<N> {
+impl<'de> Deserialize<'de> for Plaintext {
     /// Deserializes the plaintext from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,15 +37,12 @@ impl<'de, N: Network> Deserialize<'de> for Plaintext<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 2;
 
     #[test]
     fn test_serde_json() -> Result<()> {
-        fn run_test(expected: Plaintext<CurrentNetwork>) {
+        fn run_test(expected: Plaintext) {
             for _ in 0..ITERATIONS {
                 // Serialize
                 let expected_string = &expected.to_string();
@@ -59,19 +56,19 @@ mod tests {
         }
 
         // Test struct.
-        run_test(Plaintext::<CurrentNetwork>::from_str(
+        run_test(Plaintext::from_str(
             "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah, token_amount: 100u64 }",
         )?);
 
         // Test array.
-        run_test(Plaintext::<CurrentNetwork>::from_str("[ 0field, 1field, 2field, 3field, 4field ]")?);
+        run_test(Plaintext::from_str("[ 0field, 1field, 2field, 3field, 4field ]")?);
 
         Ok(())
     }
 
     #[test]
     fn test_bincode() -> Result<()> {
-        fn run_test(expected: Plaintext<CurrentNetwork>) {
+        fn run_test(expected: Plaintext) {
             for _ in 0..ITERATIONS {
                 // Serialize
                 let expected_bytes = expected.to_bytes_le().unwrap();
@@ -85,12 +82,12 @@ mod tests {
         }
 
         // Test struct.
-        run_test(Plaintext::<CurrentNetwork>::from_str(
+        run_test(Plaintext::from_str(
             "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah, token_amount: 100u64 }",
         )?);
 
         // Test array.
-        run_test(Plaintext::<CurrentNetwork>::from_str("[ 0field, 1field, 2field, 3field, 4field ]")?);
+        run_test(Plaintext::from_str("[ 0field, 1field, 2field, 3field, 4field ]")?);
 
         Ok(())
     }

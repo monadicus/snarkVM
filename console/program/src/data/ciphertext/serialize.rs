@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Ciphertext<N> {
+impl Serialize for Ciphertext {
     /// Serializes the ciphertext into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Ciphertext<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Ciphertext<N> {
+impl<'de> Deserialize<'de> for Ciphertext {
     /// Deserializes the ciphertext from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, N: Network> Deserialize<'de> for Ciphertext<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -49,7 +46,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new ciphertext.
-            let expected = Ciphertext::<CurrentNetwork>((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
+            let expected = Ciphertext((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
 
             // Serialize
             let expected_string = &expected.to_string();
@@ -69,7 +66,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new ciphertext.
-            let expected = Ciphertext::<CurrentNetwork>((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
+            let expected = Ciphertext((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
 
             // Serialize
             let expected_bytes = expected.to_bytes_le()?;

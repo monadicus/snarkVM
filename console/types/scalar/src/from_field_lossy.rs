@@ -14,20 +14,20 @@
 
 use super::*;
 
-impl<E: Environment> Scalar<E> {
+impl Scalar {
     /// Casts a scalar from a base field, with lossy truncation.
     ///
     /// This method is commonly-used by hash-to-scalar algorithms,
     /// where the hash output does not need to preserve the full base field.
-    pub fn from_field_lossy(field: &Field<E>) -> Self {
+    pub fn from_field_lossy(field: &Field) -> Self {
         // Note: We are reconstituting the base field into a scalar field.
         // This is safe as the scalar field modulus is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(Scalar::<E>::size_in_bits() < Field::<E>::size_in_bits());
+        debug_assert!(Scalar::size_in_bits() < Field::size_in_bits());
 
         // Truncate the field to the size in data bits (1 bit less than the MODULUS) of the scalar.
         // Slicing here is safe as the base field is larger than the scalar field.
-        let result = Self::from_bits_le(&field.to_bits_le()[..Scalar::<E>::size_in_data_bits()]);
+        let result = Self::from_bits_le(&field.to_bits_le()[..Scalar::size_in_data_bits()]);
         debug_assert!(result.is_ok(), "A lossy integer should always be able to be constructed from scalar bits");
         result.unwrap()
     }
@@ -36,9 +36,6 @@ impl<E: Environment> Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -48,15 +45,15 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random scalar.
-            let size_in_data_bits = Scalar::<CurrentEnvironment>::size_in_data_bits();
-            let prepare = &Scalar::<CurrentEnvironment>::rand(&mut rng).to_bits_le()[0..size_in_data_bits];
-            let expected = Scalar::<CurrentEnvironment>::from_bits_le(prepare)?;
+            let size_in_data_bits = Scalar::size_in_data_bits();
+            let prepare = &Scalar::rand(&mut rng).to_bits_le()[0..size_in_data_bits];
+            let expected = Scalar::from_bits_le(prepare)?;
             // Perform the operation.
             let candidate = Scalar::from_field_lossy(&expected.to_field()?);
             assert_eq!(expected, candidate);
 
             // Sample a random field.
-            let expected = Field::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Field::rand(&mut rng);
             // Perform the operation (should not fail).
             let _result = Scalar::from_field_lossy(&expected);
         }

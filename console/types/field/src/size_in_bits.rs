@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBits for Field<E> {
+impl SizeInBits for Field {
     /// Returns the field size in bits.
     #[inline]
     fn size_in_bits() -> usize {
@@ -22,7 +22,7 @@ impl<E: Environment> SizeInBits for Field<E> {
     }
 }
 
-impl<E: Environment> SizeInDataBits for Field<E> {
+impl SizeInDataBits for Field {
     /// Returns the field capacity for data bits.
     #[inline]
     fn size_in_data_bits() -> usize {

@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_BITS: u8> Hash for Pedersen<E, NUM_BITS> {
+impl<const NUM_BITS: u8> Hash for Pedersen<NUM_BITS> {
     type Input = bool;
-    type Output = Field<E>;
+    type Output = Field;
 
     /// Returns the Pedersen hash of the given input as a field element.
     fn hash(&self, input: &[Self::Input]) -> Result<Self::Output> {

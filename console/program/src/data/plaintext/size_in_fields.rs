@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> Visibility for Plaintext<N> {
-    type Boolean = Boolean<N>;
+impl Visibility for Plaintext {
+    type Boolean = Boolean;
 
     /// Returns the number of field elements to encode `self`.
     fn size_in_fields(&self) -> Result<u16> {
         // Compute the number of bits.
         let num_bits = self.to_bits_le().len() + 1; // 1 extra bit for the terminus indicator.
         // Compute the ceiling division of the number of bits by the number of bits in a field element.
-        let num_fields = (num_bits + Field::<N>::size_in_data_bits() - 1) / Field::<N>::size_in_data_bits();
+        let num_fields = (num_bits + Field::size_in_data_bits() - 1) / Field::size_in_data_bits();
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match num_fields <= N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match num_fields <= AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             // Return the number of field elements.
-            true => Ok(u16::try_from(num_fields).or_halt_with::<N>("Plaintext exceeds u16::MAX field elements.")),
-            false => bail!("Plaintext cannot exceed {} field elements.", N::MAX_DATA_SIZE_IN_FIELDS),
+            true => Ok(u16::try_from(num_fields).or_halt_with("Plaintext exceeds u16::MAX field elements.")),
+            false => bail!("Plaintext cannot exceed {} field elements.", AleoNetwork::MAX_DATA_SIZE_IN_FIELDS),
         }
     }
 }

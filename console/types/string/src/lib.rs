@@ -26,31 +26,27 @@ pub use snarkvm_console_types_boolean::Boolean;
 pub use snarkvm_console_types_field::Field;
 pub use snarkvm_console_types_integers::Integer;
 
-use core::marker::PhantomData;
-
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct StringType<E: Environment> {
+pub struct StringType {
     /// The underlying string.
     string: String,
-    /// PhantomData
-    _phantom: PhantomData<E>,
 }
 
-impl<E: Environment> StringTrait for StringType<E> {}
+impl StringTrait for StringType {}
 
-impl<E: Environment> StringType<E> {
+impl StringType {
     /// Initializes a new string.
     pub fn new(string: &str) -> Self {
         // Ensure the string is within the allowed capacity.
         let num_bytes = string.len();
-        match num_bytes <= E::MAX_STRING_BYTES as usize {
-            true => Self { string: string.to_string(), _phantom: PhantomData },
-            false => E::halt(format!("Attempted to allocate a string of size {num_bytes}")),
+        match num_bytes <= Console::MAX_STRING_BYTES as usize {
+            true => Self { string: string.to_string() },
+            false => Console::halt(format!("Attempted to allocate a string of size {num_bytes}")),
         }
     }
 }
 
-impl<E: Environment> TypeName for StringType<E> {
+impl TypeName for StringType {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -58,7 +54,7 @@ impl<E: Environment> TypeName for StringType<E> {
     }
 }
 
-impl<E: Environment> Deref for StringType<E> {
+impl Deref for StringType {
     type Target = str;
 
     #[inline]

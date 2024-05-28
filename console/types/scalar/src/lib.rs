@@ -39,28 +39,28 @@ pub use snarkvm_console_types_field::Field;
 use zeroize::Zeroize;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Zeroize)]
-pub struct Scalar<E: Environment> {
+pub struct Scalar {
     /// The underlying scalar element.
-    scalar: E::Scalar,
+    scalar: ConsoleScalar,
 }
 
-impl<E: Environment> ScalarTrait for Scalar<E> {}
+impl ScalarTrait for Scalar {}
 
-impl<E: Environment> Scalar<E> {
+impl Scalar {
     /// The scalar size in bits.
-    pub const SIZE_IN_BITS: usize = E::Scalar::SIZE_IN_BITS;
+    pub const SIZE_IN_BITS: usize = ConsoleScalar::SIZE_IN_BITS;
     /// The scalar size in bytes.
-    pub const SIZE_IN_BYTES: usize = (E::Scalar::SIZE_IN_BITS + 7) / 8;
+    pub const SIZE_IN_BYTES: usize = (ConsoleScalar::SIZE_IN_BITS + 7) / 8;
     /// The scalar capacity for data bits.
-    pub const SIZE_IN_DATA_BITS: usize = E::Scalar::SIZE_IN_DATA_BITS;
+    pub const SIZE_IN_DATA_BITS: usize = ConsoleScalar::SIZE_IN_DATA_BITS;
 
     /// Initializes a new scalar.
-    pub const fn new(scalar: E::Scalar) -> Self {
+    pub const fn new(scalar: ConsoleScalar) -> Self {
         Self { scalar }
     }
 }
 
-impl<E: Environment> TypeName for Scalar<E> {
+impl TypeName for Scalar {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -68,8 +68,8 @@ impl<E: Environment> TypeName for Scalar<E> {
     }
 }
 
-impl<E: Environment> Deref for Scalar<E> {
-    type Target = E::Scalar;
+impl Deref for Scalar {
+    type Target = ConsoleScalar;
 
     #[inline]
     fn deref(&self) -> &Self::Target {

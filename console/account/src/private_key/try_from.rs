@@ -18,12 +18,12 @@ use snarkvm_console_types::Field;
 static ACCOUNT_SK_SIG_DOMAIN: &str = "AleoAccountSignatureSecretKey0";
 static ACCOUNT_R_SIG_DOMAIN: &str = "AleoAccountSignatureRandomizer0";
 
-impl<N: Network> PrivateKey<N> {
+impl PrivateKey {
     /// Returns the account private key from an account seed.
     #[inline]
-    pub fn try_from(seed: Field<N>) -> Result<Self> {
+    pub fn try_from(seed: Field) -> Result<Self> {
         // Construct the sk_sig domain separator.
-        let sk_sig_domain = Field::<N>::new_domain_separator(ACCOUNT_SK_SIG_DOMAIN);
+        let sk_sig_domain = Field::new_domain_separator(ACCOUNT_SK_SIG_DOMAIN);
 
         // Construct the r_sig domain separator.
         let r_sig_input = format!("{}.{}", ACCOUNT_R_SIG_DOMAIN, 0);
@@ -31,8 +31,8 @@ impl<N: Network> PrivateKey<N> {
 
         Ok(Self {
             seed,
-            sk_sig: N::hash_to_scalar_psd2(&[sk_sig_domain, seed])?,
-            r_sig: N::hash_to_scalar_psd2(&[r_sig_domain, seed])?,
+            sk_sig: AleoNetwork::hash_to_scalar_psd2(&[sk_sig_domain, seed])?,
+            r_sig: AleoNetwork::hash_to_scalar_psd2(&[r_sig_domain, seed])?,
         })
     }
 }

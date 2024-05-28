@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for RegisterType<N> {
+impl Serialize for RegisterType {
     /// Serializes the register type into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for RegisterType<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for RegisterType<N> {
+impl<'de> Deserialize<'de> for RegisterType {
     /// Deserializes the register type from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, N: Network> Deserialize<'de> for RegisterType<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     /// Add test cases here to be checked for serialization.
     const TEST_CASES: &[&str] = &[
@@ -107,14 +104,14 @@ mod tests {
     #[test]
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
-            check_serde_json(RegisterType::<CurrentNetwork>::from_str(case).unwrap());
+            check_serde_json(RegisterType::from_str(case).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for case in TEST_CASES.iter() {
-            check_bincode(RegisterType::<CurrentNetwork>::from_str(case).unwrap());
+            check_bincode(RegisterType::from_str(case).unwrap());
         }
     }
 }

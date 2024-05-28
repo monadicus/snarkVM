@@ -17,20 +17,19 @@ mod serialize;
 mod string;
 
 use snarkvm_console_account::{Address, PrivateKey, Signature};
-use snarkvm_console_network::Network;
 use snarkvm_console_types::prelude::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct ProgramOwner<N: Network> {
+pub struct ProgramOwner {
     /// The address of the program owner.
-    address: Address<N>,
+    address: Address,
     /// The signature of the program owner, over the deployment transaction ID.
-    signature: Signature<N>,
+    signature: Signature,
 }
 
-impl<N: Network> ProgramOwner<N> {
+impl ProgramOwner {
     /// Initializes a new program owner.
-    pub fn new<R: Rng + CryptoRng>(private_key: &PrivateKey<N>, deployment_id: Field<N>, rng: &mut R) -> Result<Self> {
+    pub fn new<R: Rng + CryptoRng>(private_key: &PrivateKey, deployment_id: Field, rng: &mut R) -> Result<Self> {
         // Derive the address.
         let address = Address::try_from(private_key)?;
         // Sign the transaction ID.
@@ -40,22 +39,22 @@ impl<N: Network> ProgramOwner<N> {
     }
 
     /// Initializes a new program owner from an address and signature.
-    pub fn from(address: Address<N>, signature: Signature<N>) -> Self {
+    pub fn from(address: Address, signature: Signature) -> Self {
         Self { address, signature }
     }
 
     /// Returns the address of the program owner.
-    pub const fn address(&self) -> Address<N> {
+    pub const fn address(&self) -> Address {
         self.address
     }
 
     /// Returns the signature of the program owner.
-    pub const fn signature(&self) -> &Signature<N> {
+    pub const fn signature(&self) -> &Signature {
         &self.signature
     }
 
     /// Verify that the signature is valid for the given deployment ID.
-    pub fn verify(&self, deployment_id: Field<N>) -> bool {
+    pub fn verify(&self, deployment_id: Field) -> bool {
         self.signature.verify(&self.address, &[deployment_id])
     }
 }
@@ -63,23 +62,20 @@ impl<N: Network> ProgramOwner<N> {
 #[cfg(test)]
 pub(crate) mod test_helpers {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
 
     use once_cell::sync::OnceCell;
 
-    type CurrentNetwork = MainnetV0;
-
-    pub(crate) fn sample_program_owner() -> ProgramOwner<CurrentNetwork> {
-        static INSTANCE: OnceCell<ProgramOwner<CurrentNetwork>> = OnceCell::new();
+    pub(crate) fn sample_program_owner() -> ProgramOwner {
+        static INSTANCE: OnceCell<ProgramOwner> = OnceCell::new();
         *INSTANCE.get_or_init(|| {
             // Initialize the RNG.
             let rng = &mut TestRng::default();
 
             // Initialize a private key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+            let private_key = PrivateKey::new(rng).unwrap();
 
             // Initialize a deployment ID.
-            let deployment_id: Field<CurrentNetwork> = rng.gen();
+            let deployment_id: Field = rng.gen();
 
             // Return the program owner.
             ProgramOwner::new(&private_key, deployment_id, rng).unwrap()
@@ -92,10 +88,10 @@ pub(crate) mod test_helpers {
         let rng = &mut TestRng::default();
 
         // Initialize a private key.
-        let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let private_key = PrivateKey::new(rng).unwrap();
 
         // Initialize a deployment ID.
-        let deployment_id: Field<CurrentNetwork> = rng.gen();
+        let deployment_id: Field = rng.gen();
 
         // Construct the program owner.
         let owner = ProgramOwner::new(&private_key, deployment_id, rng).unwrap();
@@ -103,7 +99,7 @@ pub(crate) mod test_helpers {
         assert!(owner.verify(deployment_id));
 
         // Ensure that the program owner is not verified for a different deployment ID.
-        let incorrect_deployment_id: Field<CurrentNetwork> = rng.gen();
+        let incorrect_deployment_id: Field = rng.gen();
         assert!(!owner.verify(incorrect_deployment_id));
     }
 }

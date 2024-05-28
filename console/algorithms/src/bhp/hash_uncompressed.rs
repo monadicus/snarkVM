@@ -14,11 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed
-    for BHP<E, NUM_WINDOWS, WINDOW_SIZE>
-{
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed for BHP<NUM_WINDOWS, WINDOW_SIZE> {
     type Input = bool;
-    type Output = Group<E>;
+    type Output = Group;
 
     /// Returns the BHP hash of the given input as an affine group element.
     ///
@@ -28,7 +26,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
         // The number of hasher bits to fit.
         let num_hasher_bits = NUM_WINDOWS as usize * WINDOW_SIZE as usize * BHP_CHUNK_SIZE;
         // The number of data bits in the output.
-        let num_data_bits = Field::<E>::size_in_data_bits();
+        let num_data_bits = Field::size_in_data_bits();
         // The maximum number of input bits per iteration.
         let max_input_bits_per_iteration = num_hasher_bits - num_data_bits;
 
@@ -36,7 +34,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
         debug_assert_eq!(num_data_bits - 64, self.domain.len());
 
         // Initialize a variable to store the hash from the current iteration.
-        let mut digest = Group::<E>::zero();
+        let mut digest = Group::zero();
 
         // Prepare a reusable vector for the preimage.
         let mut preimage = Vec::with_capacity(num_hasher_bits);

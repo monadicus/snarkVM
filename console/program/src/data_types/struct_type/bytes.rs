@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for StructType<N> {
+impl FromBytes for StructType {
     /// Reads a struct type from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the name of the struct type.
@@ -23,10 +23,10 @@ impl<N: Network> FromBytes for StructType<N> {
         // Read the number of members.
         let num_members = u16::read_le(&mut reader)?;
         // Ensure the number of members is within the maximum limit.
-        if num_members as usize > N::MAX_STRUCT_ENTRIES {
+        if num_members as usize > AleoNetwork::MAX_STRUCT_ENTRIES {
             return Err(error(format!(
                 "StructType exceeds size: expected <= {}, found {num_members}",
-                N::MAX_STRUCT_ENTRIES
+                AleoNetwork::MAX_STRUCT_ENTRIES
             )));
         }
         // Read the members.
@@ -46,11 +46,11 @@ impl<N: Network> FromBytes for StructType<N> {
     }
 }
 
-impl<N: Network> ToBytes for StructType<N> {
+impl ToBytes for StructType {
     /// Writes the struct type to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Ensure the number of members is within the maximum limit.
-        if self.members.len() > N::MAX_STRUCT_ENTRIES {
+        if self.members.len() > AleoNetwork::MAX_STRUCT_ENTRIES {
             return Err(error("Failed to serialize struct: too many members"));
         }
 
@@ -58,7 +58,7 @@ impl<N: Network> ToBytes for StructType<N> {
         self.name.write_le(&mut writer)?;
 
         // Write the number of members.
-        u16::try_from(self.members.len()).or_halt_with::<N>("Struct length exceeds u16").write_le(&mut writer)?;
+        u16::try_from(self.members.len()).or_halt_with("Struct length exceeds u16").write_le(&mut writer)?;
         // Write the members as bytes.
         for (identifier, plaintext_type) in &self.members {
             // Write the identifier.

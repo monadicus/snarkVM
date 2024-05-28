@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment> Zero for Field<E> {
+impl Zero for Field {
     /// Returns the `0` element of the field.
     fn zero() -> Self {
-        Self::new(E::Field::zero())
+        Self::new(ConsoleField::zero())
     }
 
     /// Returns `true` if the element is zero.
@@ -29,15 +29,12 @@ impl<E: Environment> Zero for Field<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 100;
 
     #[test]
     fn test_zero() {
-        let zero = Field::<CurrentEnvironment>::zero();
+        let zero = Field::zero();
 
         for bit in zero.to_bits_le().iter() {
             assert!(!bit)
@@ -46,13 +43,13 @@ mod tests {
 
     #[test]
     fn test_is_zero() {
-        assert!(Field::<CurrentEnvironment>::zero().is_zero());
+        assert!(Field::zero().is_zero());
 
         let mut rng = TestRng::default();
 
         // Note: This test technically has a `1 / MODULUS` probability of being flaky.
         for _ in 0..ITERATIONS {
-            let field: Field<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let field: Field = Uniform::rand(&mut rng);
             assert!(!field.is_zero());
         }
     }

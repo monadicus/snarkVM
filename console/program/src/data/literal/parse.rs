@@ -14,35 +14,35 @@
 
 use super::*;
 
-impl<N: Network> Parser for Literal<N> {
+impl Parser for Literal {
     /// Parses a string into a literal.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         alt((
-            map(Address::<N>::parse, |literal| Self::Address(literal)),
-            map(Boolean::<N>::parse, |literal| Self::Boolean(literal)),
-            map(Field::<N>::parse, |literal| Self::Field(literal)),
-            map(Group::<N>::parse, |literal| Self::Group(literal)),
-            map(I8::<N>::parse, |literal| Self::I8(literal)),
-            map(I16::<N>::parse, |literal| Self::I16(literal)),
-            map(I32::<N>::parse, |literal| Self::I32(literal)),
-            map(I64::<N>::parse, |literal| Self::I64(literal)),
-            map(I128::<N>::parse, |literal| Self::I128(literal)),
-            map(U8::<N>::parse, |literal| Self::U8(literal)),
-            map(U16::<N>::parse, |literal| Self::U16(literal)),
-            map(U32::<N>::parse, |literal| Self::U32(literal)),
-            map(U64::<N>::parse, |literal| Self::U64(literal)),
-            map(U128::<N>::parse, |literal| Self::U128(literal)),
-            map(Scalar::<N>::parse, |literal| Self::Scalar(literal)),
-            map(Signature::<N>::parse, |literal| Self::Signature(Box::new(literal))),
-            map(StringType::<N>::parse, |literal| Self::String(literal)),
+            map(Address::parse, |literal| Self::Address(literal)),
+            map(Boolean::parse, |literal| Self::Boolean(literal)),
+            map(Field::parse, |literal| Self::Field(literal)),
+            map(Group::parse, |literal| Self::Group(literal)),
+            map(I8::parse, |literal| Self::I8(literal)),
+            map(I16::parse, |literal| Self::I16(literal)),
+            map(I32::parse, |literal| Self::I32(literal)),
+            map(I64::parse, |literal| Self::I64(literal)),
+            map(I128::parse, |literal| Self::I128(literal)),
+            map(U8::parse, |literal| Self::U8(literal)),
+            map(U16::parse, |literal| Self::U16(literal)),
+            map(U32::parse, |literal| Self::U32(literal)),
+            map(U64::parse, |literal| Self::U64(literal)),
+            map(U128::parse, |literal| Self::U128(literal)),
+            map(Scalar::parse, |literal| Self::Scalar(literal)),
+            map(Signature::parse, |literal| Self::Signature(Box::new(literal))),
+            map(StringType::parse, |literal| Self::String(literal)),
             // This allows users to implicitly declare program IDs as literals.
-            map_res(ProgramID::<N>::parse, |program_id| Ok::<Self, Error>(Self::Address(program_id.to_address()?))),
+            map_res(ProgramID::parse, |program_id| Ok::<Self, Error>(Self::Address(program_id.to_address()?))),
         ))(string)
     }
 }
 
-impl<N: Network> FromStr for Literal<N> {
+impl FromStr for Literal {
     type Err = Error;
 
     /// Parses a string into a literal.
@@ -60,13 +60,13 @@ impl<N: Network> FromStr for Literal<N> {
     }
 }
 
-impl<N: Network> Debug for Literal<N> {
+impl Debug for Literal {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Literal<N> {
+impl Display for Literal {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             Self::Address(literal) => Display::fmt(literal, f),
@@ -93,21 +93,18 @@ impl<N: Network> Display for Literal<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     #[test]
     fn test_parse_program_id() -> Result<()> {
-        let (remainder, candidate) = Literal::<CurrentNetwork>::parse("credits.aleo")?;
+        let (remainder, candidate) = Literal::parse("credits.aleo")?;
         assert!(matches!(candidate, Literal::Address(_)));
         assert_eq!(candidate.to_string(), "aleo1lqmly7ez2k48ajf5hs92ulphaqr05qm4n8qwzj8v0yprmasgpqgsez59gg");
         assert_eq!("", remainder);
 
-        let result = Literal::<CurrentNetwork>::parse("credits.ale");
+        let result = Literal::parse("credits.ale");
         assert!(result.is_err());
 
-        let result = Literal::<CurrentNetwork>::parse("credits.aleo1");
+        let result = Literal::parse("credits.aleo1");
         assert!(result.is_err());
 
         Ok(())

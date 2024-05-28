@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Request<N> {
+impl FromBytes for Request {
     /// Reads the request from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the version.
@@ -67,7 +67,7 @@ impl<N: Network> FromBytes for Request<N> {
     }
 }
 
-impl<N: Network> ToBytes for Request<N> {
+impl ToBytes for Request {
     /// Writes the request to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the version.
@@ -88,9 +88,7 @@ impl<N: Network> ToBytes for Request<N> {
         }
 
         // Write the number of inputs.
-        u16::try_from(self.input_ids.len())
-            .or_halt_with::<N>("Request inputs length exceeds u16")
-            .write_le(&mut writer)?;
+        u16::try_from(self.input_ids.len()).or_halt_with("Request inputs length exceeds u16").write_le(&mut writer)?;
         // Write the input IDs.
         for input_id in &self.input_ids {
             input_id.write_le(&mut writer)?;

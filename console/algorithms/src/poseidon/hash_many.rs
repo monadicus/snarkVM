@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const RATE: usize> HashMany for Poseidon<E, RATE> {
-    type Input = Field<E>;
-    type Output = Field<E>;
+impl<const RATE: usize> HashMany for Poseidon<RATE> {
+    type Input = Field;
+    type Output = Field;
 
     /// Returns the cryptographic hash for a list of field elements as input,
     /// and returns the specified number of field elements as output.
@@ -25,11 +25,11 @@ impl<E: Environment, const RATE: usize> HashMany for Poseidon<E, RATE> {
         // Construct the preimage: [ DOMAIN || LENGTH(INPUT) || [0; RATE-2] || INPUT ].
         let mut preimage = Vec::with_capacity(RATE + input.len());
         preimage.push(self.domain);
-        preimage.push(Field::<E>::from_u128(input.len() as u128));
-        preimage.resize(RATE, Field::<E>::zero()); // Pad up to RATE.
+        preimage.push(Field::from_u128(input.len() as u128));
+        preimage.resize(RATE, Field::zero()); // Pad up to RATE.
         preimage.extend_from_slice(input);
 
-        let mut sponge = PoseidonSponge::<E, RATE, CAPACITY>::new(&self.parameters);
+        let mut sponge = PoseidonSponge::<RATE, CAPACITY>::new(&self.parameters);
         sponge.absorb(&preimage);
         sponge.squeeze(num_outputs).into_vec()
     }

@@ -14,23 +14,23 @@
 
 use super::*;
 
-impl<N: Network> Eq for Identifier<N> {}
+impl Eq for Identifier {}
 
-impl<N: Network> PartialEq for Identifier<N> {
+impl PartialEq for Identifier {
     /// Returns `true` if `self` and `other` are equal.
     fn eq(&self, other: &Self) -> bool {
         *self.is_equal(other)
     }
 }
 
-impl<N: Network> core::hash::Hash for Identifier<N> {
+impl core::hash::Hash for Identifier {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.0.hash(state)
     }
 }
 
-impl<N: Network> Equal<Self> for Identifier<N> {
-    type Output = Boolean<N>;
+impl Equal<Self> for Identifier {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

@@ -14,14 +14,14 @@
 
 use super::*;
 
-impl<E: Environment> CastLossy<Address<E>> for Boolean<E> {
+impl CastLossy<Address> for Boolean {
     /// Casts a `Boolean` to an `Address`.
     /// This is safe because casting from a boolean to any other type is **always** lossless.
     ///
     /// If the boolean is true, the address is the generator of the prime-order subgroup.
     /// If the boolean is false, the address is the zero group element.
     #[inline]
-    fn cast_lossy(&self) -> Address<E> {
+    fn cast_lossy(&self) -> Address {
         match **self {
             true => Address::new(Group::generator()),
             false => Address::zero(),
@@ -29,20 +29,20 @@ impl<E: Environment> CastLossy<Address<E>> for Boolean<E> {
     }
 }
 
-impl<E: Environment> CastLossy<Boolean<E>> for Boolean<E> {
+impl CastLossy<Boolean> for Boolean {
     /// Casts a `Boolean` to a `Boolean`.
     /// This is an identity cast, so it is **always** lossless.
     #[inline]
-    fn cast_lossy(&self) -> Boolean<E> {
+    fn cast_lossy(&self) -> Boolean {
         *self
     }
 }
 
-impl<E: Environment> CastLossy<Field<E>> for Boolean<E> {
+impl CastLossy<Field> for Boolean {
     /// Casts a `Boolean` to a `Field`.
     /// This is safe because casting from a boolean to any other type is **always** lossless.
     #[inline]
-    fn cast_lossy(&self) -> Field<E> {
+    fn cast_lossy(&self) -> Field {
         match **self {
             true => Field::one(),
             false => Field::zero(),
@@ -50,14 +50,14 @@ impl<E: Environment> CastLossy<Field<E>> for Boolean<E> {
     }
 }
 
-impl<E: Environment> CastLossy<Group<E>> for Boolean<E> {
+impl CastLossy<Group> for Boolean {
     /// Casts a `Boolean` to a `Group`.
     /// This is safe because casting from a boolean to any other type is **always** lossless.
     ///
     /// If the boolean is true, the group element is the generator of the prime-order subgroup.
     /// If the boolean is false, the group element is the zero group element.
     #[inline]
-    fn cast_lossy(&self) -> Group<E> {
+    fn cast_lossy(&self) -> Group {
         match **self {
             true => Group::generator(),
             false => Group::zero(),
@@ -65,10 +65,10 @@ impl<E: Environment> CastLossy<Group<E>> for Boolean<E> {
     }
 }
 
-impl<E: Environment, I: IntegerType> CastLossy<Integer<E, I>> for Boolean<E> {
+impl<I: IntegerType> CastLossy<Integer<I>> for Boolean {
     /// Casts a `Boolean` to an `Integer`.
     #[inline]
-    fn cast_lossy(&self) -> Integer<E, I> {
+    fn cast_lossy(&self) -> Integer<I> {
         match **self {
             true => Integer::one(),
             false => Integer::zero(),
@@ -76,11 +76,11 @@ impl<E: Environment, I: IntegerType> CastLossy<Integer<E, I>> for Boolean<E> {
     }
 }
 
-impl<E: Environment> CastLossy<Scalar<E>> for Boolean<E> {
+impl CastLossy<Scalar> for Boolean {
     /// Casts a `Boolean` to a `Scalar`.
     /// This is safe because casting from a boolean to any other type is **always** lossless.
     #[inline]
-    fn cast_lossy(&self) -> Scalar<E> {
+    fn cast_lossy(&self) -> Scalar {
         match **self {
             true => Scalar::one(),
             false => Scalar::zero(),
@@ -92,72 +92,70 @@ impl<E: Environment> CastLossy<Scalar<E>> for Boolean<E> {
 mod tests {
     use super::*;
 
-    type CurrentEnvironment = snarkvm_console_network::Console;
-
     #[test]
     fn test_boolean_to_address() {
-        let boolean = Boolean::<CurrentEnvironment>::new(true);
-        let address: Address<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(true);
+        let address: Address = boolean.cast_lossy();
         assert_eq!(address, Address::new(Group::generator()));
         assert_eq!(address.to_group(), &Group::generator());
 
-        let boolean = Boolean::<CurrentEnvironment>::new(false);
-        let address: Address<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(false);
+        let address: Address = boolean.cast_lossy();
         assert_eq!(address, Address::zero());
         assert_eq!(address.to_group(), &Group::zero());
     }
 
     #[test]
     fn test_boolean_to_boolean() {
-        let boolean = Boolean::<CurrentEnvironment>::new(true);
-        let boolean: Boolean<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(true);
+        let boolean: Boolean = boolean.cast_lossy();
         assert_eq!(boolean, Boolean::new(true));
 
-        let boolean = Boolean::<CurrentEnvironment>::new(false);
-        let boolean: Boolean<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(false);
+        let boolean: Boolean = boolean.cast_lossy();
         assert_eq!(boolean, Boolean::new(false));
     }
 
     #[test]
     fn test_boolean_to_field() {
-        let boolean = Boolean::<CurrentEnvironment>::new(true);
-        let field: Field<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(true);
+        let field: Field = boolean.cast_lossy();
         assert_eq!(field, Field::one());
 
-        let boolean = Boolean::<CurrentEnvironment>::new(false);
-        let field: Field<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(false);
+        let field: Field = boolean.cast_lossy();
         assert_eq!(field, Field::zero());
     }
 
     #[test]
     fn test_boolean_to_group() {
-        let boolean = Boolean::<CurrentEnvironment>::new(true);
-        let group: Group<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(true);
+        let group: Group = boolean.cast_lossy();
         assert_eq!(group, Group::generator());
 
-        let boolean = Boolean::<CurrentEnvironment>::new(false);
-        let group: Group<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(false);
+        let group: Group = boolean.cast_lossy();
         assert_eq!(group, Group::zero());
     }
 
     #[test]
     fn test_boolean_to_scalar() {
-        let boolean = Boolean::<CurrentEnvironment>::new(true);
-        let scalar: Scalar<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(true);
+        let scalar: Scalar = boolean.cast_lossy();
         assert_eq!(scalar, Scalar::one());
 
-        let boolean = Boolean::<CurrentEnvironment>::new(false);
-        let scalar: Scalar<CurrentEnvironment> = boolean.cast_lossy();
+        let boolean = Boolean::new(false);
+        let scalar: Scalar = boolean.cast_lossy();
         assert_eq!(scalar, Scalar::zero());
     }
 
     macro_rules! check_boolean_to_integer {
         ($type:ty) => {
-            let boolean = Boolean::<CurrentEnvironment>::new(true);
+            let boolean = Boolean::new(true);
             let integer: $type = boolean.cast_lossy();
             assert_eq!(integer, <$type>::one());
 
-            let boolean = Boolean::<CurrentEnvironment>::new(false);
+            let boolean = Boolean::new(false);
             let integer: $type = boolean.cast_lossy();
             assert_eq!(integer, <$type>::zero());
         };
@@ -165,51 +163,51 @@ mod tests {
 
     #[test]
     fn test_boolean_to_i8() {
-        check_boolean_to_integer!(I8<CurrentEnvironment>);
+        check_boolean_to_integer!(I8);
     }
 
     #[test]
     fn test_boolean_to_i16() {
-        check_boolean_to_integer!(I16<CurrentEnvironment>);
+        check_boolean_to_integer!(I16);
     }
 
     #[test]
     fn test_boolean_to_i32() {
-        check_boolean_to_integer!(I32<CurrentEnvironment>);
+        check_boolean_to_integer!(I32);
     }
 
     #[test]
     fn test_boolean_to_i64() {
-        check_boolean_to_integer!(I64<CurrentEnvironment>);
+        check_boolean_to_integer!(I64);
     }
 
     #[test]
     fn test_boolean_to_i128() {
-        check_boolean_to_integer!(I128<CurrentEnvironment>);
+        check_boolean_to_integer!(I128);
     }
 
     #[test]
     fn test_boolean_to_u8() {
-        check_boolean_to_integer!(U8<CurrentEnvironment>);
+        check_boolean_to_integer!(U8);
     }
 
     #[test]
     fn test_boolean_to_u16() {
-        check_boolean_to_integer!(U16<CurrentEnvironment>);
+        check_boolean_to_integer!(U16);
     }
 
     #[test]
     fn test_boolean_to_u32() {
-        check_boolean_to_integer!(U32<CurrentEnvironment>);
+        check_boolean_to_integer!(U32);
     }
 
     #[test]
     fn test_boolean_to_u64() {
-        check_boolean_to_integer!(U64<CurrentEnvironment>);
+        check_boolean_to_integer!(U64);
     }
 
     #[test]
     fn test_boolean_to_u128() {
-        check_boolean_to_integer!(U128<CurrentEnvironment>);
+        check_boolean_to_integer!(U128);
     }
 }

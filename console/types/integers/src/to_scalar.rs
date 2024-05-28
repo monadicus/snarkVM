@@ -14,13 +14,13 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Integer<E, I> {
+impl<I: IntegerType> Integer<I> {
     /// Converts an integer into a scalar.
-    pub fn to_scalar(&self) -> Scalar<E> {
+    pub fn to_scalar(&self) -> Scalar {
         // Note: We are reconstituting the integer as a scalar field.
         // This is safe as the number of bits in the integer is less than the scalar field modulus,
         // and thus will always fit within a single scalar field element.
-        debug_assert!(I::BITS < Scalar::<E>::size_in_bits() as u64);
+        debug_assert!(I::BITS < Scalar::size_in_bits() as u64);
 
         // Reconstruct the bits as a linear combination representing the original value.
         let result = Scalar::from_bits_le(&self.to_bits_le());
@@ -32,9 +32,6 @@ impl<E: Environment, I: IntegerType> Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -43,14 +40,14 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random integer.
-            let expected = Integer::<CurrentEnvironment, I>::rand(&mut rng);
+            let expected = Integer::<I>::rand(&mut rng);
 
             // Perform the operation.
             let candidate = expected.to_scalar();
 
             // Extract the bits from the scalar field representation.
             let candidate_bits_le = candidate.to_bits_le();
-            assert_eq!(Scalar::<CurrentEnvironment>::size_in_bits(), candidate_bits_le.len());
+            assert_eq!(Scalar::size_in_bits(), candidate_bits_le.len());
 
             // Ensure all integer bits match with the expected result.
             let i_bits = usize::try_from(I::BITS).unwrap();

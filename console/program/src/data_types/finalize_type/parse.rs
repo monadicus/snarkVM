@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for FinalizeType<N> {
+impl Parser for FinalizeType {
     /// Parses a string into a finalize type.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -26,7 +26,7 @@ impl<N: Network> Parser for FinalizeType<N> {
     }
 }
 
-impl<N: Network> FromStr for FinalizeType<N> {
+impl FromStr for FinalizeType {
     type Err = Error;
 
     /// Returns a finalize type from a string literal.
@@ -43,14 +43,14 @@ impl<N: Network> FromStr for FinalizeType<N> {
     }
 }
 
-impl<N: Network> Debug for FinalizeType<N> {
+impl Debug for FinalizeType {
     /// Prints the finalize type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for FinalizeType<N> {
+impl Display for FinalizeType {
     /// Prints the finalize type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

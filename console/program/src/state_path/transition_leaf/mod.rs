@@ -25,7 +25,7 @@ const TRANSITION_LEAF_VERSION: u8 = 1u8;
 
 /// The Merkle leaf for an input or output ID in the transition.
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub struct TransitionLeaf<N: Network> {
+pub struct TransitionLeaf {
     /// The version of the Merkle leaf.
     version: u8,
     /// The index of the Merkle leaf.
@@ -33,17 +33,17 @@ pub struct TransitionLeaf<N: Network> {
     /// The variant of the Merkle leaf.
     variant: u8,
     /// The ID.
-    id: Field<N>,
+    id: Field,
 }
 
-impl<N: Network> TransitionLeaf<N> {
+impl TransitionLeaf {
     /// Initializes a new instance of `TransitionLeaf`.
-    pub const fn new_with_version(index: u8, variant: u8, id: Field<N>) -> Self {
+    pub const fn new_with_version(index: u8, variant: u8, id: Field) -> Self {
         Self { version: TRANSITION_LEAF_VERSION, index, variant, id }
     }
 
     /// Initializes a new instance of `TransitionLeaf`.
-    pub const fn from(version: u8, index: u8, variant: u8, id: Field<N>) -> Self {
+    pub const fn from(version: u8, index: u8, variant: u8, id: Field) -> Self {
         Self { version, index, variant, id }
     }
 
@@ -63,7 +63,7 @@ impl<N: Network> TransitionLeaf<N> {
     }
 
     /// Returns the ID in the Merkle leaf.
-    pub const fn id(&self) -> Field<N> {
+    pub const fn id(&self) -> Field {
         self.id
     }
 }

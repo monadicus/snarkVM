@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Attempts to recover an affine group element from a given x-coordinate field element.
     /// For safety, the resulting point is always enforced to be on the curve and in the correct subgroup.
-    pub fn from_x_coordinate(x_coordinate: Field<E>) -> Result<Self> {
-        if let Some((p1, p2)) = E::Affine::pair_from_x_coordinate(*x_coordinate) {
+    pub fn from_x_coordinate(x_coordinate: Field) -> Result<Self> {
+        if let Some((p1, p2)) = ConsoleAffine::pair_from_x_coordinate(*x_coordinate) {
             for point in [p2, p1] {
                 if point.is_in_correct_subgroup_assuming_on_curve() {
                     return Ok(Self::new(point));

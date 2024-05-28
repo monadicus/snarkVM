@@ -14,18 +14,18 @@
 
 use super::*;
 
-impl<N: Network> Future<N> {
+impl Future {
     /// Returns a value from the given path.
-    pub fn find<A: Into<Access<N>> + Copy + Debug>(&self, path: &[A]) -> Result<Value<N>> {
+    pub fn find<A: Into<Access> + Copy + Debug>(&self, path: &[A]) -> Result<Value> {
         // Ensure the path is not empty.
         ensure!(!path.is_empty(), "Attempted to find an argument with an empty path.");
 
         // A helper enum to track the the argument.
-        enum ArgumentRefType<'a, N: Network> {
+        enum ArgumentRefType<'a> {
             /// A plaintext type.
-            Plaintext(&'a Plaintext<N>),
+            Plaintext(&'a Plaintext),
             /// A future.
-            Future(&'a Future<N>),
+            Future(&'a Future),
         }
 
         // Initialize a value starting from the top-level.

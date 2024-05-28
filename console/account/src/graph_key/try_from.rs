@@ -15,43 +15,43 @@
 use super::*;
 
 #[cfg(feature = "view_key")]
-impl<N: Network> TryFrom<ViewKey<N>> for GraphKey<N> {
+impl TryFrom<ViewKey> for GraphKey {
     type Error = Error;
 
     /// Derives the account graph key from an account view key.
-    fn try_from(view_key: ViewKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(view_key: ViewKey) -> Result<Self, Self::Error> {
         Self::try_from(&view_key)
     }
 }
 
 #[cfg(feature = "view_key")]
-impl<N: Network> TryFrom<&ViewKey<N>> for GraphKey<N> {
+impl TryFrom<&ViewKey> for GraphKey {
     type Error = Error;
 
     /// Derives the account graph key from an account view key.
-    fn try_from(view_key: &ViewKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(view_key: &ViewKey) -> Result<Self, Self::Error> {
         // Compute sk_tag := Hash(view_key || ctr).
-        let sk_tag = N::hash_psd4(&[N::graph_key_domain(), view_key.to_field()?, Field::zero()])?;
+        let sk_tag = AleoNetwork::hash_psd4(&[AleoNetwork::graph_key_domain(), view_key.to_field()?, Field::zero()])?;
         // Output the graph key.
         Self::try_from(sk_tag)
     }
 }
 
-impl<N: Network> TryFrom<Field<N>> for GraphKey<N> {
+impl TryFrom<Field> for GraphKey {
     type Error = Error;
 
     /// Derives the account graph key from `sk_tag`.
-    fn try_from(sk_tag: Field<N>) -> Result<Self> {
+    fn try_from(sk_tag: Field) -> Result<Self> {
         // Output the graph key.
         Ok(Self { sk_tag })
     }
 }
 
-impl<N: Network> TryFrom<&Field<N>> for GraphKey<N> {
+impl TryFrom<&Field> for GraphKey {
     type Error = Error;
 
     /// Derives the account graph key from `sk_tag`.
-    fn try_from(sk_tag: &Field<N>) -> Result<Self> {
+    fn try_from(sk_tag: &Field) -> Result<Self> {
         Self::try_from(*sk_tag)
     }
 }

@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Neg for Field<E> {
-    type Output = Field<E>;
+impl Neg for Field {
+    type Output = Field;
 
     /// Returns the `negation` of `self`.
     #[inline]
@@ -24,184 +24,184 @@ impl<E: Environment> Neg for Field<E> {
     }
 }
 
-impl<E: Environment> Add<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Add<Field> for Field {
+    type Output = Field;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: Field<E>) -> Self::Output {
+    fn add(self, other: Field) -> Self::Output {
         Field::new(self.field + other.field)
     }
 }
 
-impl<E: Environment> Add<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Add<&Field> for Field {
+    type Output = Field;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: &Field<E>) -> Self::Output {
+    fn add(self, other: &Field) -> Self::Output {
         Field::new(self.field + other.field)
     }
 }
 
-impl<E: Environment> AddAssign<Field<E>> for Field<E> {
+impl AddAssign<Field> for Field {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: Field<E>) {
+    fn add_assign(&mut self, other: Field) {
         self.field += other.field;
     }
 }
 
-impl<E: Environment> AddAssign<&Field<E>> for Field<E> {
+impl AddAssign<&Field> for Field {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: &Field<E>) {
+    fn add_assign(&mut self, other: &Field) {
         self.field += other.field;
     }
 }
 
-impl<E: Environment> Sub<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Sub<Field> for Field {
+    type Output = Field;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: Field<E>) -> Self::Output {
+    fn sub(self, other: Field) -> Self::Output {
         Field::new(self.field - other.field)
     }
 }
 
-impl<E: Environment> Sub<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Sub<&Field> for Field {
+    type Output = Field;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: &Field<E>) -> Self::Output {
+    fn sub(self, other: &Field) -> Self::Output {
         Field::new(self.field - other.field)
     }
 }
 
-impl<E: Environment> SubAssign<Field<E>> for Field<E> {
+impl SubAssign<Field> for Field {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: Field<E>) {
+    fn sub_assign(&mut self, other: Field) {
         self.field -= other.field;
     }
 }
 
-impl<E: Environment> SubAssign<&Field<E>> for Field<E> {
+impl SubAssign<&Field> for Field {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: &Field<E>) {
+    fn sub_assign(&mut self, other: &Field) {
         self.field -= other.field;
     }
 }
 
-impl<E: Environment> Mul<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Mul<Field> for Field {
+    type Output = Field;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: Field<E>) -> Self::Output {
+    fn mul(self, other: Field) -> Self::Output {
         Field::new(self.field * other.field)
     }
 }
 
-impl<E: Environment> Mul<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Mul<&Field> for Field {
+    type Output = Field;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: &Field<E>) -> Self::Output {
+    fn mul(self, other: &Field) -> Self::Output {
         Field::new(self.field * other.field)
     }
 }
 
-impl<E: Environment> MulAssign<Field<E>> for Field<E> {
+impl MulAssign<Field> for Field {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: Field<E>) {
+    fn mul_assign(&mut self, other: Field) {
         self.field *= other.field;
     }
 }
 
-impl<E: Environment> MulAssign<&Field<E>> for Field<E> {
+impl MulAssign<&Field> for Field {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: &Field<E>) {
+    fn mul_assign(&mut self, other: &Field) {
         self.field *= other.field;
     }
 }
 
-impl<E: Environment> Div<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Div<Field> for Field {
+    type Output = Field;
 
     /// Returns the `quotient` of `self` and `other`.
     #[inline]
-    fn div(self, other: Field<E>) -> Self::Output {
+    fn div(self, other: Field) -> Self::Output {
         match other.is_zero() {
-            true => E::halt(format!("Field division by zero: {self} / {other}")),
+            true => Console::halt(format!("Field division by zero: {self} / {other}")),
             false => Field::new(self.field / other.field),
         }
     }
 }
 
-impl<E: Environment> Div<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Div<&Field> for Field {
+    type Output = Field;
 
     /// Returns the `quotient` of `self` and `other`.
     #[inline]
-    fn div(self, other: &Field<E>) -> Self::Output {
+    fn div(self, other: &Field) -> Self::Output {
         match other.is_zero() {
-            true => E::halt(format!("Field division by zero: {self} / {other}")),
+            true => Console::halt(format!("Field division by zero: {self} / {other}")),
             false => Field::new(self.field / other.field),
         }
     }
 }
 
-impl<E: Environment> DivAssign<Field<E>> for Field<E> {
+impl DivAssign<Field> for Field {
     /// Divides `self` by `other`.
     #[inline]
-    fn div_assign(&mut self, other: Field<E>) {
+    fn div_assign(&mut self, other: Field) {
         match other.is_zero() {
-            true => E::halt(format!("Field division by zero: {self} / {other}")),
+            true => Console::halt(format!("Field division by zero: {self} / {other}")),
             false => self.field /= other.field,
         }
     }
 }
 
-impl<E: Environment> DivAssign<&Field<E>> for Field<E> {
+impl DivAssign<&Field> for Field {
     /// Divides `self` by `other`.
     #[inline]
-    fn div_assign(&mut self, other: &Field<E>) {
+    fn div_assign(&mut self, other: &Field) {
         match other.is_zero() {
-            true => E::halt(format!("Field division by zero: {self} / {other}")),
+            true => Console::halt(format!("Field division by zero: {self} / {other}")),
             false => self.field /= other.field,
         }
     }
 }
 
-impl<E: Environment> Pow<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Pow<Field> for Field {
+    type Output = Field;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: Field<E>) -> Self::Output {
+    fn pow(self, other: Field) -> Self::Output {
         Field::new(self.field.pow(other.field.to_bigint()))
     }
 }
 
-impl<E: Environment> Pow<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Pow<&Field> for Field {
+    type Output = Field;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: &Field<E>) -> Self::Output {
+    fn pow(self, other: &Field) -> Self::Output {
         Field::new(self.field.pow(other.field.to_bigint()))
     }
 }
 
-impl<E: Environment> Double for Field<E> {
-    type Output = Field<E>;
+impl Double for Field {
+    type Output = Field;
 
     /// Returns the `double` of `self`.
     #[inline]
@@ -210,8 +210,8 @@ impl<E: Environment> Double for Field<E> {
     }
 }
 
-impl<E: Environment> Inverse for Field<E> {
-    type Output = Field<E>;
+impl Inverse for Field {
+    type Output = Field;
 
     /// Returns the `inverse` of `self`.
     #[inline]
@@ -223,8 +223,8 @@ impl<E: Environment> Inverse for Field<E> {
     }
 }
 
-impl<E: Environment> Square for Field<E> {
-    type Output = Field<E>;
+impl Square for Field {
+    type Output = Field;
 
     /// Returns the `square` of `self`.
     #[inline]
@@ -233,8 +233,8 @@ impl<E: Environment> Square for Field<E> {
     }
 }
 
-impl<E: Environment> SquareRoot for Field<E> {
-    type Output = Field<E>;
+impl SquareRoot for Field {
+    type Output = Field;
 
     /// Returns the `square_root` of `self`.
     /// If there are two square roots, the bitwise lesser one is returned.
@@ -244,7 +244,7 @@ impl<E: Environment> SquareRoot for Field<E> {
             Some(sqrt) => {
                 // Return the smaller square root.
                 let sqrt = Field::new(sqrt);
-                let negative_sqrt: Field<E> = -sqrt;
+                let negative_sqrt: Field = -sqrt;
                 match *(sqrt.is_less_than_or_equal(&negative_sqrt)) {
                     true => Ok(sqrt),
                     false => Ok(negative_sqrt),
@@ -255,13 +255,13 @@ impl<E: Environment> SquareRoot for Field<E> {
     }
 }
 
-impl<E: Environment> Field<E> {
+impl Field {
     /// Returns the `square_root` of `self`, where the least significant bit of the square root is zero.
     #[inline]
     pub fn even_square_root(&self) -> Result<Self> {
         match self.field.sqrt() {
             Some(sqrt) => {
-                let sqrt: Field<E> = Field::new(sqrt);
+                let sqrt: Field = Field::new(sqrt);
                 // Check the least significant bit of the square root.
                 // Note that the unwrap is safe since the number of bits is always greater than zero.
                 match *sqrt.to_bits_be().last().unwrap() {
@@ -276,34 +276,34 @@ impl<E: Environment> Field<E> {
     }
 }
 
-impl<E: Environment> Sum<Field<E>> for Field<E> {
+impl Sum<Field> for Field {
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn sum<I: Iterator<Item = Field<E>>>(iter: I) -> Self {
+    fn sum<I: Iterator<Item = Field>>(iter: I) -> Self {
         iter.fold(Field::zero(), |a, b| a + b)
     }
 }
 
-impl<'a, E: Environment> Sum<&'a Field<E>> for Field<E> {
+impl<'a> Sum<&'a Field> for Field {
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn sum<I: Iterator<Item = &'a Field<E>>>(iter: I) -> Self {
+    fn sum<I: Iterator<Item = &'a Field>>(iter: I) -> Self {
         iter.fold(Field::zero(), |a, b| a + b)
     }
 }
 
-impl<E: Environment> Product<Field<E>> for Field<E> {
+impl Product<Field> for Field {
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn product<I: Iterator<Item = Field<E>>>(iter: I) -> Self {
+    fn product<I: Iterator<Item = Field>>(iter: I) -> Self {
         iter.fold(Field::one(), |a, b| a * b)
     }
 }
 
-impl<'a, E: Environment> Product<&'a Field<E>> for Field<E> {
+impl<'a> Product<&'a Field> for Field {
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn product<I: Iterator<Item = &'a Field<E>>>(iter: I) -> Self {
+    fn product<I: Iterator<Item = &'a Field>>(iter: I) -> Self {
         iter.fold(Field::one(), |a, b| a * b)
     }
 }
@@ -311,14 +311,11 @@ impl<'a, E: Environment> Product<&'a Field<E>> for Field<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     #[test]
     fn test_div_by_zero_fails() {
-        let one = Field::<CurrentEnvironment>::one();
-        let zero = Field::<CurrentEnvironment>::zero();
+        let one = Field::one();
+        let zero = Field::zero();
 
         let result = std::panic::catch_unwind(|| one / zero);
         assert!(result.is_err()); // Probe further for specific error type here, if desired

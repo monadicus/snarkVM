@@ -36,52 +36,52 @@ use snarkvm_console_network::prelude::*;
 use snarkvm_console_types::{Boolean, Field, Scalar};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Signature<N: Network> {
+pub struct Signature {
     /// The verifier challenge to check against.
-    challenge: Scalar<N>,
+    challenge: Scalar,
     /// The prover response to the challenge.
-    response: Scalar<N>,
+    response: Scalar,
     /// The compute key of the prover.
-    compute_key: ComputeKey<N>,
+    compute_key: ComputeKey,
 }
 
-impl<N: Network> From<(Scalar<N>, Scalar<N>, ComputeKey<N>)> for Signature<N> {
+impl From<(Scalar, Scalar, ComputeKey)> for Signature {
     /// Derives the account signature from a tuple `(challenge, response, compute_key)`.
-    fn from((challenge, response, compute_key): (Scalar<N>, Scalar<N>, ComputeKey<N>)) -> Self {
+    fn from((challenge, response, compute_key): (Scalar, Scalar, ComputeKey)) -> Self {
         Self { challenge, response, compute_key }
     }
 }
 
-impl<N: Network> From<&(Scalar<N>, Scalar<N>, ComputeKey<N>)> for Signature<N> {
+impl From<&(Scalar, Scalar, ComputeKey)> for Signature {
     /// Derives the account signature from a tuple `(challenge, response, compute_key)`.
-    fn from((challenge, response, compute_key): &(Scalar<N>, Scalar<N>, ComputeKey<N>)) -> Self {
+    fn from((challenge, response, compute_key): &(Scalar, Scalar, ComputeKey)) -> Self {
         Self { challenge: *challenge, response: *response, compute_key: *compute_key }
     }
 }
 
-impl<N: Network> Signature<N> {
+impl Signature {
     /// Returns the verifier challenge.
-    pub const fn challenge(&self) -> Scalar<N> {
+    pub const fn challenge(&self) -> Scalar {
         self.challenge
     }
 
     /// Returns the prover response.
-    pub const fn response(&self) -> Scalar<N> {
+    pub const fn response(&self) -> Scalar {
         self.response
     }
 
     /// Returns the signer compute key.
-    pub const fn compute_key(&self) -> ComputeKey<N> {
+    pub const fn compute_key(&self) -> ComputeKey {
         self.compute_key
     }
 
     /// Returns the signer address.
-    pub fn to_address(&self) -> Address<N> {
+    pub fn to_address(&self) -> Address {
         self.compute_key.to_address()
     }
 }
 
-impl<N: Network> TypeName for Signature<N> {
+impl TypeName for Signature {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -89,7 +89,7 @@ impl<N: Network> TypeName for Signature<N> {
     }
 }
 
-impl<N: Network> Signature<N> {
+impl Signature {
     /// Initializes a `zero` signature.
     #[cfg(any(test, feature = "test"))]
     pub fn zero() -> Self {

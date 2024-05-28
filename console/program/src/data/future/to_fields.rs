@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> ToFields for Future<N> {
-    type Field = Field<N>;
+impl ToFields for Future {
+    type Field = Field;
 
     /// Returns the future as a list of fields.
     #[inline]
@@ -26,12 +28,9 @@ impl<N: Network> ToFields for Future<N> {
         // During decryption, this final bit ensures we've reached the end.
         bits_le.push(true);
         // Pack the bits into field elements.
-        let fields = bits_le
-            .chunks(Field::<N>::size_in_data_bits())
-            .map(Field::<N>::from_bits_le)
-            .collect::<Result<Vec<_>>>()?;
+        let fields = bits_le.chunks(Field::size_in_data_bits()).map(Field::from_bits_le).collect::<Result<Vec<_>>>()?;
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => Ok(fields),
             false => bail!("Future exceeds maximum allowed size"),
         }

@@ -30,17 +30,17 @@ use zeroize::Zeroize;
 
 /// The account view key used to decrypt records and ciphertext.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Zeroize)]
-pub struct ViewKey<N: Network>(Scalar<N>);
+pub struct ViewKey(Scalar);
 
-impl<N: Network> ViewKey<N> {
+impl ViewKey {
     /// Initializes the account view key from a scalar.
-    pub const fn from_scalar(view_key: Scalar<N>) -> Self {
+    pub const fn from_scalar(view_key: Scalar) -> Self {
         Self(view_key)
     }
 }
 
-impl<N: Network> Deref for ViewKey<N> {
-    type Target = Scalar<N>;
+impl Deref for ViewKey {
+    type Target = Scalar;
 
     /// Returns the account view key as a scalar.
     fn deref(&self) -> &Self::Target {
@@ -51,9 +51,6 @@ impl<N: Network> Deref for ViewKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -63,7 +60,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new address.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let expected = ViewKey::try_from(private_key)?;
 
             // Check the scalar representation.

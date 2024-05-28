@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> ToFields for Value<N> {
-    type Field = Field<N>;
+impl ToFields for Value {
+    type Field = Field;
 
     /// Returns the stack value as a list of fields.
     #[inline]

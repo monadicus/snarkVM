@@ -29,18 +29,18 @@ use indexmap::IndexMap;
 
 /// The declared layout for program data.
 #[derive(Clone, PartialEq, Eq)]
-pub struct RecordType<N: Network> {
+pub struct RecordType {
     /// The name of the record type.
-    name: Identifier<N>,
+    name: Identifier,
     /// The visibility for the owner of the program record.
     owner: PublicOrPrivate,
     /// The name and value type for the entries in data.
-    entries: IndexMap<Identifier<N>, EntryType<N>>,
+    entries: IndexMap<Identifier, EntryType>,
 }
 
-impl<N: Network> RecordType<N> {
+impl RecordType {
     /// Returns the name of the record type.
-    pub const fn name(&self) -> &Identifier<N> {
+    pub const fn name(&self) -> &Identifier {
         &self.name
     }
 
@@ -50,12 +50,12 @@ impl<N: Network> RecordType<N> {
     }
 
     /// Returns the entries of the record type.
-    pub const fn entries(&self) -> &IndexMap<Identifier<N>, EntryType<N>> {
+    pub const fn entries(&self) -> &IndexMap<Identifier, EntryType> {
         &self.entries
     }
 }
 
-impl<N: Network> TypeName for RecordType<N> {
+impl TypeName for RecordType {
     /// Returns the type name.
     fn type_name() -> &'static str {
         "record"

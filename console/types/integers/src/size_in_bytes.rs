@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> SizeInBytes for Integer<E, I> {
+impl<I: IntegerType> SizeInBytes for Integer<I> {
     /// Returns the integer size in bytes.
     #[inline]
     fn size_in_bytes() -> usize {

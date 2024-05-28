@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Private: Visibility> Entry<N, Private> {
+impl<Private: Visibility> Entry<Private> {
     /// Returns the number of field elements to encode `self`.
     pub(crate) fn num_randomizers(&self) -> Result<u16> {
         match self {

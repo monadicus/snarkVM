@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Parser for Group<E> {
+impl Parser for Group {
     /// Parses a string into a group circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -36,7 +36,7 @@ impl<E: Environment> Parser for Group<E> {
     }
 }
 
-impl<E: Environment> FromStr for Group<E> {
+impl FromStr for Group {
     type Err = Error;
 
     /// Parses a string into a group.
@@ -54,13 +54,13 @@ impl<E: Environment> FromStr for Group<E> {
     }
 }
 
-impl<E: Environment> Debug for Group<E> {
+impl Debug for Group {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<E: Environment> Display for Group<E> {
+impl Display for Group {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}{}", self.group.to_affine().to_x_coordinate(), Self::type_name())
     }
@@ -80,15 +80,15 @@ mod tests {
         let rng = &mut TestRng::default();
 
         // Ensure empty value fails.
-        assert!(Group::<CurrentEnvironment>::parse(Group::<CurrentEnvironment>::type_name()).is_err());
-        assert!(Group::<CurrentEnvironment>::parse("").is_err());
+        assert!(Group::parse(Group::type_name()).is_err());
+        assert!(Group::parse("").is_err());
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
             let group: <CurrentEnvironment as Environment>::Affine = Uniform::rand(rng);
 
-            let expected = format!("{}{}", group.to_x_coordinate(), Group::<CurrentEnvironment>::type_name());
-            let (remainder, candidate) = Group::<CurrentEnvironment>::parse(&expected).unwrap();
+            let expected = format!("{}{}", group.to_x_coordinate(), Group::type_name());
+            let (remainder, candidate) = Group::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!("", remainder);
         }
@@ -99,11 +99,11 @@ mod tests {
     fn test_display() {
         /// Attempts to construct a group from the given element,
         /// format it in display mode, and recover a group from it.
-        fn check_display<E: Environment>(element: E::Affine) {
-            let candidate = Group::<E>::new(element);
-            assert_eq!(format!("{}{}", element.to_x_coordinate(), Group::<E>::type_name()), format!("{candidate}"));
+        fn check_display(element: ConsoleAffine) {
+            let candidate = Group::new(element);
+            assert_eq!(format!("{}{}", element.to_x_coordinate(), Group::type_name()), format!("{candidate}"));
 
-            let candidate_recovered = Group::<E>::from_str(&format!("{candidate}")).unwrap();
+            let candidate_recovered = Group::from_str(&format!("{candidate}")).unwrap();
             assert_eq!(candidate, candidate_recovered);
         }
 
@@ -112,15 +112,15 @@ mod tests {
         for _ in 0..ITERATIONS {
             let element = Uniform::rand(&mut rng);
 
-            check_display::<CurrentEnvironment>(element);
+            check_display(element);
         }
     }
 
     #[test]
     fn test_display_zero() {
-        let zero = <CurrentEnvironment as Environment>::Affine::zero();
+        let zero = ConsoleAffine::zero();
 
-        let candidate = Group::<CurrentEnvironment>::new(zero);
+        let candidate = Group::new(zero);
         assert_eq!("0group", &format!("{candidate}"));
     }
 }

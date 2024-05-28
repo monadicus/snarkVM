@@ -16,7 +16,7 @@ use super::*;
 
 static STATE_PATH_PREFIX: &str = "path";
 
-impl<N: Network> Parser for StatePath<N> {
+impl Parser for StatePath {
     /// Parses a string into the state path.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -33,7 +33,7 @@ impl<N: Network> Parser for StatePath<N> {
     }
 }
 
-impl<N: Network> FromStr for StatePath<N> {
+impl FromStr for StatePath {
     type Err = Error;
 
     /// Reads in the state path string.
@@ -52,13 +52,13 @@ impl<N: Network> FromStr for StatePath<N> {
     }
 }
 
-impl<N: Network> Debug for StatePath<N> {
+impl Debug for StatePath {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for StatePath<N> {
+impl Display for StatePath {
     /// Writes the state path as a bech32m string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // Convert the state path to bytes.

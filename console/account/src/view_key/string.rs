@@ -16,7 +16,7 @@ use super::*;
 
 static VIEW_KEY_PREFIX: [u8; 7] = [14, 138, 223, 204, 247, 224, 122]; // AViewKey1
 
-impl<N: Network> FromStr for ViewKey<N> {
+impl FromStr for ViewKey {
     type Err = Error;
 
     /// Reads in an account view key from a base58 string.
@@ -33,7 +33,7 @@ impl<N: Network> FromStr for ViewKey<N> {
     }
 }
 
-impl<N: Network> fmt::Display for ViewKey<N> {
+impl fmt::Display for ViewKey {
     /// Writes the account view key as a base58 string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Write the view key bytes.

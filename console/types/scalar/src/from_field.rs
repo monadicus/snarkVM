@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> FromField for Scalar<E> {
-    type Field = Field<E>;
+impl FromField for Scalar {
+    type Field = Field;
 
     /// Casts a scalar from a base field element.
     ///
@@ -28,7 +28,7 @@ impl<E: Environment> FromField for Scalar<E> {
         // Note: We are reconstituting the base field into a scalar field.
         // This is safe as the scalar field modulus is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(Scalar::<E>::size_in_bits() < Field::<E>::size_in_bits());
+        debug_assert!(Scalar::size_in_bits() < Field::size_in_bits());
 
         // Do not truncate the field bits, which provides the following features:
         //   1. If the field element is larger than the scalar field modulus, then the operation will fail.
@@ -42,9 +42,6 @@ impl<E: Environment> FromField for Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -54,15 +51,15 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random scalar.
-            let expected = Scalar::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Scalar::rand(&mut rng);
             // Perform the operation.
             let candidate = Scalar::from_field(&expected.to_field()?)?;
             assert_eq!(expected, candidate);
 
             // Sample a random field.
-            let expected = Field::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Field::rand(&mut rng);
             // Filter for field elements that exceed the scalar field modulus.
-            if expected > (-Scalar::<CurrentEnvironment>::one()).to_field()? {
+            if expected > (-Scalar::one()).to_field()? {
                 // Perform the operation.
                 assert!(Scalar::from_field(&expected).is_err());
             } else {

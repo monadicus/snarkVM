@@ -18,26 +18,26 @@ impl LiteralType {
     /// Returns the number of bits of this literal type.
     ///
     /// For string literals, this method returns the maximum number of bits that can be stored in the string.
-    pub fn size_in_bits<N: Network>(&self) -> u16 {
+    pub fn size_in_bits(&self) -> u16 {
         let size = match self {
-            Self::Address => Address::<N>::size_in_bits(),
-            Self::Boolean => Boolean::<N>::size_in_bits(),
-            Self::Field => Field::<N>::size_in_bits(),
-            Self::Group => Group::<N>::size_in_bits(),
-            Self::I8 => I8::<N>::size_in_bits(),
-            Self::I16 => I16::<N>::size_in_bits(),
-            Self::I32 => I32::<N>::size_in_bits(),
-            Self::I64 => I64::<N>::size_in_bits(),
-            Self::I128 => I128::<N>::size_in_bits(),
-            Self::U8 => U8::<N>::size_in_bits(),
-            Self::U16 => U16::<N>::size_in_bits(),
-            Self::U32 => U32::<N>::size_in_bits(),
-            Self::U64 => U64::<N>::size_in_bits(),
-            Self::U128 => U128::<N>::size_in_bits(),
-            Self::Scalar => Scalar::<N>::size_in_bits(),
-            Self::Signature => Signature::<N>::size_in_bits(),
-            Self::String => N::MAX_STRING_BYTES.saturating_mul(8) as usize,
+            Self::Address => Address::size_in_bits(),
+            Self::Boolean => Boolean::size_in_bits(),
+            Self::Field => Field::size_in_bits(),
+            Self::Group => Group::size_in_bits(),
+            Self::I8 => I8::size_in_bits(),
+            Self::I16 => I16::size_in_bits(),
+            Self::I32 => I32::size_in_bits(),
+            Self::I64 => I64::size_in_bits(),
+            Self::I128 => I128::size_in_bits(),
+            Self::U8 => U8::size_in_bits(),
+            Self::U16 => U16::size_in_bits(),
+            Self::U32 => U32::size_in_bits(),
+            Self::U64 => U64::size_in_bits(),
+            Self::U128 => U128::size_in_bits(),
+            Self::Scalar => Scalar::size_in_bits(),
+            Self::Signature => Signature::size_in_bits(),
+            Self::String => AleoNetwork::MAX_STRING_BYTES.saturating_mul(8) as usize,
         };
-        u16::try_from(size).or_halt_with::<N>("Literal exceeds u16::MAX bits.")
+        u16::try_from(size).or_halt_with("Literal exceeds u16::MAX bits.")
     }
 }

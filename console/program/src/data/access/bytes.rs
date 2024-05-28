@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Access<N> {
+impl FromBytes for Access {
     /// Reads the access from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let variant = u8::read_le(&mut reader)?;
@@ -26,7 +26,7 @@ impl<N: Network> FromBytes for Access<N> {
     }
 }
 
-impl<N: Network> ToBytes for Access<N> {
+impl ToBytes for Access {
     /// Write the access to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {
@@ -46,13 +46,10 @@ impl<N: Network> ToBytes for Access<N> {
 mod tests {
     use super::*;
     use crate::data::identifier::tests::sample_identifier;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u32 = 1000;
 
-    fn check_bytes(expected: Access<CurrentNetwork>) -> Result<()> {
+    fn check_bytes(expected: Access) -> Result<()> {
         // Check the byte representation.
         let expected_bytes = expected.to_bytes_le()?;
         assert_eq!(expected, Access::read_le(&expected_bytes[..])?);
@@ -69,7 +66,7 @@ mod tests {
             check_bytes(Access::Member(identifier))?;
 
             // Index
-            let index = U32::<CurrentNetwork>::rand(rng);
+            let index = U32::rand(rng);
             check_bytes(Access::Index(index))?;
         }
         Ok(())

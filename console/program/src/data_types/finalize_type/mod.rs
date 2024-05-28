@@ -23,9 +23,9 @@ use snarkvm_console_network::prelude::*;
 use enum_index::EnumIndex;
 
 #[derive(Clone, PartialEq, Eq, Hash, EnumIndex)]
-pub enum FinalizeType<N: Network> {
+pub enum FinalizeType {
     /// A plaintext type.
-    Plaintext(PlaintextType<N>),
+    Plaintext(PlaintextType),
     /// A future.
-    Future(Locator<N>),
+    Future(Locator),
 }

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for RecordType<N> {
+impl Parser for RecordType {
     /// Parses a record type as:
     /// ```text
     ///   record message:
@@ -24,7 +24,7 @@ impl<N: Network> Parser for RecordType<N> {
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         /// Parses a string into a tuple.
-        fn parse_entry<N: Network>(string: &str) -> ParserResult<(Identifier<N>, EntryType<N>)> {
+        fn parse_entry(string: &str) -> ParserResult<(Identifier, EntryType)> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the identifier from the string.
@@ -87,7 +87,7 @@ impl<N: Network> Parser for RecordType<N> {
                 return Err(error(format!("Duplicate entry type found in record '{name}'")));
             }
             // Ensure the number of members is within the maximum limit.
-            if entries.len() > N::MAX_DATA_ENTRIES {
+            if entries.len() > AleoNetwork::MAX_DATA_ENTRIES {
                 return Err(error("Failed to parse record: too many entries"));
             }
             Ok(entries)
@@ -98,7 +98,7 @@ impl<N: Network> Parser for RecordType<N> {
     }
 }
 
-impl<N: Network> FromStr for RecordType<N> {
+impl FromStr for RecordType {
     type Err = Error;
 
     /// Returns an record type from a string literal.
@@ -115,14 +115,14 @@ impl<N: Network> FromStr for RecordType<N> {
     }
 }
 
-impl<N: Network> Debug for RecordType<N> {
+impl Debug for RecordType {
     /// Prints the record type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for RecordType<N> {
+impl Display for RecordType {
     /// Prints the record type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{} {}:", Self::type_name(), self.name)?;

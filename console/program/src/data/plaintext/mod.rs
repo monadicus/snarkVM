@@ -26,32 +26,31 @@ mod to_bits;
 mod to_fields;
 
 use crate::{Access, Ciphertext, Identifier, Literal};
-use snarkvm_console_network::Network;
 use snarkvm_console_types::prelude::*;
 
 use indexmap::IndexMap;
 use once_cell::sync::OnceCell;
 
 #[derive(Clone)]
-pub enum Plaintext<N: Network> {
+pub enum Plaintext {
     /// A literal.
-    Literal(Literal<N>, OnceCell<Vec<bool>>),
+    Literal(Literal, OnceCell<Vec<bool>>),
     /// A struct.
-    Struct(IndexMap<Identifier<N>, Plaintext<N>>, OnceCell<Vec<bool>>),
+    Struct(IndexMap<Identifier, Plaintext>, OnceCell<Vec<bool>>),
     /// An array.
-    Array(Vec<Plaintext<N>>, OnceCell<Vec<bool>>),
+    Array(Vec<Plaintext>, OnceCell<Vec<bool>>),
 }
 
-impl<N: Network> From<Literal<N>> for Plaintext<N> {
+impl From<Literal> for Plaintext {
     /// Returns a new `Plaintext` from a `Literal`.
-    fn from(literal: Literal<N>) -> Self {
+    fn from(literal: Literal) -> Self {
         Self::Literal(literal, OnceCell::new())
     }
 }
 
-impl<N: Network> From<&Literal<N>> for Plaintext<N> {
+impl From<&Literal> for Plaintext {
     /// Returns a new `Plaintext` from a `&Literal`.
-    fn from(literal: &Literal<N>) -> Self {
+    fn from(literal: &Literal) -> Self {
         Self::Literal(literal.clone(), OnceCell::new())
     }
 }

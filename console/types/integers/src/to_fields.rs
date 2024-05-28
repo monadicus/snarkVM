@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> ToFields for Integer<E, I> {
-    type Field = Field<E>;
+impl<I: IntegerType> ToFields for Integer<I> {
+    type Field = Field;
 
     /// Returns the integer as field elements.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {
@@ -26,9 +26,6 @@ impl<E: Environment, I: IntegerType> ToFields for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -37,14 +34,14 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random integer.
-            let expected = Integer::<CurrentEnvironment, I>::rand(&mut rng);
+            let expected = Integer::<I>::rand(&mut rng);
 
             // Perform the operation.
             let candidate = expected.to_fields()?;
 
             // Extract the bits from the base field representation.
             let candidate_bits_le = candidate.to_bits_le();
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), candidate_bits_le.len());
+            assert_eq!(Field::size_in_bits(), candidate_bits_le.len());
 
             // Ensure all integer bits match with the expected result.
             let i_bits = usize::try_from(I::BITS).unwrap();

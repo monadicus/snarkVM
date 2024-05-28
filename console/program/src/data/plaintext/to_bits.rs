@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBits for Plaintext<N> {
+impl ToBits for Plaintext {
     /// Returns this plaintext as a list of **little-endian** bits.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         match self {
@@ -37,7 +37,7 @@ impl<N: Network> ToBits for Plaintext<N> {
 
                     // Write the length of the struct.
                     u8::try_from(struct_.len())
-                        .or_halt_with::<N>("Plaintext struct length exceeds u8::MAX")
+                        .or_halt_with("Plaintext struct length exceeds u8::MAX")
                         .write_bits_le(&mut bits_le);
 
                     // Write each member of the struct.
@@ -49,7 +49,7 @@ impl<N: Network> ToBits for Plaintext<N> {
                         // Write the value of the member.
                         let value_bits = value.to_bits_le();
                         u16::try_from(value_bits.len())
-                            .or_halt_with::<N>("Plaintext member exceeds u16::MAX bits")
+                            .or_halt_with("Plaintext member exceeds u16::MAX bits")
                             .write_bits_le(&mut bits_le);
                         bits_le.extend_from_slice(&value_bits);
                     }
@@ -65,7 +65,7 @@ impl<N: Network> ToBits for Plaintext<N> {
 
                     // Write the length of the array.
                     u32::try_from(array.len())
-                        .or_halt_with::<N>("Plaintext array length exceeds u32::MAX")
+                        .or_halt_with("Plaintext array length exceeds u32::MAX")
                         .write_bits_le(&mut bits_le);
 
                     // Write each element of the array.
@@ -74,7 +74,7 @@ impl<N: Network> ToBits for Plaintext<N> {
 
                         // Write the size of the element.
                         u16::try_from(element_bits.len())
-                            .or_halt_with::<N>("Plaintext element exceeds u16::MAX bits")
+                            .or_halt_with("Plaintext element exceeds u16::MAX bits")
                             .write_bits_le(&mut bits_le);
 
                         // Write the element.
@@ -110,7 +110,7 @@ impl<N: Network> ToBits for Plaintext<N> {
 
                     // Write the length of the struct.
                     u8::try_from(struct_.len())
-                        .or_halt_with::<N>("Plaintext struct length exceeds u8::MAX")
+                        .or_halt_with("Plaintext struct length exceeds u8::MAX")
                         .write_bits_be(&mut bits_be);
 
                     // Write each member of the struct.
@@ -122,7 +122,7 @@ impl<N: Network> ToBits for Plaintext<N> {
                         // Write the value of the member.
                         let value_bits = value.to_bits_be();
                         u16::try_from(value_bits.len())
-                            .or_halt_with::<N>("Plaintext member exceeds u16::MAX bits")
+                            .or_halt_with("Plaintext member exceeds u16::MAX bits")
                             .write_bits_be(&mut bits_be);
                         bits_be.extend_from_slice(&value_bits);
                     }
@@ -139,7 +139,7 @@ impl<N: Network> ToBits for Plaintext<N> {
 
                     // Write the length of the array.
                     u32::try_from(array.len())
-                        .or_halt_with::<N>("Plaintext array length exceeds u32::MAX")
+                        .or_halt_with("Plaintext array length exceeds u32::MAX")
                         .write_bits_be(&mut bits_be);
 
                     // Write each element of the array.
@@ -148,7 +148,7 @@ impl<N: Network> ToBits for Plaintext<N> {
 
                         // Write the size of the element.
                         u16::try_from(element_bits.len())
-                            .or_halt_with::<N>("Plaintext element exceeds u16::MAX bits")
+                            .or_halt_with("Plaintext element exceeds u16::MAX bits")
                             .write_bits_be(&mut bits_be);
 
                         // Write the element.

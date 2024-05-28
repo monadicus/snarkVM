@@ -62,13 +62,13 @@ thread_local! {
     static SERIAL_NUMBER_DOMAIN: Field<AleoTestnetV0> = Field::constant(<console::TestnetV0 as console::Network>::serial_number_domain());
 
     /// The BHP hash function, which can take an input of up to 256 bits.
-    static BHP_256: BHP256<AleoTestnetV0> = BHP256::<AleoTestnetV0>::constant(console::TESTNET_BHP_256.clone());
+    static BHP_256: BHP256<AleoTestnetV0> = BHP256::<AleoTestnetV0>::constant(console::BHP_256.clone());
     /// The BHP hash function, which can take an input of up to 512 bits.
-    static BHP_512: BHP512<AleoTestnetV0> = BHP512::<AleoTestnetV0>::constant(console::TESTNET_BHP_512.clone());
+    static BHP_512: BHP512<AleoTestnetV0> = BHP512::<AleoTestnetV0>::constant(console::BHP_512.clone());
     /// The BHP hash function, which can take an input of up to 768 bits.
-    static BHP_768: BHP768<AleoTestnetV0> = BHP768::<AleoTestnetV0>::constant(console::TESTNET_BHP_768.clone());
+    static BHP_768: BHP768<AleoTestnetV0> = BHP768::<AleoTestnetV0>::constant(console::BHP_768.clone());
     /// The BHP hash function, which can take an input of up to 1024 bits.
-    static BHP_1024: BHP1024<AleoTestnetV0> = BHP1024::<AleoTestnetV0>::constant(console::TESTNET_BHP_1024.clone());
+    static BHP_1024: BHP1024<AleoTestnetV0> = BHP1024::<AleoTestnetV0>::constant(console::BHP_1024.clone());
 
     /// The Keccak hash function, which outputs 256 bits.
     static KECCAK_256: Keccak256<AleoTestnetV0> = Keccak256::<AleoTestnetV0>::new();
@@ -78,16 +78,16 @@ thread_local! {
     static KECCAK_512: Keccak512<AleoTestnetV0> = Keccak512::<AleoTestnetV0>::new();
 
     /// The Pedersen hash function, which can take an input of up to 64 bits.
-    static PEDERSEN_64: Pedersen64<AleoTestnetV0> = Pedersen64::<AleoTestnetV0>::constant(console::TESTNET_PEDERSEN_64.clone());
+    static PEDERSEN_64: Pedersen64<AleoTestnetV0> = Pedersen64::<AleoTestnetV0>::constant(console::PEDERSEN_64.clone());
     /// The Pedersen hash function, which can take an input of up to 128 bits.
-    static PEDERSEN_128: Pedersen128<AleoTestnetV0> = Pedersen128::<AleoTestnetV0>::constant(console::TESTNET_PEDERSEN_128.clone());
+    static PEDERSEN_128: Pedersen128<AleoTestnetV0> = Pedersen128::<AleoTestnetV0>::constant(console::PEDERSEN_128.clone());
 
     /// The Poseidon hash function, using a rate of 2.
-    static POSEIDON_2: Poseidon2<AleoTestnetV0> = Poseidon2::<AleoTestnetV0>::constant(console::TESTNET_POSEIDON_2.clone());
+    static POSEIDON_2: Poseidon2<AleoTestnetV0> = Poseidon2::<AleoTestnetV0>::constant(console::POSEIDON_2.clone());
     /// The Poseidon hash function, using a rate of 4.
-    static POSEIDON_4: Poseidon4<AleoTestnetV0> = Poseidon4::<AleoTestnetV0>::constant(console::TESTNET_POSEIDON_4.clone());
+    static POSEIDON_4: Poseidon4<AleoTestnetV0> = Poseidon4::<AleoTestnetV0>::constant(console::POSEIDON_4.clone());
     /// The Poseidon hash function, using a rate of 8.
-    static POSEIDON_8: Poseidon8<AleoTestnetV0> = Poseidon8::<AleoTestnetV0>::constant(console::TESTNET_POSEIDON_8.clone());
+    static POSEIDON_8: Poseidon8<AleoTestnetV0> = Poseidon8::<AleoTestnetV0>::constant(console::POSEIDON_8.clone());
 
     /// The SHA-3 hash function, which outputs 256 bits.
     static SHA3_256: Sha3_256<AleoTestnetV0> = Sha3_256::<AleoTestnetV0>::new();

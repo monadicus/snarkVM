@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for FinalizeType<N> {
+impl Serialize for FinalizeType {
     /// Serializes the finalize type into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for FinalizeType<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for FinalizeType<N> {
+impl<'de> Deserialize<'de> for FinalizeType {
     /// Deserializes the finalize type from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {

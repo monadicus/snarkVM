@@ -16,7 +16,7 @@ use super::*;
 
 static PRIVATE_KEY_PREFIX: [u8; 11] = [127, 134, 189, 116, 210, 221, 210, 137, 145, 18, 253]; // APrivateKey1
 
-impl<N: Network> FromStr for PrivateKey<N> {
+impl FromStr for PrivateKey {
     type Err = Error;
 
     /// Reads in an account private key from a base58 string.
@@ -33,7 +33,7 @@ impl<N: Network> FromStr for PrivateKey<N> {
     }
 }
 
-impl<N: Network> fmt::Display for PrivateKey<N> {
+impl fmt::Display for PrivateKey {
     /// Writes the account private key as a base58 string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Write the private key bytes.
@@ -48,9 +48,6 @@ impl<N: Network> fmt::Display for PrivateKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -60,7 +57,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new private key.
-            let expected = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let expected = PrivateKey::new(&mut rng)?;
 
             // Check the string representation.
             let candidate = format!("{expected}");

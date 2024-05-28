@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<N: Network> Identifier<N> {
+impl Identifier {
     /// Returns the number of bits of this identifier.
     pub fn size_in_bits(&self) -> u8 {
         // The size in bits always fits in a u8, as the underlying representation is a field element.
-        debug_assert!(Field::<N>::size_in_data_bits() <= u8::MAX as usize);
+        debug_assert!(Field::size_in_data_bits() <= u8::MAX as usize);
         // Convert the size to bits (as a byte-aligned multiple).
         8 * self.1
     }
@@ -40,9 +40,9 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_string = sample_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_string = sample_identifier_as_string(&mut rng)?;
 
-            let candidate = Identifier::<CurrentNetwork>::from_str(&expected_string)?;
+            let candidate = Identifier::from_str(&expected_string)?;
             assert_eq!(expected_string.len() * 8, candidate.size_in_bits() as usize);
         }
         Ok(())

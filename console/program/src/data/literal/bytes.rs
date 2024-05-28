@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Literal<N> {
+impl FromBytes for Literal {
     /// Reads the literal from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let index = u16::read_le(&mut reader)?;
@@ -42,7 +42,7 @@ impl<N: Network> FromBytes for Literal<N> {
     }
 }
 
-impl<N: Network> ToBytes for Literal<N> {
+impl ToBytes for Literal {
     /// Writes the literal to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         type Size = u16;
@@ -122,13 +122,10 @@ impl<N: Network> ToBytes for Literal<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u32 = 1000;
 
-    fn check_bytes(expected: Literal<CurrentNetwork>) -> Result<()> {
+    fn check_bytes(expected: Literal) -> Result<()> {
         // Check the byte representation.
         let expected_bytes = expected.to_bytes_le()?;
         assert_eq!(expected, Literal::read_le(&expected_bytes[..])?);
@@ -140,42 +137,42 @@ mod tests {
         let rng = &mut TestRng::default();
 
         for _ in 0..ITERATIONS {
-            let private_key = snarkvm_console_account::PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = snarkvm_console_account::PrivateKey::new(rng)?;
 
             // Address
-            check_bytes(Literal::<CurrentNetwork>::Address(Address::try_from(private_key)?))?;
+            check_bytes(Literal::Address(Address::try_from(private_key)?))?;
             // Boolean
-            check_bytes(Literal::<CurrentNetwork>::Boolean(Boolean::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::Boolean(Boolean::new(Uniform::rand(rng))))?;
             // Field
-            check_bytes(Literal::<CurrentNetwork>::Field(Uniform::rand(rng)))?;
+            check_bytes(Literal::Field(Uniform::rand(rng)))?;
             // Group
-            check_bytes(Literal::<CurrentNetwork>::Group(Uniform::rand(rng)))?;
+            check_bytes(Literal::Group(Uniform::rand(rng)))?;
             // I8
-            check_bytes(Literal::<CurrentNetwork>::I8(I8::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::I8(I8::new(Uniform::rand(rng))))?;
             // I16
-            check_bytes(Literal::<CurrentNetwork>::I16(I16::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::I16(I16::new(Uniform::rand(rng))))?;
             // I32
-            check_bytes(Literal::<CurrentNetwork>::I32(I32::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::I32(I32::new(Uniform::rand(rng))))?;
             // I64
-            check_bytes(Literal::<CurrentNetwork>::I64(I64::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::I64(I64::new(Uniform::rand(rng))))?;
             // I128
-            check_bytes(Literal::<CurrentNetwork>::I128(I128::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::I128(I128::new(Uniform::rand(rng))))?;
             // U8
-            check_bytes(Literal::<CurrentNetwork>::U8(U8::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::U8(U8::new(Uniform::rand(rng))))?;
             // U16
-            check_bytes(Literal::<CurrentNetwork>::U16(U16::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::U16(U16::new(Uniform::rand(rng))))?;
             // U32
-            check_bytes(Literal::<CurrentNetwork>::U32(U32::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::U32(U32::new(Uniform::rand(rng))))?;
             // U64
-            check_bytes(Literal::<CurrentNetwork>::U64(U64::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::U64(U64::new(Uniform::rand(rng))))?;
             // U128
-            check_bytes(Literal::<CurrentNetwork>::U128(U128::new(Uniform::rand(rng))))?;
+            check_bytes(Literal::U128(U128::new(Uniform::rand(rng))))?;
             // Scalar
-            check_bytes(Literal::<CurrentNetwork>::Scalar(Uniform::rand(rng)))?;
+            check_bytes(Literal::Scalar(Uniform::rand(rng)))?;
             // Signature
             check_bytes(Literal::sample(LiteralType::Signature, rng))?;
             // String
-            check_bytes(Literal::<CurrentNetwork>::String(StringType::rand(rng)))?;
+            check_bytes(Literal::String(StringType::rand(rng)))?;
         }
         Ok(())
     }

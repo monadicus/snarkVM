@@ -25,7 +25,7 @@ use smallvec::SmallVec;
 /// The interface for a cryptographic sponge.
 /// A sponge can `absorb` or take in inputs and later `squeeze` or output bytes or field elements.
 /// The outputs are dependent on previous `absorb` and `squeeze` calls.
-pub trait AlgebraicSponge<E: Environment, const RATE: usize, const CAPACITY: usize>: Clone + Debug {
+pub trait AlgebraicSponge<const RATE: usize, const CAPACITY: usize>: Clone + Debug {
     /// Parameters used by the sponge.
     type Parameters;
 
@@ -33,10 +33,10 @@ pub trait AlgebraicSponge<E: Environment, const RATE: usize, const CAPACITY: usi
     fn new(params: &Self::Parameters) -> Self;
 
     /// Absorb an input into the sponge.
-    fn absorb(&mut self, input: &[Field<E>]);
+    fn absorb(&mut self, input: &[Field]);
 
     /// Squeeze `num_elements` field elements from the sponge.
-    fn squeeze(&mut self, num_elements: u16) -> SmallVec<[Field<E>; 10]>;
+    fn squeeze(&mut self, num_elements: u16) -> SmallVec<[Field; 10]>;
 }
 
 /// The mode structure for duplex sponges.

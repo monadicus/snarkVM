@@ -15,21 +15,21 @@
 use super::*;
 
 #[cfg(feature = "private_key")]
-impl<N: Network> TryFrom<PrivateKey<N>> for ViewKey<N> {
+impl TryFrom<PrivateKey> for ViewKey {
     type Error = Error;
 
     /// Initializes a new account view key from an account private key.
-    fn try_from(private_key: PrivateKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(private_key: PrivateKey) -> Result<Self, Self::Error> {
         Self::try_from(&private_key)
     }
 }
 
 #[cfg(feature = "private_key")]
-impl<N: Network> TryFrom<&PrivateKey<N>> for ViewKey<N> {
+impl TryFrom<&PrivateKey> for ViewKey {
     type Error = Error;
 
     /// Initializes a new account view key from an account private key.
-    fn try_from(private_key: &PrivateKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(private_key: &PrivateKey) -> Result<Self, Self::Error> {
         // Derive the compute key.
         let compute_key = ComputeKey::try_from(private_key)?;
         // Compute view_key := sk_sig + r_sig + sk_prf.
@@ -38,11 +38,11 @@ impl<N: Network> TryFrom<&PrivateKey<N>> for ViewKey<N> {
 }
 
 #[cfg(feature = "private_key")]
-impl<N: Network> TryFrom<(&PrivateKey<N>, &ComputeKey<N>)> for ViewKey<N> {
+impl TryFrom<(&PrivateKey, &ComputeKey)> for ViewKey {
     type Error = Error;
 
     /// Initializes a new account view key from an account private key.
-    fn try_from((private_key, compute_key): (&PrivateKey<N>, &ComputeKey<N>)) -> Result<Self, Self::Error> {
+    fn try_from((private_key, compute_key): (&PrivateKey, &ComputeKey)) -> Result<Self, Self::Error> {
         // Compute view_key := sk_sig + r_sig + sk_prf.
         Ok(Self::from_scalar(private_key.sk_sig() + private_key.r_sig() + compute_key.sk_prf()))
     }

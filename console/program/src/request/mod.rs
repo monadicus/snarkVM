@@ -23,123 +23,106 @@ mod verify;
 
 use crate::{compute_function_id, Identifier, Plaintext, ProgramID, Record, Value, ValueType};
 use snarkvm_console_account::{Address, ComputeKey, GraphKey, PrivateKey, Signature, ViewKey};
-use snarkvm_console_network::Network;
+use snarkvm_console_network::{AleoNetwork, Network};
 use snarkvm_console_types::prelude::*;
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct Request<N: Network> {
+pub struct Request {
     /// The request signer.
-    signer: Address<N>,
+    signer: Address,
     /// The network ID.
-    network_id: U16<N>,
+    network_id: U16,
     /// The program ID.
-    program_id: ProgramID<N>,
+    program_id: ProgramID,
     /// The function name.
-    function_name: Identifier<N>,
+    function_name: Identifier,
     /// The input ID for the transition.
-    input_ids: Vec<InputID<N>>,
+    input_ids: Vec<InputID>,
     /// The function inputs.
-    inputs: Vec<Value<N>>,
+    inputs: Vec<Value>,
     /// The signature for the transition.
-    signature: Signature<N>,
+    signature: Signature,
     /// The tag secret key.
-    sk_tag: Field<N>,
+    sk_tag: Field,
     /// The transition view key.
-    tvk: Field<N>,
+    tvk: Field,
     /// The transition commitment.
-    tcm: Field<N>,
+    tcm: Field,
     /// The signer commitment.
-    scm: Field<N>,
+    scm: Field,
 }
 
-impl<N: Network>
-    From<(
-        Address<N>,
-        U16<N>,
-        ProgramID<N>,
-        Identifier<N>,
-        Vec<InputID<N>>,
-        Vec<Value<N>>,
-        Signature<N>,
-        Field<N>,
-        Field<N>,
-        Field<N>,
-        Field<N>,
-    )> for Request<N>
+impl From<(Address, U16, ProgramID, Identifier, Vec<InputID>, Vec<Value>, Signature, Field, Field, Field, Field)>
+    for Request
 {
     /// Note: See `Request::sign` to create the request. This method is used to eject from a circuit.
     fn from(
         (signer, network_id, program_id, function_name, input_ids, inputs, signature, sk_tag, tvk, tcm, scm): (
-            Address<N>,
-            U16<N>,
-            ProgramID<N>,
-            Identifier<N>,
-            Vec<InputID<N>>,
-            Vec<Value<N>>,
-            Signature<N>,
-            Field<N>,
-            Field<N>,
-            Field<N>,
-            Field<N>,
+            Address,
+            U16,
+            ProgramID,
+            Identifier,
+            Vec<InputID>,
+            Vec<Value>,
+            Signature,
+            Field,
+            Field,
+            Field,
+            Field,
         ),
     ) -> Self {
-        // Ensure the network ID is correct.
-        if *network_id != N::ID {
-            N::halt(format!("Invalid network ID. Expected {}, found {}", N::ID, *network_id))
-        } else {
-            Self { signer, network_id, program_id, function_name, input_ids, inputs, signature, sk_tag, tvk, tcm, scm }
-        }
+        Self { signer, network_id, program_id, function_name, input_ids, inputs, signature, sk_tag, tvk, tcm, scm }
     }
 }
 
-impl<N: Network> Request<N> {
+impl Request {
     /// Returns the request signer.
-    pub const fn signer(&self) -> &Address<N> {
+    pub const fn signer(&self) -> &Address {
         &self.signer
     }
 
     /// Returns the network ID.
-    pub const fn network_id(&self) -> &U16<N> {
+    pub const fn network_id(&self) -> &U16 {
         &self.network_id
     }
 
     /// Returns the program ID.
-    pub const fn program_id(&self) -> &ProgramID<N> {
+    pub const fn program_id(&self) -> &ProgramID {
         &self.program_id
     }
 
     /// Returns the function name.
-    pub const fn function_name(&self) -> &Identifier<N> {
+    pub const fn function_name(&self) -> &Identifier {
         &self.function_name
     }
 
     /// Returns the input ID for the transition.
-    pub fn input_ids(&self) -> &[InputID<N>] {
+    pub fn input_ids(&self) -> &[InputID] {
         &self.input_ids
     }
 
     /// Returns the function inputs.
-    pub fn inputs(&self) -> &[Value<N>] {
+    pub fn inputs(&self) -> &[Value] {
         &self.inputs
     }
 
     /// Returns the signature for the transition.
-    pub const fn signature(&self) -> &Signature<N> {
+    pub const fn signature(&self) -> &Signature {
         &self.signature
     }
 
     /// Returns the tag secret key `sk_tag`.
-    pub const fn sk_tag(&self) -> &Field<N> {
+    pub const fn sk_tag(&self) -> &Field {
         &self.sk_tag
     }
 
     /// Returns the transition view key `tvk`.
-    pub const fn tvk(&self) -> &Field<N> {
+    pub const fn tvk(&self) -> &Field {
         &self.tvk
     }
 
     /// Returns the transition public key `tpk`.
-    pub fn to_tpk(&self) -> Group<N> {
+    pub fn to_tpk(&self) -> Group {
         // Retrieve the challenge from the signature.
         let challenge = self.signature.challenge();
         // Retrieve the response from the signature.
@@ -147,16 +130,16 @@ impl<N: Network> Request<N> {
         // Retrieve `pk_sig` from the signature.
         let pk_sig = self.signature.compute_key().pk_sig();
         // Compute `tpk` as `(challenge * pk_sig) + (response * G)`, equivalent to `r * G`.
-        (pk_sig * challenge) + N::g_scalar_multiply(&response)
+        (pk_sig * challenge) + AleoNetwork::g_scalar_multiply(&response)
     }
 
     /// Returns the transition commitment `tcm`.
-    pub const fn tcm(&self) -> &Field<N> {
+    pub const fn tcm(&self) -> &Field {
         &self.tcm
     }
 
     /// Returns the signer commitment `scm`.
-    pub const fn scm(&self) -> &Field<N> {
+    pub const fn scm(&self) -> &Field {
         &self.scm
     }
 }
@@ -170,11 +153,11 @@ mod test_helpers {
 
     const ITERATIONS: u64 = 1000;
 
-    pub(super) fn sample_requests(rng: &mut TestRng) -> Vec<Request<CurrentNetwork>> {
+    pub(super) fn sample_requests(rng: &mut TestRng) -> Vec<Request> {
         (0..ITERATIONS)
             .map(|i| {
                 // Sample a random private key and address.
-                let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+                let private_key = PrivateKey::new(rng).unwrap();
                 let address = Address::try_from(&private_key).unwrap();
 
                 // Construct a program ID and function name.
@@ -210,7 +193,7 @@ mod test_helpers {
 
                 // Compute the signed request.
                 let request =
-                    Request::sign(&private_key, program_id, function_name, inputs.into_iter(), &input_types, root_tvk, is_root, rng).unwrap();
+                    Request::sign::<CurrentNetwork>(&private_key, program_id, function_name, inputs.into_iter(), &input_types, root_tvk, is_root, rng).unwrap();
                 assert!(request.verify(&input_types, is_root));
                 request
             })

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Cast<Address<E>> for Field<E> {
+impl Cast<Address> for Field {
     /// Casts a `Field` to an `Address`.
     ///
     /// This operation attempts to recover the group element from the field element, and then
@@ -22,17 +22,17 @@ impl<E: Environment> Cast<Address<E>> for Field<E> {
     ///
     /// To cast arbitrary field elements to addresses, use `Field::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Address<E>> {
+    fn cast(&self) -> Result<Address> {
         Address::from_field(self)
     }
 }
 
-impl<E: Environment> Cast<Boolean<E>> for Field<E> {
+impl Cast<Boolean> for Field {
     /// Casts a `Field` to a `Boolean`, if the field is zero or one.
     ///
     /// To cast arbitrary field elements to booleans, use `Field::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Boolean<E>> {
+    fn cast(&self) -> Result<Boolean> {
         if self.is_zero() {
             Ok(Boolean::new(false))
         } else if self.is_one() {
@@ -43,15 +43,15 @@ impl<E: Environment> Cast<Boolean<E>> for Field<E> {
     }
 }
 
-impl<E: Environment> Cast<Field<E>> for Field<E> {
+impl Cast<Field> for Field {
     /// Casts a `Field` to a `Field`.
     #[inline]
-    fn cast(&self) -> Result<Field<E>> {
+    fn cast(&self) -> Result<Field> {
         Ok(*self)
     }
 }
 
-impl<E: Environment> Cast<Group<E>> for Field<E> {
+impl Cast<Group> for Field {
     /// Casts a `Field` to a `Group`.
     ///
     /// This operation attempts to recover the group element from the field element,
@@ -59,27 +59,27 @@ impl<E: Environment> Cast<Group<E>> for Field<E> {
     ///
     /// To cast arbitrary field elements to groups, use `Field::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Group<E>> {
+    fn cast(&self) -> Result<Group> {
         Group::from_field(self)
     }
 }
 
-impl<E: Environment, I: IntegerType> Cast<Integer<E, I>> for Field<E> {
+impl<I: IntegerType> Cast<Integer<I>> for Field {
     /// Casts a `Field` to an `Integer`, if the field element is in the integer's range.
     ///
     /// To cast arbitrary field elements to integers, use `Field::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Integer<E, I>> {
+    fn cast(&self) -> Result<Integer<I>> {
         Integer::from_field(self)
     }
 }
 
-impl<E: Environment> Cast<Scalar<E>> for Field<E> {
+impl Cast<Scalar> for Field {
     /// Casts a `Field` to a `Scalar`, if the field element is in the scalar's range.
     ///
     /// To cast arbitrary field elements to scalars, use `Field::cast_lossy`.
     #[inline]
-    fn cast(&self) -> Result<Scalar<E>> {
+    fn cast(&self) -> Result<Scalar> {
         Scalar::from_field(self)
     }
 }

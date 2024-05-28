@@ -14,17 +14,17 @@
 
 use super::*;
 
-impl<N: Network> Request<N> {
+impl Request {
     /// Returns the request for a given private key, program ID, function name, inputs, input types, and RNG, where:
     ///     challenge := HashToScalar(r * G, pk_sig, pr_sig, signer, \[tvk, tcm, function ID, input IDs\])
     ///     response := r - challenge * sk_sig
-    pub fn sign<R: Rng + CryptoRng>(
-        private_key: &PrivateKey<N>,
-        program_id: ProgramID<N>,
-        function_name: Identifier<N>,
-        inputs: impl ExactSizeIterator<Item = impl TryInto<Value<N>>>,
-        input_types: &[ValueType<N>],
-        root_tvk: Option<Field<N>>,
+    pub fn sign<N: Network, R: Rng + CryptoRng>(
+        private_key: &PrivateKey,
+        program_id: ProgramID,
+        function_name: Identifier,
+        inputs: impl ExactSizeIterator<Item = impl TryInto<Value>>,
+        input_types: &[ValueType],
+        root_tvk: Option<Field>,
         is_root: bool,
         rng: &mut R,
     ) -> Result<Self> {
@@ -53,23 +53,23 @@ impl<N: Network> Request<N> {
         let sk_tag = GraphKey::try_from(view_key)?.sk_tag();
 
         // Sample a random nonce.
-        let nonce = Field::<N>::rand(rng);
+        let nonce = Field::rand(rng);
         // Compute a `r` as `HashToScalar(sk_sig || nonce)`. Note: This is the transition secret key `tsk`.
-        let r = N::hash_to_scalar_psd4(&[N::serial_number_domain(), sk_sig.to_field()?, nonce])?;
+        let r = AleoNetwork::hash_to_scalar_psd4(&[AleoNetwork::serial_number_domain(), sk_sig.to_field()?, nonce])?;
         // Compute `g_r` as `r * G`. Note: This is the transition public key `tpk`.
-        let g_r = N::g_scalar_multiply(&r);
+        let g_r = AleoNetwork::g_scalar_multiply(&r);
 
         // Derive the signer from the compute key.
         let signer = Address::try_from(compute_key)?;
         // Compute the transition view key `tvk` as `r * signer`.
         let tvk = (*signer * r).to_x_coordinate();
         // Compute the transition commitment `tcm` as `Hash(tvk)`.
-        let tcm = N::hash_psd2(&[tvk])?;
+        let tcm = AleoNetwork::hash_psd2(&[tvk])?;
         // Compute the signer commitment `scm` as `Hash(signer || root_tvk)`.
         let root_tvk = root_tvk.unwrap_or(tvk);
-        let scm = N::hash_psd2(&[signer.deref().to_x_coordinate(), root_tvk])?;
+        let scm = AleoNetwork::hash_psd2(&[signer.deref().to_x_coordinate(), root_tvk])?;
         // Compute 'is_root' as a field element.
-        let is_root = if is_root { Field::<N>::one() } else { Field::<N>::zero() };
+        let is_root = if is_root { Field::one() } else { Field::zero() };
 
         // Retrieve the network ID.
         let network_id = U16::new(N::ID);
@@ -102,7 +102,7 @@ impl<N: Network> Request<N> {
                     ensure!(matches!(input, Value::Plaintext(..)), "Expected a plaintext input");
 
                     // Construct the (console) input index as a field element.
-                    let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                    let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                     // Construct the preimage as `(function ID || input || tcm || index)`.
                     let mut preimage = Vec::new();
                     preimage.push(function_id);
@@ -110,7 +110,7 @@ impl<N: Network> Request<N> {
                     preimage.push(tcm);
                     preimage.push(index);
                     // Hash the input to a field element.
-                    let input_hash = N::hash_psd8(&preimage)?;
+                    let input_hash = AleoNetwork::hash_psd8(&preimage)?;
 
                     // Add the input hash to the preimage.
                     message.push(input_hash);
@@ -123,7 +123,7 @@ impl<N: Network> Request<N> {
                     ensure!(matches!(input, Value::Plaintext(..)), "Expected a plaintext input");
 
                     // Construct the (console) input index as a field element.
-                    let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                    let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                     // Construct the preimage as `(function ID || input || tcm || index)`.
                     let mut preimage = Vec::new();
                     preimage.push(function_id);
@@ -131,7 +131,7 @@ impl<N: Network> Request<N> {
                     preimage.push(tcm);
                     preimage.push(index);
                     // Hash the input to a field element.
-                    let input_hash = N::hash_psd8(&preimage)?;
+                    let input_hash = AleoNetwork::hash_psd8(&preimage)?;
 
                     // Add the input hash to the preimage.
                     message.push(input_hash);
@@ -144,9 +144,9 @@ impl<N: Network> Request<N> {
                     ensure!(matches!(input, Value::Plaintext(..)), "Expected a plaintext input");
 
                     // Construct the (console) input index as a field element.
-                    let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                    let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                     // Compute the input view key as `Hash(function ID || tvk || index)`.
-                    let input_view_key = N::hash_psd4(&[function_id, tvk, index])?;
+                    let input_view_key = AleoNetwork::hash_psd4(&[function_id, tvk, index])?;
                     // Compute the ciphertext.
                     let ciphertext = match &input {
                         Value::Plaintext(plaintext) => plaintext.encrypt_symmetric(input_view_key)?,
@@ -155,7 +155,7 @@ impl<N: Network> Request<N> {
                         Value::Future(..) => bail!("Expected a plaintext input, found a future input"),
                     };
                     // Hash the ciphertext to a field element.
-                    let input_hash = N::hash_psd8(&ciphertext.to_fields()?)?;
+                    let input_hash = AleoNetwork::hash_psd8(&ciphertext.to_fields()?)?;
 
                     // Add the input hash to the preimage.
                     message.push(input_hash);
@@ -175,19 +175,19 @@ impl<N: Network> Request<N> {
                     ensure!(**record.owner() == signer, "Input record for '{program_id}' must belong to the signer");
 
                     // Compute the record commitment.
-                    let commitment = record.to_commitment(&program_id, record_name)?;
+                    let commitment = record.to_commitment(&program_id, &record_name)?;
 
                     // Compute the generator `H` as `HashToGroup(commitment)`.
-                    let h = N::hash_to_group_psd2(&[N::serial_number_domain(), commitment])?;
+                    let h = AleoNetwork::hash_to_group_psd2(&[AleoNetwork::serial_number_domain(), commitment])?;
                     // Compute `h_r` as `r * H`.
                     let h_r = h * r;
                     // Compute `gamma` as `sk_sig * H`.
                     let gamma = h * sk_sig;
 
                     // Compute the `serial_number` from `gamma`.
-                    let serial_number = Record::<N, Plaintext<N>>::serial_number_from_gamma(&gamma, commitment)?;
+                    let serial_number = Record::<Plaintext>::serial_number_from_gamma(&gamma, commitment)?;
                     // Compute the tag.
-                    let tag = Record::<N, Plaintext<N>>::tag(sk_tag, commitment)?;
+                    let tag = Record::<Plaintext>::tag(sk_tag, commitment)?;
 
                     // Add (`H`, `r * H`, `gamma`, `tag`) to the preimage.
                     message.extend([h, h_r, gamma].iter().map(|point| point.to_x_coordinate()));
@@ -202,7 +202,7 @@ impl<N: Network> Request<N> {
                     ensure!(matches!(input, Value::Record(..)), "Expected a record input");
 
                     // Construct the (console) input index as a field element.
-                    let index = Field::from_u16(u16::try_from(index).or_halt_with::<N>("Input index exceeds u16"));
+                    let index = Field::from_u16(u16::try_from(index).or_halt_with("Input index exceeds u16"));
                     // Construct the preimage as `(function ID || input || tvk || index)`.
                     let mut preimage = Vec::new();
                     preimage.push(function_id);
@@ -210,7 +210,7 @@ impl<N: Network> Request<N> {
                     preimage.push(tvk);
                     preimage.push(index);
                     // Hash the input to a field element.
-                    let input_hash = N::hash_psd8(&preimage)?;
+                    let input_hash = AleoNetwork::hash_psd8(&preimage)?;
 
                     // Add the input hash to the preimage.
                     message.push(input_hash);
@@ -223,7 +223,7 @@ impl<N: Network> Request<N> {
         }
 
         // Compute `challenge` as `HashToScalar(r * G, pk_sig, pr_sig, signer, [tvk, tcm, function ID, input IDs])`.
-        let challenge = N::hash_to_scalar_psd8(&message)?;
+        let challenge = AleoNetwork::hash_to_scalar_psd8(&message)?;
         // Compute `response` as `r - challenge * sk_sig`.
         let response = r - challenge * sk_sig;
 

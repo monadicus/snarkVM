@@ -36,15 +36,15 @@ pub use snarkvm_console_types_field::Field;
 pub use snarkvm_console_types_group::Group;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Address<E: Environment> {
+pub struct Address {
     /// The underlying address.
-    address: Group<E>,
+    address: Group,
 }
 
-impl<E: Environment> AddressTrait for Address<E> {}
+impl AddressTrait for Address {}
 
-impl<E: Environment> Visibility for Address<E> {
-    type Boolean = Boolean<E>;
+impl Visibility for Address {
+    type Boolean = Boolean;
 
     /// Returns the number of field elements to encode `self`.
     fn size_in_fields(&self) -> Result<u16> {
@@ -52,9 +52,9 @@ impl<E: Environment> Visibility for Address<E> {
     }
 }
 
-impl<E: Environment> Address<E> {
+impl Address {
     /// Initializes an address from a group element.
-    pub const fn new(group: Group<E>) -> Self {
+    pub const fn new(group: Group) -> Self {
         Self { address: group }
     }
 
@@ -64,7 +64,7 @@ impl<E: Environment> Address<E> {
     }
 }
 
-impl<E: Environment> TypeName for Address<E> {
+impl TypeName for Address {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -72,8 +72,8 @@ impl<E: Environment> TypeName for Address<E> {
     }
 }
 
-impl<E: Environment> Deref for Address<E> {
-    type Target = Group<E>;
+impl Deref for Address {
+    type Target = Group;
 
     /// Returns the address as a group element.
     #[inline]

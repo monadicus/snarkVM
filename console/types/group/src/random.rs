@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment> Distribution<Group<E>> for Standard {
+impl Distribution<Group> for Standard {
     #[inline]
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Group<E> {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Group {
         Group::new(Uniform::rand(rng))
     }
 }
@@ -24,11 +24,8 @@ impl<E: Environment> Distribution<Group<E>> for Standard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
 
     use std::collections::HashSet;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -42,7 +39,7 @@ mod tests {
         // Note: This test technically has a `(1 + 2 + ... + ITERATIONS) / MODULUS` probability of being flaky.
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let group: Group<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let group: Group = Uniform::rand(&mut rng);
             assert!(!set.contains(&group));
 
             // Add the new random value to the set.

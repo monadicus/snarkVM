@@ -23,27 +23,35 @@ use core::fmt::{Debug, Display};
 
 /// An `ArrayType` defines the type and size of an array.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct ArrayType<N: Network> {
+pub struct ArrayType {
     /// The element type.
-    element_type: Box<PlaintextType<N>>,
+    element_type: Box<PlaintextType>,
     /// The length of the array.
-    length: U32<N>,
+    length: U32,
 }
 
-impl<N: Network> ArrayType<N> {
+impl ArrayType {
     /// Initializes a new multi-dimensional array type.
     /// Note that the dimensions must be specified from the outermost to the innermost.
-    pub fn new(plaintext_type: PlaintextType<N>, mut dimensions: Vec<U32<N>>) -> Result<Self> {
+    pub fn new(plaintext_type: PlaintextType, mut dimensions: Vec<U32>) -> Result<Self> {
         // Check that the number of dimensions are valid.
         ensure!(!dimensions.is_empty(), "An array must have at least one dimension");
-        ensure!(dimensions.len() <= N::MAX_DATA_DEPTH, "An array can have at most {} dimensions", N::MAX_DATA_DEPTH);
+        ensure!(
+            dimensions.len() <= AleoNetwork::MAX_DATA_DEPTH,
+            "An array can have at most {} dimensions",
+            AleoNetwork::MAX_DATA_DEPTH
+        );
         // Check that each dimension is valid.
         for length in &dimensions {
-            ensure!(**length as usize >= N::MIN_ARRAY_ELEMENTS, "An array must have {} element", N::MIN_ARRAY_ELEMENTS);
             ensure!(
-                **length as usize <= N::MAX_ARRAY_ELEMENTS,
+                **length as usize >= AleoNetwork::MIN_ARRAY_ELEMENTS,
+                "An array must have {} element",
+                AleoNetwork::MIN_ARRAY_ELEMENTS
+            );
+            ensure!(
+                **length as usize <= AleoNetwork::MAX_ARRAY_ELEMENTS,
                 "An array can contain {} elements",
-                N::MAX_ARRAY_ELEMENTS
+                AleoNetwork::MAX_ARRAY_ELEMENTS
             );
         }
         // Construct the array type.
@@ -56,20 +64,20 @@ impl<N: Network> ArrayType<N> {
     }
 }
 
-impl<N: Network> ArrayType<N> {
+impl ArrayType {
     /// Returns the next element type.
     /// In the case of a one-dimensional array, this will return the element type of the array.
     /// In the case of a multi-dimensional array, this will return the element type of the **outermost** array.
-    pub const fn next_element_type(&self) -> &PlaintextType<N> {
+    pub const fn next_element_type(&self) -> &PlaintextType {
         &self.element_type
     }
 
     /// Returns the base element type.
     /// In the case of a one-dimensional array, this will return the element type of the array.
     /// In the case of a multi-dimensional array, this will return the element type of the **innermost** array.
-    pub fn base_element_type(&self) -> &PlaintextType<N> {
+    pub fn base_element_type(&self) -> &PlaintextType {
         let mut element_type = self.next_element_type();
-        // Note that this `while` loop must terminate because the number of dimensions of `ArrayType` is checked to be less then N::MAX_DATA_DEPTH.
+        // Note that this `while` loop must terminate because the number of dimensions of `ArrayType` is checked to be less then AleoNetwork::MAX_DATA_DEPTH.
         while let PlaintextType::Array(array_type) = element_type {
             element_type = array_type.next_element_type();
         }
@@ -82,7 +90,7 @@ impl<N: Network> ArrayType<N> {
     }
 
     /// Returns the length of the array.
-    pub const fn length(&self) -> &U32<N> {
+    pub const fn length(&self) -> &U32 {
         &self.length
     }
 }

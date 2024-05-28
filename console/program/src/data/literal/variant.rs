@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Literal<N> {
+impl Literal {
     /// Returns the variant of the literal.
     pub fn variant(&self) -> u8 {
         match self {

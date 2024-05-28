@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal for Scalar<E> {
-    type Output = Boolean<E>;
+impl Equal for Scalar {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -28,8 +28,8 @@ impl<E: Environment> Equal for Scalar<E> {
     }
 }
 
-impl<E: Environment> Compare for Scalar<E> {
-    type Output = Boolean<E>;
+impl Compare for Scalar {
+    type Output = Boolean;
 
     /// Returns `true` if `self` is less than `other`.
     fn is_less_than(&self, other: &Self) -> Self::Output {
@@ -52,8 +52,8 @@ impl<E: Environment> Compare for Scalar<E> {
     }
 }
 
-impl<E: Environment> Ternary for Scalar<E> {
-    type Boolean = Boolean<E>;
+impl Ternary for Scalar {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.

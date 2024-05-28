@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBits for ComputeKey<N> {
+impl ToBits for ComputeKey {
     /// Returns the little-endian bits of the compute key.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         // Write the `pk_sig` bits.
@@ -35,9 +35,6 @@ impl<N: Network> ToBits for ComputeKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1_000;
 
@@ -47,10 +44,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random compute_key.
-            let compute_key = ComputeKey::<CurrentNetwork>::try_from(PrivateKey::new(rng).unwrap()).unwrap();
+            let compute_key = ComputeKey::try_from(PrivateKey::new(rng).unwrap()).unwrap();
 
             let candidate = compute_key.to_bits_le();
-            assert_eq!(ComputeKey::<CurrentNetwork>::size_in_bits(), candidate.len());
+            assert_eq!(ComputeKey::size_in_bits(), candidate.len());
 
             // Construct the expected bits.
             let mut expected = Vec::new();
@@ -69,10 +66,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random compute_key.
-            let compute_key = ComputeKey::<CurrentNetwork>::try_from(PrivateKey::new(rng).unwrap()).unwrap();
+            let compute_key = ComputeKey::try_from(PrivateKey::new(rng).unwrap()).unwrap();
 
             let candidate = compute_key.to_bits_be();
-            assert_eq!(ComputeKey::<CurrentNetwork>::size_in_bits(), candidate.len());
+            assert_eq!(ComputeKey::size_in_bits(), candidate.len());
 
             // Construct the expected bits.
             let mut expected = Vec::new();

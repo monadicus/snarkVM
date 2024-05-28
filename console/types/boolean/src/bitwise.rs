@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal for Boolean<E> {
-    type Output = Boolean<E>;
+impl Equal for Boolean {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -28,8 +28,8 @@ impl<E: Environment> Equal for Boolean<E> {
     }
 }
 
-impl<E: Environment> Not for Boolean<E> {
-    type Output = Boolean<E>;
+impl Not for Boolean {
+    type Output = Boolean;
 
     /// Returns the `negation` of `self`.
     #[inline]
@@ -38,8 +38,8 @@ impl<E: Environment> Not for Boolean<E> {
     }
 }
 
-impl<E: Environment> BitAnd<Boolean<E>> for Boolean<E> {
-    type Output = Boolean<E>;
+impl BitAnd<Boolean> for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `AND`` of `self` and `other`.
     #[inline]
@@ -48,17 +48,17 @@ impl<E: Environment> BitAnd<Boolean<E>> for Boolean<E> {
     }
 }
 
-impl<E: Environment> BitAnd<&Boolean<E>> for Boolean<E> {
-    type Output = Boolean<E>;
+impl BitAnd<&Boolean> for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `AND` of `self` and `other`.
     #[inline]
-    fn bitand(self, other: &Boolean<E>) -> Self::Output {
+    fn bitand(self, other: &Boolean) -> Self::Output {
         Boolean::new(self.boolean & other.boolean)
     }
 }
 
-impl<E: Environment> BitAndAssign for Boolean<E> {
+impl BitAndAssign for Boolean {
     /// Sets `self` as the bitwise `AND` of `self` and `other`.
     #[inline]
     fn bitand_assign(&mut self, other: Self) {
@@ -66,8 +66,8 @@ impl<E: Environment> BitAndAssign for Boolean<E> {
     }
 }
 
-impl<E: Environment> BitOr for Boolean<E> {
-    type Output = Boolean<E>;
+impl BitOr for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `OR` of `self` and `other`.
     #[inline]
@@ -76,17 +76,17 @@ impl<E: Environment> BitOr for Boolean<E> {
     }
 }
 
-impl<E: Environment> BitOr<&Boolean<E>> for Boolean<E> {
-    type Output = Boolean<E>;
+impl BitOr<&Boolean> for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `OR` of `self` and `other`.
     #[inline]
-    fn bitor(self, other: &Boolean<E>) -> Self::Output {
+    fn bitor(self, other: &Boolean) -> Self::Output {
         Boolean::new(self.boolean | other.boolean)
     }
 }
 
-impl<E: Environment> BitOrAssign for Boolean<E> {
+impl BitOrAssign for Boolean {
     /// Sets `self` as the bitwise `OR` of `self` and `other`.
     #[inline]
     fn bitor_assign(&mut self, other: Self) {
@@ -94,8 +94,8 @@ impl<E: Environment> BitOrAssign for Boolean<E> {
     }
 }
 
-impl<E: Environment> BitXor for Boolean<E> {
-    type Output = Boolean<E>;
+impl BitXor for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `XOR` of `self` and `other`.
     #[inline]
@@ -104,17 +104,17 @@ impl<E: Environment> BitXor for Boolean<E> {
     }
 }
 
-impl<E: Environment> BitXor<&Boolean<E>> for Boolean<E> {
-    type Output = Boolean<E>;
+impl BitXor<&Boolean> for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `XOR` of `self` and `other`.
     #[inline]
-    fn bitxor(self, other: &Boolean<E>) -> Self::Output {
+    fn bitxor(self, other: &Boolean) -> Self::Output {
         Boolean::new(self.boolean ^ other.boolean)
     }
 }
 
-impl<E: Environment> BitXorAssign for Boolean<E> {
+impl BitXorAssign for Boolean {
     /// Sets `self` as the bitwise `XOR` of `self` and `other`.
     #[inline]
     fn bitxor_assign(&mut self, other: Self) {
@@ -122,8 +122,8 @@ impl<E: Environment> BitXorAssign for Boolean<E> {
     }
 }
 
-impl<E: Environment> Nand for Boolean<E> {
-    type Output = Boolean<E>;
+impl Nand for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `NAND` of `self` and `other`.
     #[inline]
@@ -132,8 +132,8 @@ impl<E: Environment> Nand for Boolean<E> {
     }
 }
 
-impl<E: Environment> Nor for Boolean<E> {
-    type Output = Boolean<E>;
+impl Nor for Boolean {
+    type Output = Boolean;
 
     /// Returns the bitwise `NOR` of `self` and `other`.
     #[inline]
@@ -142,8 +142,8 @@ impl<E: Environment> Nor for Boolean<E> {
     }
 }
 
-impl<E: Environment> Ternary for Boolean<E> {
-    type Boolean = Boolean<E>;
+impl Ternary for Boolean {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.

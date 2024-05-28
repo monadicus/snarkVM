@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal for StringType<E> {
-    type Output = Boolean<E>;
+impl Equal for StringType {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -28,8 +28,8 @@ impl<E: Environment> Equal for StringType<E> {
     }
 }
 
-impl<E: Environment> Ternary for StringType<E> {
-    type Boolean = Boolean<E>;
+impl Ternary for StringType {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.

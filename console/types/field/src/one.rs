@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment> One for Field<E> {
+impl One for Field {
     /// Returns the `1` element of the field.
     fn one() -> Self {
-        Self::new(E::Field::one())
+        Self::new(ConsoleField::one())
     }
 
     /// Returns `true` if the element is one.
@@ -29,15 +29,12 @@ impl<E: Environment> One for Field<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 100;
 
     #[test]
     fn test_one() {
-        let one = Field::<CurrentEnvironment>::one();
+        let one = Field::one();
 
         for (index, bit) in one.to_bits_le().iter().enumerate() {
             match index == 0 {
@@ -49,13 +46,13 @@ mod tests {
 
     #[test]
     fn test_is_one() {
-        assert!(Field::<CurrentEnvironment>::one().is_one());
+        assert!(Field::one().is_one());
 
         let mut rng = TestRng::default();
 
         // Note: This test technically has a `1 / MODULUS` probability of being flaky.
         for _ in 0..ITERATIONS {
-            let field: Field<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let field: Field = Uniform::rand(&mut rng);
             assert!(!field.is_one());
         }
     }

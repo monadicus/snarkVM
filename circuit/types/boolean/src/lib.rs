@@ -105,7 +105,7 @@ impl<E: Environment> Parser for Boolean<E> {
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         // Parse the boolean from the string.
-        let (string, boolean) = console::Boolean::<E::Network>::parse(string)?;
+        let (string, boolean) = console::Boolean::parse(string)?;
         // Parse the mode from the string.
         let (string, mode) = opt(pair(tag("."), Mode::parse))(string)?;
 
@@ -140,7 +140,7 @@ impl<E: Environment> TypeName for Boolean<E> {
     /// Returns the type name of the circuit as a string.
     #[inline]
     fn type_name() -> &'static str {
-        console::Boolean::<E::Network>::type_name()
+        console::Boolean::type_name()
     }
 }
 

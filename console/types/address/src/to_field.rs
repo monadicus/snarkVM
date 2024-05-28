@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> ToField for Address<E> {
-    type Field = Field<E>;
+impl ToField for Address {
+    type Field = Field;
 
     /// Returns the address as a field element.
     fn to_field(&self) -> Result<Self::Field> {
@@ -26,9 +26,6 @@ impl<E: Environment> ToField for Address<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -38,7 +35,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let address = Address::<CurrentEnvironment>::rand(&mut rng);
+            let address = Address::rand(&mut rng);
 
             let candidate = address.to_field()?;
 

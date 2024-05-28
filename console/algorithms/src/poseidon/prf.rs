@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const RATE: usize> PRF for Poseidon<E, RATE> {
-    type Input = Field<E>;
-    type Output = Field<E>;
-    type Seed = Field<E>;
+impl<const RATE: usize> PRF for Poseidon<RATE> {
+    type Input = Field;
+    type Output = Field;
+    type Seed = Field;
 
     #[inline]
     fn prf(&self, seed: &Self::Seed, input: &[Self::Input]) -> Result<Self::Output> {

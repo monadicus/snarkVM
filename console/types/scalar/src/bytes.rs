@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> FromBytes for Scalar<E> {
+impl FromBytes for Scalar {
     /// Reads the scalar from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -22,7 +22,7 @@ impl<E: Environment> FromBytes for Scalar<E> {
     }
 }
 
-impl<E: Environment> ToBytes for Scalar<E> {
+impl ToBytes for Scalar {
     /// Writes the scalar to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
@@ -33,9 +33,6 @@ impl<E: Environment> ToBytes for Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -45,12 +42,12 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new scalar.
-            let expected = Scalar::<CurrentEnvironment>::new(Uniform::rand(&mut rng));
+            let expected = Scalar::new(Uniform::rand(&mut rng));
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, Scalar::read_le(&expected_bytes[..])?);
-            assert!(Scalar::<CurrentEnvironment>::read_le(&expected_bytes[1..]).is_err());
+            assert!(Scalar::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for Request<N> {
+impl FromStr for Request {
     type Err = Error;
 
     /// Initializes the request from a JSON-string.
@@ -23,14 +23,14 @@ impl<N: Network> FromStr for Request<N> {
     }
 }
 
-impl<N: Network> Debug for Request<N> {
+impl Debug for Request {
     /// Prints the request as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Request<N> {
+impl Display for Request {
     /// Displays the request as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", serde_json::to_string(self).map_err::<fmt::Error, _>(ser::Error::custom)?)

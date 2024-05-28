@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Parser for Boolean<E> {
+impl Parser for Boolean {
     /// Parses a string into a boolean.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -25,7 +25,7 @@ impl<E: Environment> Parser for Boolean<E> {
     }
 }
 
-impl<E: Environment> FromStr for Boolean<E> {
+impl FromStr for Boolean {
     type Err = Error;
 
     /// Parses a string into a boolean.
@@ -43,13 +43,13 @@ impl<E: Environment> FromStr for Boolean<E> {
     }
 }
 
-impl<E: Environment> Debug for Boolean<E> {
+impl Debug for Boolean {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<E: Environment> Display for Boolean<E> {
+impl Display for Boolean {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", self.boolean)
     }
@@ -58,19 +58,16 @@ impl<E: Environment> Display for Boolean<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     #[test]
     fn test_parse() -> Result<()> {
         // Ensure type and empty value fails.
-        assert!(Boolean::<CurrentEnvironment>::parse(Boolean::<CurrentEnvironment>::type_name()).is_err());
-        assert!(Boolean::<CurrentEnvironment>::parse("").is_err());
+        assert!(Boolean::parse(Boolean::type_name()).is_err());
+        assert!(Boolean::parse("").is_err());
 
         for boolean in &[true, false] {
             let expected = format!("{boolean}");
-            let (remainder, candidate) = Boolean::<CurrentEnvironment>::parse(&expected).unwrap();
+            let (remainder, candidate) = Boolean::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!("", remainder);
         }
@@ -81,7 +78,7 @@ mod tests {
     fn test_display() {
         /// Attempts to construct a boolean from the given element,
         /// format it in display mode, and recover a boolean from it.
-        fn check_display<E: Environment>(element: bool) {
+        fn check_display(element: bool) {
             let candidate = Boolean::<E>::new(element);
             assert_eq!(format!("{element}"), format!("{candidate}"));
 
@@ -89,21 +86,21 @@ mod tests {
             assert_eq!(candidate, candidate_recovered);
         }
 
-        check_display::<CurrentEnvironment>(false);
-        check_display::<CurrentEnvironment>(true);
+        check_display(false);
+        check_display(true);
     }
 
     #[test]
     fn test_display_false() {
         // Constant
-        let candidate = Boolean::<CurrentEnvironment>::new(false);
+        let candidate = Boolean::new(false);
         assert_eq!("false", &format!("{candidate}"));
     }
 
     #[test]
     fn test_display_true() {
         // Constant
-        let candidate = Boolean::<CurrentEnvironment>::new(true);
+        let candidate = Boolean::new(true);
         assert_eq!("true", &format!("{candidate}"));
     }
 }

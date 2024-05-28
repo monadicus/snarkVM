@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for StructType<N> {
+impl Parser for StructType {
     /// Parses a struct as:
     /// ```text
     ///   struct message:
@@ -24,7 +24,7 @@ impl<N: Network> Parser for StructType<N> {
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         /// Parses a string into a tuple.
-        fn parse_tuple<N: Network>(string: &str) -> ParserResult<(Identifier<N>, PlaintextType<N>)> {
+        fn parse_tuple(string: &str) -> ParserResult<(Identifier, PlaintextType)> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the identifier from the string.
@@ -64,7 +64,7 @@ impl<N: Network> Parser for StructType<N> {
                 return Err(error(format!("Duplicate identifier found in struct '{name}'")));
             }
             // Ensure the number of members is within the maximum limit.
-            if members.len() > N::MAX_STRUCT_ENTRIES {
+            if members.len() > AleoNetwork::MAX_STRUCT_ENTRIES {
                 return Err(error("Failed to parse struct: too many members"));
             }
             Ok(members)
@@ -74,7 +74,7 @@ impl<N: Network> Parser for StructType<N> {
     }
 }
 
-impl<N: Network> FromStr for StructType<N> {
+impl FromStr for StructType {
     type Err = Error;
 
     /// Returns a struct from a string literal.
@@ -91,7 +91,7 @@ impl<N: Network> FromStr for StructType<N> {
     }
 }
 
-impl<N: Network> Debug for StructType<N> {
+impl Debug for StructType {
     /// Prints the struct type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
@@ -99,7 +99,7 @@ impl<N: Network> Debug for StructType<N> {
 }
 
 #[allow(clippy::format_push_string)]
-impl<N: Network> Display for StructType<N> {
+impl Display for StructType {
     /// Prints the struct type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut output = format!("{} {}:\n", Self::type_name(), self.name);

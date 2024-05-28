@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for Scalar<E> {
+impl ToBits for Scalar {
     /// Outputs the little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         (**self).write_bits_le(vec);
@@ -29,9 +29,6 @@ impl<E: Environment> ToBits for Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -41,10 +38,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let scalar: Scalar<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let scalar: Scalar = Uniform::rand(&mut rng);
 
             let candidate = scalar.to_bits_le();
-            assert_eq!(Scalar::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Scalar::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*scalar).to_bits_le().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);
@@ -58,10 +55,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let scalar: Scalar<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let scalar: Scalar = Uniform::rand(&mut rng);
 
             let candidate = scalar.to_bits_be();
-            assert_eq!(Scalar::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Scalar::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*scalar).to_bits_be().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);

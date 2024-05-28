@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<N: Network> Record<N, Ciphertext<N>> {
+impl Record<Ciphertext> {
     /// Decrypts `self` into plaintext using the given view key.
-    pub fn is_owner(&self, view_key: &ViewKey<N>) -> bool {
+    pub fn is_owner(&self, view_key: &ViewKey) -> bool {
         // Compute the address.
         let address = view_key.to_address();
         // Check if the address is the owner.
@@ -24,7 +24,7 @@ impl<N: Network> Record<N, Ciphertext<N>> {
     }
 
     /// Decrypts `self` into plaintext using the x-coordinate of the address corresponding to the given view key.
-    pub fn is_owner_with_address_x_coordinate(&self, view_key: &ViewKey<N>, address_x_coordinate: &Field<N>) -> bool {
+    pub fn is_owner_with_address_x_coordinate(&self, view_key: &ViewKey, address_x_coordinate: &Field) -> bool {
         // In debug mode, check that the address corresponds to the given view key.
         debug_assert_eq!(
             &view_key.to_address().to_x_coordinate(),
@@ -40,7 +40,7 @@ impl<N: Network> Record<N, Ciphertext<N>> {
                 // Compute the record view key.
                 let record_view_key = (self.nonce * **view_key).to_x_coordinate();
                 // Compute the 0th randomizer.
-                let randomizer = N::hash_many_psd8(&[N::encryption_domain(), record_view_key], 1);
+                let randomizer = AleoNetwork::hash_many_psd8(&[AleoNetwork::encryption_domain(), record_view_key], 1);
                 // Decrypt the owner.
                 let owner_x = ciphertext[0] - randomizer[0];
                 // Compare the x coordinates of computed and supplied addresses.
@@ -62,18 +62,11 @@ mod tests {
     use super::*;
     use crate::Literal;
     use snarkvm_console_account::PrivateKey;
-    use snarkvm_console_network::MainnetV0;
     use snarkvm_console_types::Field;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1_000;
 
-    fn check_is_owner<N: Network>(
-        view_key: ViewKey<N>,
-        owner: Owner<N, Plaintext<N>>,
-        rng: &mut TestRng,
-    ) -> Result<()> {
+    fn check_is_owner(view_key: ViewKey, owner: Owner<Plaintext>, rng: &mut TestRng) -> Result<()> {
         // Prepare the record.
         let randomizer = Scalar::rand(rng);
         let record = Record {
@@ -92,7 +85,7 @@ mod tests {
         assert!(ciphertext.is_owner(&view_key));
 
         // Sample a random view key and address.
-        let private_key = PrivateKey::<N>::new(rng)?;
+        let private_key = PrivateKey::new(rng)?;
         let view_key = ViewKey::try_from(&private_key)?;
 
         // Ensure the random address is not the owner.
@@ -107,17 +100,17 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a view key and address.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let view_key = ViewKey::try_from(&private_key)?;
             let address = Address::try_from(&private_key)?;
 
             // Public owner.
             let owner = Owner::Public(address);
-            check_is_owner::<CurrentNetwork>(view_key, owner, &mut rng)?;
+            check_is_owner(view_key, owner, &mut rng)?;
 
             // Private owner.
             let owner = Owner::Private(Plaintext::from(Literal::Address(address)));
-            check_is_owner::<CurrentNetwork>(view_key, owner, &mut rng)?;
+            check_is_owner(view_key, owner, &mut rng)?;
         }
         Ok(())
     }

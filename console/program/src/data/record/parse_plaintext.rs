@@ -14,13 +14,13 @@
 
 use super::*;
 
-impl<N: Network> Parser for Record<N, Plaintext<N>> {
+impl Parser for Record<Plaintext> {
     /// Parses a string as a record: `{ owner: address, identifier_0: entry_0, ..., identifier_n: entry_n, _nonce: field }`.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         /// Parses a sanitized pair: `identifier: entry`.
         #[allow(clippy::type_complexity)]
-        fn parse_pair<N: Network>(string: &str) -> ParserResult<(Identifier<N>, Entry<N, Plaintext<N>>)> {
+        fn parse_pair(string: &str) -> ParserResult<(Identifier, Entry<Plaintext>)> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the identifier from the string.
@@ -73,7 +73,7 @@ impl<N: Network> Parser for Record<N, Plaintext<N>> {
                 return Err(error("Duplicate entry type found in record"));
             }
             // Ensure the number of entries is within the maximum limit.
-            match entries.len() <= N::MAX_DATA_ENTRIES {
+            match entries.len() <= AleoNetwork::MAX_DATA_ENTRIES {
                 true => Ok(entries),
                 false => Err(error(format!("Found a record that exceeds size ({})", entries.len()))),
             }
@@ -106,7 +106,7 @@ impl<N: Network> Parser for Record<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network> FromStr for Record<N, Plaintext<N>> {
+impl FromStr for Record<Plaintext> {
     type Err = Error;
 
     /// Returns a record from a string literal.
@@ -123,21 +123,21 @@ impl<N: Network> FromStr for Record<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network> Debug for Record<N, Plaintext<N>> {
+impl Debug for Record<Plaintext> {
     /// Prints the record as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Record<N, Plaintext<N>> {
+impl Display for Record<Plaintext> {
     /// Prints the record as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         self.fmt_internal(f, 0)
     }
 }
 
-impl<N: Network> Record<N, Plaintext<N>> {
+impl Record<Plaintext> {
     /// Prints the record with the given indentation depth.
     fn fmt_internal(&self, f: &mut Formatter, depth: usize) -> fmt::Result {
         /// The number of spaces to indent.

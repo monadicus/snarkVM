@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Register<N> {
+impl Serialize for Register {
     /// Serializes the register into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Register<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Register<N> {
+impl<'de> Deserialize<'de> for Register {
     /// Deserializes the register from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, N: Network> Deserialize<'de> for Register<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     fn check_serde_json<
         T: Serialize + for<'a> Deserialize<'a> + Debug + Display + PartialEq + Eq + FromStr + ToBytes + FromBytes,
@@ -74,26 +71,26 @@ mod tests {
     #[test]
     fn test_serde_json() {
         for i in 0..1000 {
-            check_serde_json(Register::<CurrentNetwork>::from_str(&format!("r{i}")).unwrap());
-            check_serde_json(Register::<CurrentNetwork>::from_str(&format!("r{i}.a")).unwrap());
-            check_serde_json(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b")).unwrap());
-            check_serde_json(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b.c")).unwrap());
-            check_serde_json(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b.c.e")).unwrap());
-            check_serde_json(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b.c.e.f")).unwrap());
-            check_serde_json(Register::<CurrentNetwork>::from_str(&format!("r{i}.hello_world_foo_bar")).unwrap());
+            check_serde_json(Register::from_str(&format!("r{i}")).unwrap());
+            check_serde_json(Register::from_str(&format!("r{i}.a")).unwrap());
+            check_serde_json(Register::from_str(&format!("r{i}.a.b")).unwrap());
+            check_serde_json(Register::from_str(&format!("r{i}.a.b.c")).unwrap());
+            check_serde_json(Register::from_str(&format!("r{i}.a.b.c.e")).unwrap());
+            check_serde_json(Register::from_str(&format!("r{i}.a.b.c.e.f")).unwrap());
+            check_serde_json(Register::from_str(&format!("r{i}.hello_world_foo_bar")).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for i in 0..1000 {
-            check_bincode(Register::<CurrentNetwork>::from_str(&format!("r{i}")).unwrap());
-            check_bincode(Register::<CurrentNetwork>::from_str(&format!("r{i}.a")).unwrap());
-            check_bincode(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b")).unwrap());
-            check_bincode(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b.c")).unwrap());
-            check_bincode(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b.c.e")).unwrap());
-            check_bincode(Register::<CurrentNetwork>::from_str(&format!("r{i}.a.b.c.e.f")).unwrap());
-            check_bincode(Register::<CurrentNetwork>::from_str(&format!("r{i}.hello_world_foo_bar")).unwrap());
+            check_bincode(Register::from_str(&format!("r{i}")).unwrap());
+            check_bincode(Register::from_str(&format!("r{i}.a")).unwrap());
+            check_bincode(Register::from_str(&format!("r{i}.a.b")).unwrap());
+            check_bincode(Register::from_str(&format!("r{i}.a.b.c")).unwrap());
+            check_bincode(Register::from_str(&format!("r{i}.a.b.c.e")).unwrap());
+            check_bincode(Register::from_str(&format!("r{i}.a.b.c.e.f")).unwrap());
+            check_bincode(Register::from_str(&format!("r{i}.hello_world_foo_bar")).unwrap());
         }
     }
 }

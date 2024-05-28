@@ -15,47 +15,47 @@
 use super::*;
 
 #[cfg(feature = "private_key")]
-impl<N: Network> TryFrom<PrivateKey<N>> for ComputeKey<N> {
+impl TryFrom<PrivateKey> for ComputeKey {
     type Error = Error;
 
     /// Derives the account compute key from an account private key.
-    fn try_from(private_key: PrivateKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(private_key: PrivateKey) -> Result<Self, Self::Error> {
         Self::try_from(&private_key)
     }
 }
 
 #[cfg(feature = "private_key")]
-impl<N: Network> TryFrom<&PrivateKey<N>> for ComputeKey<N> {
+impl TryFrom<&PrivateKey> for ComputeKey {
     type Error = Error;
 
     /// Derives the account compute key from an account private key.
-    fn try_from(private_key: &PrivateKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(private_key: &PrivateKey) -> Result<Self, Self::Error> {
         // Compute pk_sig := G^sk_sig.
-        let pk_sig = N::g_scalar_multiply(&private_key.sk_sig());
+        let pk_sig = AleoNetwork::g_scalar_multiply(&private_key.sk_sig());
         // Compute pr_sig := G^r_sig.
-        let pr_sig = N::g_scalar_multiply(&private_key.r_sig());
+        let pr_sig = AleoNetwork::g_scalar_multiply(&private_key.r_sig());
         // Output the compute key.
         Self::try_from((pk_sig, pr_sig))
     }
 }
 
-impl<N: Network> TryFrom<(Group<N>, Group<N>)> for ComputeKey<N> {
+impl TryFrom<(Group, Group)> for ComputeKey {
     type Error = Error;
 
     /// Derives the account compute key from a tuple `(pk_sig, pr_sig)`.
-    fn try_from((pk_sig, pr_sig): (Group<N>, Group<N>)) -> Result<Self> {
+    fn try_from((pk_sig, pr_sig): (Group, Group)) -> Result<Self> {
         // Compute sk_prf := HashToScalar(pk_sig || pr_sig).
-        let sk_prf = N::hash_to_scalar_psd4(&[pk_sig.to_x_coordinate(), pr_sig.to_x_coordinate()])?;
+        let sk_prf = AleoNetwork::hash_to_scalar_psd4(&[pk_sig.to_x_coordinate(), pr_sig.to_x_coordinate()])?;
         // Output the compute key.
         Ok(Self { pk_sig, pr_sig, sk_prf })
     }
 }
 
-impl<N: Network> TryFrom<&(Group<N>, Group<N>)> for ComputeKey<N> {
+impl TryFrom<&(Group, Group)> for ComputeKey {
     type Error = Error;
 
     /// Derives the account compute key from a tuple `(pk_sig, pr_sig)`.
-    fn try_from((pk_sig, pr_sig): &(Group<N>, Group<N>)) -> Result<Self> {
+    fn try_from((pk_sig, pr_sig): &(Group, Group)) -> Result<Self> {
         Self::try_from((*pk_sig, *pr_sig))
     }
 }
@@ -63,7 +63,7 @@ impl<N: Network> TryFrom<&(Group<N>, Group<N>)> for ComputeKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
+    use snarkvm_console_AleoNetwork::MainnetV0;
 
     type CurrentNetwork = MainnetV0;
 
@@ -80,7 +80,7 @@ mod tests {
 
             // Check that sk_prf matches.
             // Compute sk_prf := HashToScalar(pk_sig || pr_sig).
-            let candidate_sk_prf = CurrentNetwork::hash_to_scalar_psd4(&[
+            let candidate_sk_prf = CurrentAleoNetwork::hash_to_scalar_psd4(&[
                 candidate.pk_sig().to_x_coordinate(),
                 candidate.pr_sig().to_x_coordinate(),
             ])?;

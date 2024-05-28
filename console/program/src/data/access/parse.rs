@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for Access<N> {
+impl Parser for Access {
     fn parse(string: &str) -> ParserResult<Self> {
         alt((
             map(pair(tag("["), pair(U32::parse, tag("]"))), |(_, (index, _))| Self::Index(index)),
@@ -23,7 +23,7 @@ impl<N: Network> Parser for Access<N> {
     }
 }
 
-impl<N: Network> FromStr for Access<N> {
+impl FromStr for Access {
     type Err = Error;
 
     /// Parses an identifier into an access.
@@ -41,14 +41,14 @@ impl<N: Network> FromStr for Access<N> {
     }
 }
 
-impl<N: Network> Debug for Access<N> {
+impl Debug for Access {
     /// Prints the access as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Access<N> {
+impl Display for Access {
     /// Prints the access as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

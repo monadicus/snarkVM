@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_BITS: u8> CommitUncompressed for Pedersen<E, NUM_BITS> {
+impl<const NUM_BITS: u8> CommitUncompressed for Pedersen<NUM_BITS> {
     type Input = bool;
-    type Output = Group<E>;
-    type Randomizer = Scalar<E>;
+    type Output = Group;
+    type Randomizer = Scalar;
 
     /// Returns the Pedersen commitment of the given input and randomizer as a group element.
     fn commit_uncompressed(&self, input: &[Self::Input], randomizer: &Self::Randomizer) -> Result<Self::Output> {

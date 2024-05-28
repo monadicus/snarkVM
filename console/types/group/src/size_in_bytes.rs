@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBytes for Group<E> {
+impl SizeInBytes for Group {
     /// Returns the group size in bytes.
     #[inline]
     fn size_in_bytes() -> usize {
         // As we serialize into the affine **x-coordinate**, we only require `Field::size_in_bits()`.
-        Field::<E>::size_in_bytes()
+        Field::size_in_bytes()
     }
 }

@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment> Elligator2<E> {
+impl Elligator2 {
     /// Returns the encoded affine group element and sign, given a field element.
-    pub fn encode(input: &Field<E>) -> Result<(Group<E>, bool)> {
+    pub fn encode(input: &Field) -> Result<(Group, bool)> {
         // Compute the encoding of the input field element.
         let (encoding, sign_high) = Self::encode_without_cofactor_clear(input)?;
 
@@ -29,14 +29,11 @@ impl<E: Environment> Elligator2<E> {
     }
 
     /// Returns the encoded affine group element and sign, given a field element.
-    pub(crate) fn encode_without_cofactor_clear(input: &Field<E>) -> Result<(Group<E>, bool)> {
-        ensure!(
-            Group::<E>::EDWARDS_D.legendre().is_qnr(),
-            "D on the twisted Edwards curve must be a quadratic nonresidue"
-        );
+    pub(crate) fn encode_without_cofactor_clear(input: &Field) -> Result<(Group, bool)> {
+        ensure!(Group::EDWARDS_D.legendre().is_qnr(), "D on the twisted Edwards curve must be a quadratic nonresidue");
         ensure!(!input.is_zero(), "Inputs to Elligator2 must be nonzero (inverses will fail)");
 
-        let one = Field::<E>::one();
+        let one = Field::one();
 
         // Store the sign of the input, to be returned with the output.
         let sign_high = input > &input.neg();
@@ -44,7 +41,7 @@ impl<E: Environment> Elligator2<E> {
         // Compute the mapping from Fq to E(Fq) as a Montgomery element (u, v).
         let (u, v) = {
             // Compute the coefficients for the Weierstrass form: y^2 == x^3 + A * x^2 + B * x.
-            let (a, b) = match Group::<E>::MONTGOMERY_B.inverse() {
+            let (a, b) = match Group::MONTGOMERY_B.inverse() {
                 Ok(b_inverse) => (Group::MONTGOMERY_A * b_inverse, b_inverse.square()),
                 Err(_) => bail!("Montgomery B must be invertible in order to use Elligator2"),
             };
@@ -73,7 +70,7 @@ impl<E: Environment> Elligator2<E> {
 
             // Let x = ev - ((1 - e) * A/2).
             let x = match e {
-                LegendreSymbol::Zero => -a * Field::<E>::half(),
+                LegendreSymbol::Zero => -a * Field::half(),
                 LegendreSymbol::QuadraticResidue => v,
                 LegendreSymbol::QuadraticNonResidue => -v - a,
             };
@@ -88,7 +85,7 @@ impl<E: Environment> Elligator2<E> {
                 rhs.even_square_root().map_err(|_| anyhow!("Elligator2 failed: even_sqrt(x^3 + Ax^2 + Bx) failed"))?;
 
             let y = match e {
-                LegendreSymbol::Zero => Field::<E>::zero(),
+                LegendreSymbol::Zero => Field::zero(),
                 LegendreSymbol::QuadraticResidue => -value,
                 LegendreSymbol::QuadraticNonResidue => value,
             };

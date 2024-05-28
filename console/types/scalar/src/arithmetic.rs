@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Neg for Scalar<E> {
-    type Output = Scalar<E>;
+impl Neg for Scalar {
+    type Output = Scalar;
 
     /// Returns the `negation` of `self`.
     #[inline]
@@ -24,184 +24,184 @@ impl<E: Environment> Neg for Scalar<E> {
     }
 }
 
-impl<E: Environment> Add<Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Add<Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: Scalar<E>) -> Self::Output {
+    fn add(self, other: Scalar) -> Self::Output {
         Scalar::new(self.scalar + other.scalar)
     }
 }
 
-impl<E: Environment> Add<&Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Add<&Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: &Scalar<E>) -> Self::Output {
+    fn add(self, other: &Scalar) -> Self::Output {
         Scalar::new(self.scalar + other.scalar)
     }
 }
 
-impl<E: Environment> AddAssign<Scalar<E>> for Scalar<E> {
+impl AddAssign<Scalar> for Scalar {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: Scalar<E>) {
+    fn add_assign(&mut self, other: Scalar) {
         self.scalar += other.scalar;
     }
 }
 
-impl<E: Environment> AddAssign<&Scalar<E>> for Scalar<E> {
+impl AddAssign<&Scalar> for Scalar {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: &Scalar<E>) {
+    fn add_assign(&mut self, other: &Scalar) {
         self.scalar += other.scalar;
     }
 }
 
-impl<E: Environment> Sub<Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Sub<Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: Scalar<E>) -> Self::Output {
+    fn sub(self, other: Scalar) -> Self::Output {
         Scalar::new(self.scalar - other.scalar)
     }
 }
 
-impl<E: Environment> Sub<&Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Sub<&Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: &Scalar<E>) -> Self::Output {
+    fn sub(self, other: &Scalar) -> Self::Output {
         Scalar::new(self.scalar - other.scalar)
     }
 }
 
-impl<E: Environment> SubAssign<Scalar<E>> for Scalar<E> {
+impl SubAssign<Scalar> for Scalar {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: Scalar<E>) {
+    fn sub_assign(&mut self, other: Scalar) {
         self.scalar -= other.scalar;
     }
 }
 
-impl<E: Environment> SubAssign<&Scalar<E>> for Scalar<E> {
+impl SubAssign<&Scalar> for Scalar {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: &Scalar<E>) {
+    fn sub_assign(&mut self, other: &Scalar) {
         self.scalar -= other.scalar;
     }
 }
 
-impl<E: Environment> Mul<Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Mul<Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: Scalar<E>) -> Self::Output {
+    fn mul(self, other: Scalar) -> Self::Output {
         Scalar::new(self.scalar * other.scalar)
     }
 }
 
-impl<E: Environment> Mul<&Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Mul<&Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: &Scalar<E>) -> Self::Output {
+    fn mul(self, other: &Scalar) -> Self::Output {
         Scalar::new(self.scalar * other.scalar)
     }
 }
 
-impl<E: Environment> MulAssign<Scalar<E>> for Scalar<E> {
+impl MulAssign<Scalar> for Scalar {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: Scalar<E>) {
+    fn mul_assign(&mut self, other: Scalar) {
         self.scalar *= other.scalar;
     }
 }
 
-impl<E: Environment> MulAssign<&Scalar<E>> for Scalar<E> {
+impl MulAssign<&Scalar> for Scalar {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: &Scalar<E>) {
+    fn mul_assign(&mut self, other: &Scalar) {
         self.scalar *= other.scalar;
     }
 }
 
-impl<E: Environment> Div<Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Div<Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `quotient` of `self` and `other`.
     #[inline]
-    fn div(self, other: Scalar<E>) -> Self::Output {
+    fn div(self, other: Scalar) -> Self::Output {
         match other.is_zero() {
-            true => E::halt(format!("Scalar division by zero: {self} / {other}")),
+            true => Console::halt(format!("Scalar division by zero: {self} / {other}")),
             false => Scalar::new(self.scalar / other.scalar),
         }
     }
 }
 
-impl<E: Environment> Div<&Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Div<&Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `quotient` of `self` and `other`.
     #[inline]
-    fn div(self, other: &Scalar<E>) -> Self::Output {
+    fn div(self, other: &Scalar) -> Self::Output {
         match other.is_zero() {
-            true => E::halt(format!("Scalar division by zero: {self} / {other}")),
+            true => Console::halt(format!("Scalar division by zero: {self} / {other}")),
             false => Scalar::new(self.scalar / other.scalar),
         }
     }
 }
 
-impl<E: Environment> DivAssign<Scalar<E>> for Scalar<E> {
+impl DivAssign<Scalar> for Scalar {
     /// Divides `self` by `other`.
     #[inline]
-    fn div_assign(&mut self, other: Scalar<E>) {
+    fn div_assign(&mut self, other: Scalar) {
         match other.is_zero() {
-            true => E::halt(format!("Scalar division by zero: {self} / {other}")),
+            true => Console::halt(format!("Scalar division by zero: {self} / {other}")),
             false => self.scalar /= other.scalar,
         }
     }
 }
 
-impl<E: Environment> DivAssign<&Scalar<E>> for Scalar<E> {
+impl DivAssign<&Scalar> for Scalar {
     /// Divides `self` by `other`.
     #[inline]
-    fn div_assign(&mut self, other: &Scalar<E>) {
+    fn div_assign(&mut self, other: &Scalar) {
         match other.is_zero() {
-            true => E::halt(format!("Scalar division by zero: {self} / {other}")),
+            true => Console::halt(format!("Scalar division by zero: {self} / {other}")),
             false => self.scalar /= other.scalar,
         }
     }
 }
 
-impl<E: Environment> Pow<Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Pow<Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: Scalar<E>) -> Self::Output {
+    fn pow(self, other: Scalar) -> Self::Output {
         Scalar::new(self.scalar.pow(other.scalar.to_bigint()))
     }
 }
 
-impl<E: Environment> Pow<&Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Pow<&Scalar> for Scalar {
+    type Output = Scalar;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: &Scalar<E>) -> Self::Output {
+    fn pow(self, other: &Scalar) -> Self::Output {
         Scalar::new(self.scalar.pow(other.scalar.to_bigint()))
     }
 }
 
-impl<E: Environment> Double for Scalar<E> {
-    type Output = Scalar<E>;
+impl Double for Scalar {
+    type Output = Scalar;
 
     /// Returns the `double` of `self`.
     #[inline]
@@ -210,8 +210,8 @@ impl<E: Environment> Double for Scalar<E> {
     }
 }
 
-impl<E: Environment> Inverse for Scalar<E> {
-    type Output = Scalar<E>;
+impl Inverse for Scalar {
+    type Output = Scalar;
 
     /// Returns the `inverse` of `self`.
     #[inline]
@@ -223,8 +223,8 @@ impl<E: Environment> Inverse for Scalar<E> {
     }
 }
 
-impl<E: Environment> Square for Scalar<E> {
-    type Output = Scalar<E>;
+impl Square for Scalar {
+    type Output = Scalar;
 
     /// Returns the `square` of `self`.
     #[inline]
@@ -233,34 +233,34 @@ impl<E: Environment> Square for Scalar<E> {
     }
 }
 
-impl<E: Environment> Sum<Scalar<E>> for Scalar<E> {
+impl Sum<Scalar> for Scalar {
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn sum<I: Iterator<Item = Scalar<E>>>(iter: I) -> Self {
+    fn sum<I: Iterator<Item = Scalar>>(iter: I) -> Self {
         iter.fold(Scalar::zero(), |a, b| a + b)
     }
 }
 
-impl<'a, E: Environment> Sum<&'a Scalar<E>> for Scalar<E> {
+impl<'a> Sum<&'a Scalar> for Scalar {
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn sum<I: Iterator<Item = &'a Scalar<E>>>(iter: I) -> Self {
+    fn sum<I: Iterator<Item = &'a Scalar>>(iter: I) -> Self {
         iter.fold(Scalar::zero(), |a, b| a + b)
     }
 }
 
-impl<E: Environment> Product<Scalar<E>> for Scalar<E> {
+impl Product<Scalar> for Scalar {
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn product<I: Iterator<Item = Scalar<E>>>(iter: I) -> Self {
+    fn product<I: Iterator<Item = Scalar>>(iter: I) -> Self {
         iter.fold(Scalar::one(), |a, b| a * b)
     }
 }
 
-impl<'a, E: Environment> Product<&'a Scalar<E>> for Scalar<E> {
+impl<'a> Product<&'a Scalar> for Scalar {
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn product<I: Iterator<Item = &'a Scalar<E>>>(iter: I) -> Self {
+    fn product<I: Iterator<Item = &'a Scalar>>(iter: I) -> Self {
         iter.fold(Scalar::one(), |a, b| a * b)
     }
 }
@@ -268,14 +268,11 @@ impl<'a, E: Environment> Product<&'a Scalar<E>> for Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     #[test]
     fn test_div_by_zero_fails() {
-        let one = Scalar::<CurrentEnvironment>::one();
-        let zero = Scalar::<CurrentEnvironment>::zero();
+        let one = Scalar::one();
+        let zero = Scalar::zero();
 
         let result = std::panic::catch_unwind(|| one / zero);
         assert!(result.is_err()); // Probe further for specific error type here, if desired

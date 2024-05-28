@@ -30,25 +30,25 @@ fn is_lowercase_alphanumeric(s: &str) -> bool {
 
 /// A program ID is of the form `{name}.{network}`.
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct ProgramID<N: Network> {
+pub struct ProgramID {
     /// The program name.
-    name: Identifier<N>,
+    name: Identifier,
     /// The network-level domain (NLD).
-    network: Identifier<N>,
+    network: Identifier,
 }
 
-impl<N: Network> From<&ProgramID<N>> for ProgramID<N> {
+impl From<&ProgramID> for ProgramID {
     /// Returns a copy of the program ID.
-    fn from(program_id: &ProgramID<N>) -> Self {
+    fn from(program_id: &ProgramID) -> Self {
         *program_id
     }
 }
 
-impl<N: Network> TryFrom<(Identifier<N>, Identifier<N>)> for ProgramID<N> {
+impl TryFrom<(Identifier, Identifier)> for ProgramID {
     type Error = Error;
 
     /// Initializes a program ID from a name and network-level domain identifier.
-    fn try_from((name, network): (Identifier<N>, Identifier<N>)) -> Result<Self> {
+    fn try_from((name, network): (Identifier, Identifier)) -> Result<Self> {
         // Ensure the name is lowercase alphabets and numbers.
         ensure!(is_lowercase_alphanumeric(&name.to_string()), "Program name is invalid: {name}");
         // Construct the program ID.
@@ -60,7 +60,7 @@ impl<N: Network> TryFrom<(Identifier<N>, Identifier<N>)> for ProgramID<N> {
     }
 }
 
-impl<N: Network> TryFrom<String> for ProgramID<N> {
+impl TryFrom<String> for ProgramID {
     type Error = Error;
 
     /// Initializes a program ID from a name and network-level domain identifier.
@@ -69,7 +69,7 @@ impl<N: Network> TryFrom<String> for ProgramID<N> {
     }
 }
 
-impl<N: Network> TryFrom<&String> for ProgramID<N> {
+impl TryFrom<&String> for ProgramID {
     type Error = Error;
 
     /// Initializes a program ID from a name and network-level domain identifier.
@@ -78,7 +78,7 @@ impl<N: Network> TryFrom<&String> for ProgramID<N> {
     }
 }
 
-impl<N: Network> TryFrom<&str> for ProgramID<N> {
+impl TryFrom<&str> for ProgramID {
     type Error = Error;
 
     /// Initializes a program ID from a name and network-level domain identifier.
@@ -97,16 +97,16 @@ impl<N: Network> TryFrom<&str> for ProgramID<N> {
     }
 }
 
-impl<N: Network> ProgramID<N> {
+impl ProgramID {
     /// Returns the program name.
     #[inline]
-    pub const fn name(&self) -> &Identifier<N> {
+    pub const fn name(&self) -> &Identifier {
         &self.name
     }
 
     /// Returns the network-level domain (NLD).
     #[inline]
-    pub const fn network(&self) -> &Identifier<N> {
+    pub const fn network(&self) -> &Identifier {
         &self.network
     }
 
@@ -117,7 +117,7 @@ impl<N: Network> ProgramID<N> {
     }
 }
 
-impl<N: Network> Ord for ProgramID<N> {
+impl Ord for ProgramID {
     /// Ordering is determined by the network first, then the program name second.
     fn cmp(&self, other: &Self) -> Ordering {
         match self.network == other.network {
@@ -127,15 +127,15 @@ impl<N: Network> Ord for ProgramID<N> {
     }
 }
 
-impl<N: Network> PartialOrd for ProgramID<N> {
+impl PartialOrd for ProgramID {
     /// Ordering is determined by the network first, then the program name second.
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<N: Network> Equal<Self> for ProgramID<N> {
-    type Output = Boolean<N>;
+impl Equal<Self> for ProgramID {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

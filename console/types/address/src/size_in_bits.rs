@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBits for Address<E> {
+impl SizeInBits for Address {
     /// Returns the address size in bits.
     #[inline]
     fn size_in_bits() -> usize {
         // As we serialize into the affine **x-coordinate**, we only require `Field::size_in_bits()`.
-        Field::<E>::size_in_bits()
+        Field::size_in_bits()
     }
 }

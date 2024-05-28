@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Record<N, Plaintext<N>> {
+impl Serialize for Record<Plaintext> {
     /// Serializes the record plaintext into a string or as bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Record<N, Plaintext<N>> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Record<N, Plaintext<N>> {
+impl<'de> Deserialize<'de> for Record<Plaintext> {
     /// Deserializes the record plaintext from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -34,7 +34,7 @@ impl<'de, N: Network> Deserialize<'de> for Record<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network> Serialize for Record<N, Ciphertext<N>> {
+impl Serialize for Record<Ciphertext> {
     /// Serializes the record ciphertext into a string or as bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -44,7 +44,7 @@ impl<N: Network> Serialize for Record<N, Ciphertext<N>> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Record<N, Ciphertext<N>> {
+impl<'de> Deserialize<'de> for Record<Ciphertext> {
     /// Deserializes the record ciphertext from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -57,9 +57,6 @@ impl<'de, N: Network> Deserialize<'de> for Record<N, Ciphertext<N>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1;
 
@@ -67,7 +64,7 @@ mod tests {
     fn test_serde_json() -> Result<()> {
         for _ in 0..ITERATIONS {
             // Sample a new record.
-            let expected = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::from_str(
+            let expected = Record::<Plaintext>::from_str(
                 "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: 0group.public }",
             )?;
             println!("{}", serde_json::to_string_pretty(&expected)?);
@@ -88,7 +85,7 @@ mod tests {
     fn test_bincode() -> Result<()> {
         for _ in 0..ITERATIONS {
             // Sample a new record.
-            let expected = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::from_str(
+            let expected = Record::<Plaintext>::from_str(
                 "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: 0group.public }",
             )?;
 

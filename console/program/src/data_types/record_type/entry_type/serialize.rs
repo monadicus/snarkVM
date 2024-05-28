@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for EntryType<N> {
+impl Serialize for EntryType {
     /// Serializes the entry type into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for EntryType<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for EntryType<N> {
+impl<'de> Deserialize<'de> for EntryType {
     /// Deserializes the entry type from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, N: Network> Deserialize<'de> for EntryType<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     /// Add test cases here to be checked for serialization.
     const TEST_CASES: &[&str] = &[
@@ -103,7 +100,7 @@ mod tests {
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
             for mode in &["constant", "public", "private"] {
-                check_serde_json(EntryType::<CurrentNetwork>::from_str(&format!("{case}.{mode}")).unwrap());
+                check_serde_json(EntryType::from_str(&format!("{case}.{mode}")).unwrap());
             }
         }
     }
@@ -112,7 +109,7 @@ mod tests {
     fn test_bincode() {
         for case in TEST_CASES.iter() {
             for mode in &["constant", "public", "private"] {
-                check_bincode(EntryType::<CurrentNetwork>::from_str(&format!("{case}.{mode}")).unwrap());
+                check_bincode(EntryType::from_str(&format!("{case}.{mode}")).unwrap());
             }
         }
     }

@@ -15,61 +15,61 @@
 use super::*;
 
 #[cfg(feature = "private_key")]
-impl<N: Network> TryFrom<PrivateKey<N>> for Address<N> {
+impl TryFrom<PrivateKey> for Address {
     type Error = Error;
 
     /// Derives the account address from an account private key.
-    fn try_from(private_key: PrivateKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(private_key: PrivateKey) -> Result<Self, Self::Error> {
         Self::try_from(&private_key)
     }
 }
 
 #[cfg(feature = "private_key")]
-impl<N: Network> TryFrom<&PrivateKey<N>> for Address<N> {
+impl TryFrom<&PrivateKey> for Address {
     type Error = Error;
 
     /// Derives the account address from an account private key.
-    fn try_from(private_key: &PrivateKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(private_key: &PrivateKey) -> Result<Self, Self::Error> {
         Self::try_from(ComputeKey::try_from(private_key)?)
     }
 }
 
 #[cfg(feature = "compute_key")]
-impl<N: Network> TryFrom<ComputeKey<N>> for Address<N> {
+impl TryFrom<ComputeKey> for Address {
     type Error = Error;
 
     /// Derives the account address from an account compute key.
-    fn try_from(compute_key: ComputeKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(compute_key: ComputeKey) -> Result<Self, Self::Error> {
         Self::try_from(&compute_key)
     }
 }
 
 #[cfg(feature = "compute_key")]
-impl<N: Network> TryFrom<&ComputeKey<N>> for Address<N> {
+impl TryFrom<&ComputeKey> for Address {
     type Error = Error;
 
     /// Derives the account address from an account compute key.
-    fn try_from(compute_key: &ComputeKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(compute_key: &ComputeKey) -> Result<Self, Self::Error> {
         Ok(compute_key.to_address())
     }
 }
 
 #[cfg(feature = "view_key")]
-impl<N: Network> TryFrom<ViewKey<N>> for Address<N> {
+impl TryFrom<ViewKey> for Address {
     type Error = Error;
 
     /// Derives the account address from an account view key.
-    fn try_from(view_key: ViewKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(view_key: ViewKey) -> Result<Self, Self::Error> {
         Self::try_from(&view_key)
     }
 }
 
 #[cfg(feature = "view_key")]
-impl<N: Network> TryFrom<&ViewKey<N>> for Address<N> {
+impl TryFrom<&ViewKey> for Address {
     type Error = Error;
 
     /// Derives the account address from an account view key.
-    fn try_from(view_key: &ViewKey<N>) -> Result<Self, Self::Error> {
+    fn try_from(view_key: &ViewKey) -> Result<Self, Self::Error> {
         Ok(view_key.to_address())
     }
 }

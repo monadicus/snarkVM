@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> FromFields for Group<E> {
-    type Field = Field<E>;
+impl FromFields for Group {
+    type Field = Field;
 
     /// Initializes a new group by recovering the **x-coordinate** of an affine group from a field element.
     fn from_fields(fields: &[Self::Field]) -> Result<Self> {
@@ -29,9 +29,6 @@ impl<E: Environment> FromFields for Group<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -40,8 +37,8 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let expected = Group::<CurrentEnvironment>::new(Uniform::rand(&mut rng));
-            let candidate = Group::<CurrentEnvironment>::from_fields(&expected.to_fields()?)?;
+            let expected = Group::new(Uniform::rand(&mut rng));
+            let candidate = Group::from_fields(&expected.to_fields()?)?;
             assert_eq!(expected, candidate);
         }
         Ok(())

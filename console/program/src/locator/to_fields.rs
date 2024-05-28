@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> ToFields for Locator<N> {
-    type Field = Field<N>;
+impl ToFields for Locator {
+    type Field = Field;
 
     /// Returns this locator as a list of field elements.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {

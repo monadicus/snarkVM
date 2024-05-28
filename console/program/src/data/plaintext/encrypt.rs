@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> Plaintext<N> {
+impl Plaintext {
     /// Encrypts `self` to the given address under the given randomizer.
-    pub fn encrypt(&self, address: &Address<N>, randomizer: Scalar<N>) -> Result<Ciphertext<N>> {
+    pub fn encrypt(&self, address: &Address, randomizer: Scalar) -> Result<Ciphertext> {
         // Compute the plaintext view key.
         let plaintext_view_key = (**address * randomizer).to_x_coordinate();
         // Encrypt the plaintext.
@@ -24,17 +26,18 @@ impl<N: Network> Plaintext<N> {
     }
 
     /// Encrypts `self` under the given plaintext view key.
-    pub fn encrypt_symmetric(&self, plaintext_view_key: Field<N>) -> Result<Ciphertext<N>> {
+    pub fn encrypt_symmetric(&self, plaintext_view_key: Field) -> Result<Ciphertext> {
         // Determine the number of randomizers needed to encrypt the plaintext.
         let num_randomizers = self.num_randomizers()?;
         // Prepare a randomizer for each field element.
-        let randomizers = N::hash_many_psd8(&[N::encryption_domain(), plaintext_view_key], num_randomizers);
+        let randomizers =
+            AleoNetwork::hash_many_psd8(&[AleoNetwork::encryption_domain(), plaintext_view_key], num_randomizers);
         // Encrypt the plaintext.
         self.encrypt_with_randomizers(&randomizers)
     }
 
     /// Encrypts `self` under the given randomizers.
-    pub(crate) fn encrypt_with_randomizers(&self, randomizers: &[Field<N>]) -> Result<Ciphertext<N>> {
+    pub(crate) fn encrypt_with_randomizers(&self, randomizers: &[Field]) -> Result<Ciphertext> {
         // Encrypt the plaintext.
         Ciphertext::from_fields(
             &self

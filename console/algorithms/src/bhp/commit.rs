@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Commit for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Commit for BHP<NUM_WINDOWS, WINDOW_SIZE> {
     type Input = bool;
-    type Output = Field<E>;
-    type Randomizer = Scalar<E>;
+    type Output = Field;
+    type Randomizer = Scalar;
 
     /// Returns the BHP commitment of the given input and randomizer as a field element.
     fn commit(&self, input: &[Self::Input], randomizer: &Self::Randomizer) -> Result<Self::Output> {

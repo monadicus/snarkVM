@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> FromField for Integer<E, I> {
-    type Field = Field<E>;
+impl<I: IntegerType> FromField for Integer<I> {
+    type Field = Field;
 
     /// Casts an integer from a base field.
     ///
@@ -26,7 +26,7 @@ impl<E: Environment, I: IntegerType> FromField for Integer<E, I> {
         // Note: We are reconstituting the integer from the base field.
         // This is safe as the number of bits in the integer is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(I::BITS < Field::<E>::size_in_bits() as u64);
+        debug_assert!(I::BITS < Field::size_in_bits() as u64);
 
         // Convert the field element into bits.
         let bits_le = field.to_bits_le();
@@ -45,9 +45,6 @@ impl<E: Environment, I: IntegerType> FromField for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -56,21 +53,21 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random integer.
-            let expected = Integer::<CurrentEnvironment, I>::rand(&mut rng);
+            let expected = Integer::<I>::rand(&mut rng);
 
             // Perform the operation.
             let candidate = Integer::from_field(&expected.to_field()?)?;
             assert_eq!(expected, candidate);
 
             // Sample a random field.
-            let expected = Field::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Field::rand(&mut rng);
             // Determine the integer domain.
             let integer_max = match I::type_name() {
-                "u8" | "i8" => Field::<CurrentEnvironment>::from_u8(u8::MAX),
-                "u16" | "i16" => Field::<CurrentEnvironment>::from_u16(u16::MAX),
-                "u32" | "i32" => Field::<CurrentEnvironment>::from_u32(u32::MAX),
-                "u64" | "i64" => Field::<CurrentEnvironment>::from_u64(u64::MAX),
-                "u128" | "i128" => Field::<CurrentEnvironment>::from_u128(u128::MAX),
+                "u8" | "i8" => Field::from_u8(u8::MAX),
+                "u16" | "i16" => Field::from_u16(u16::MAX),
+                "u32" | "i32" => Field::from_u32(u32::MAX),
+                "u64" | "i64" => Field::from_u64(u64::MAX),
+                "u128" | "i128" => Field::from_u128(u128::MAX),
                 _ => panic!("Unsupported integer type."),
             };
             // Filter for field elements that exceed the integer domain.

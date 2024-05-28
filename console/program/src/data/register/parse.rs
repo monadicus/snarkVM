@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for Register<N> {
+impl Parser for Register {
     /// Parses a string into a register.
     /// The register is of the form `r{locator}` or `r{locator}.{identifier}`.
     #[inline]
@@ -25,9 +25,9 @@ impl<N: Network> Parser for Register<N> {
         let (string, locator) =
             map_res(recognize(many1(one_of("0123456789"))), |locator: &str| locator.parse::<u64>())(string)?;
         // Parse the accesses from the string, if it is a register access.
-        let (string, accesses): (&str, Vec<Access<N>>) = map_res(many0(Access::parse), |accesses| {
+        let (string, accesses): (&str, Vec<Access>) = map_res(many0(Access::parse), |accesses| {
             // Ensure the number of identifiers is within the limit.
-            if accesses.len() <= N::MAX_DATA_DEPTH {
+            if accesses.len() <= AleoNetwork::MAX_DATA_DEPTH {
                 Ok(accesses)
             } else {
                 Err(error(format!("Register \'r{locator}\' has too many accesses ({})", accesses.len())))
@@ -41,7 +41,7 @@ impl<N: Network> Parser for Register<N> {
     }
 }
 
-impl<N: Network> FromStr for Register<N> {
+impl FromStr for Register {
     type Err = Error;
 
     /// Parses a string into a register.
@@ -59,14 +59,14 @@ impl<N: Network> FromStr for Register<N> {
     }
 }
 
-impl<N: Network> Debug for Register<N> {
+impl Debug for Register {
     /// Prints the register as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Register<N> {
+impl Display for Register {
     /// Prints the register as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

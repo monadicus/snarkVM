@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> FromBytes for Integer<E, I> {
+impl<I: IntegerType> FromBytes for Integer<I> {
     /// Reads the integer from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -22,7 +22,7 @@ impl<E: Environment, I: IntegerType> FromBytes for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> ToBytes for Integer<E, I> {
+impl<I: IntegerType> ToBytes for Integer<I> {
     /// Writes the integer to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
@@ -33,21 +33,18 @@ impl<E: Environment, I: IntegerType> ToBytes for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
     fn check_bytes<I: IntegerType>(rng: &mut TestRng) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Sample a random integer.
-            let expected: Integer<CurrentEnvironment, I> = Uniform::rand(rng);
+            let expected: Integer<I> = Uniform::rand(rng);
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, Integer::read_le(&expected_bytes[..])?);
-            assert!(Integer::<CurrentEnvironment, I>::read_le(&expected_bytes[1..]).is_err());
+            assert!(Integer::<I>::read_le(&expected_bytes[1..]).is_err());
 
             // Dereference the integer and compare bytes.
             let deref_bytes = (*expected).to_bytes_le()?;

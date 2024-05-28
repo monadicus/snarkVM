@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> FromField for Address<E> {
-    type Field = Field<E>;
+impl FromField for Address {
+    type Field = Field;
 
     /// Initializes a new address by recovering the **x-coordinate** of an affine group from a field element.
     fn from_field(field: &Self::Field) -> Result<Self> {
@@ -26,9 +26,6 @@ impl<E: Environment> FromField for Address<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -37,8 +34,8 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let expected = Address::<CurrentEnvironment>::rand(&mut rng);
-            let candidate = Address::<CurrentEnvironment>::from_field(&expected.to_field()?)?;
+            let expected = Address::rand(&mut rng);
+            let candidate = Address::from_field(&expected.to_field()?)?;
             assert_eq!(expected, candidate);
         }
         Ok(())

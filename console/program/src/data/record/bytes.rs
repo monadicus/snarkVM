@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Private: Visibility> FromBytes for Record<N, Private> {
+impl<Private: Visibility> FromBytes for Record<Private> {
     /// Reads the record from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the owner.
@@ -25,7 +25,7 @@ impl<N: Network, Private: Visibility> FromBytes for Record<N, Private> {
         let mut data = IndexMap::with_capacity(num_entries as usize);
         for _ in 0..num_entries {
             // Read the identifier.
-            let identifier = Identifier::<N>::read_le(&mut reader)?;
+            let identifier = Identifier::read_le(&mut reader)?;
             // Read the entry value (in 2 steps to prevent infinite recursion).
             let num_bytes = u16::read_le(&mut reader)?;
             // Read the entry bytes.
@@ -46,7 +46,7 @@ impl<N: Network, Private: Visibility> FromBytes for Record<N, Private> {
             return Err(error("Duplicate entry type found in record"));
         }
         // Ensure the number of entries is within the maximum limit.
-        if data.len() > N::MAX_DATA_ENTRIES {
+        if data.len() > AleoNetwork::MAX_DATA_ENTRIES {
             return Err(error("Failed to parse record: too many entries"));
         }
 
@@ -54,13 +54,13 @@ impl<N: Network, Private: Visibility> FromBytes for Record<N, Private> {
     }
 }
 
-impl<N: Network, Private: Visibility> ToBytes for Record<N, Private> {
+impl<Private: Visibility> ToBytes for Record<Private> {
     /// Writes the record to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the owner.
         self.owner.write_le(&mut writer)?;
         // Write the number of entries in the record data.
-        u8::try_from(self.data.len()).or_halt_with::<N>("Record length exceeds u8::MAX").write_le(&mut writer)?;
+        u8::try_from(self.data.len()).or_halt_with("Record length exceeds u8::MAX").write_le(&mut writer)?;
         // Write each entry.
         for (entry_name, entry_value) in &self.data {
             // Write the entry name.
@@ -68,9 +68,7 @@ impl<N: Network, Private: Visibility> ToBytes for Record<N, Private> {
             // Write the entry value (performed in 2 steps to prevent infinite recursion).
             let bytes = entry_value.to_bytes_le().map_err(|e| error(e.to_string()))?;
             // Write the number of bytes.
-            u16::try_from(bytes.len())
-                .or_halt_with::<N>("Record entry exceeds u16::MAX bytes")
-                .write_le(&mut writer)?;
+            u16::try_from(bytes.len()).or_halt_with("Record entry exceeds u16::MAX bytes").write_le(&mut writer)?;
             // Write the bytes.
             bytes.write_le(&mut writer)?;
         }

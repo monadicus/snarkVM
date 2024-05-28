@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBytes for EntryType<N> {
+impl ToBytes for EntryType {
     /// Writes the entry type to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         u8::try_from(self.enum_index()).map_err(error)?.write_le(&mut writer)?;
@@ -26,7 +26,7 @@ impl<N: Network> ToBytes for EntryType<N> {
     }
 }
 
-impl<N: Network> FromBytes for EntryType<N> {
+impl FromBytes for EntryType {
     /// Reads the entry type from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let variant = u8::read_le(&mut reader)?;

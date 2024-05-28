@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for ProgramID<N> {
+impl Parser for ProgramID {
     /// Parses a string into a program ID of the form `{name}.{network}`.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -26,7 +26,7 @@ impl<N: Network> Parser for ProgramID<N> {
     }
 }
 
-impl<N: Network> FromStr for ProgramID<N> {
+impl FromStr for ProgramID {
     type Err = Error;
 
     /// Parses a string into a program ID.
@@ -44,14 +44,14 @@ impl<N: Network> FromStr for ProgramID<N> {
     }
 }
 
-impl<N: Network> Debug for ProgramID<N> {
+impl Debug for ProgramID {
     /// Prints the program ID as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for ProgramID<N> {
+impl Display for ProgramID {
     /// Prints the program ID as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{name}.{network}", name = self.name, network = self.network)

@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Distribution<Integer<E, I>> for Standard {
+impl<I: IntegerType> Distribution<Integer<I>> for Standard {
     #[inline]
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Integer<E, I> {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Integer<I> {
         Integer::new(Uniform::rand(rng))
     }
 }
@@ -24,11 +24,8 @@ impl<E: Environment, I: IntegerType> Distribution<Integer<E, I>> for Standard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
 
     use std::collections::HashSet;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 10;
 
@@ -39,7 +36,7 @@ mod tests {
         // Note: This test technically has a `(1 + 2 + ... + ITERATIONS) / MODULUS` probability of being flaky.
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let integer: Integer<CurrentEnvironment, I> = Uniform::rand(rng);
+            let integer: Integer<I> = Uniform::rand(rng);
             assert!(!set.contains(&integer));
 
             // Add the new random value to the set.

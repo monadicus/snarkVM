@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for HeaderLeaf<N> {
+impl FromStr for HeaderLeaf {
     type Err = Error;
 
     /// Initializes the leaf from a JSON-string.
@@ -23,14 +23,14 @@ impl<N: Network> FromStr for HeaderLeaf<N> {
     }
 }
 
-impl<N: Network> Debug for HeaderLeaf<N> {
+impl Debug for HeaderLeaf {
     /// Prints the leaf as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for HeaderLeaf<N> {
+impl Display for HeaderLeaf {
     /// Displays the leaf as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", serde_json::to_string(self).map_err::<fmt::Error, _>(ser::Error::custom)?)

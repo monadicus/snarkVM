@@ -40,34 +40,30 @@ pub use snarkvm_console_types_boolean::Boolean;
 pub use snarkvm_console_types_field::Field;
 pub use snarkvm_console_types_scalar::Scalar;
 
-use core::marker::PhantomData;
+pub type I8 = Integer<i8>;
+pub type I16 = Integer<i16>;
+pub type I32 = Integer<i32>;
+pub type I64 = Integer<i64>;
+pub type I128 = Integer<i128>;
 
-pub type I8<E> = Integer<E, i8>;
-pub type I16<E> = Integer<E, i16>;
-pub type I32<E> = Integer<E, i32>;
-pub type I64<E> = Integer<E, i64>;
-pub type I128<E> = Integer<E, i128>;
-
-pub type U8<E> = Integer<E, u8>;
-pub type U16<E> = Integer<E, u16>;
-pub type U32<E> = Integer<E, u32>;
-pub type U64<E> = Integer<E, u64>;
-pub type U128<E> = Integer<E, u128>;
+pub type U8 = Integer<u8>;
+pub type U16 = Integer<u16>;
+pub type U32 = Integer<u32>;
+pub type U64 = Integer<u64>;
+pub type U128 = Integer<u128>;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Integer<E: Environment, I: IntegerType> {
+pub struct Integer<I: IntegerType> {
     /// The underlying integer value.
     integer: I,
-    /// PhantomData.
-    _phantom: PhantomData<E>,
 }
 
-impl<E: Environment, I: IntegerType> IntegerTrait<I, U8<E>, U16<E>, U32<E>> for Integer<E, I> {}
+impl<I: IntegerType> IntegerTrait<I, U8, U16, U32> for Integer<I> {}
 
-impl<E: Environment, I: IntegerType> IntegerCore<I> for Integer<E, I> {}
+impl<I: IntegerType> IntegerCore<I> for Integer<I> {}
 
-impl<E: Environment, I: IntegerType> Visibility for Integer<E, I> {
-    type Boolean = Boolean<E>;
+impl<I: IntegerType> Visibility for Integer<I> {
+    type Boolean = Boolean;
 
     /// Returns the number of field elements to encode `self`.
     fn size_in_fields(&self) -> Result<u16> {
@@ -75,17 +71,17 @@ impl<E: Environment, I: IntegerType> Visibility for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Integer<E, I> {
+impl<I: IntegerType> Integer<I> {
     pub const MAX: Self = Self::new(I::MAX);
     pub const MIN: Self = Self::new(I::MIN);
 
     /// Initializes a new integer.
     pub const fn new(integer: I) -> Self {
-        Self { integer, _phantom: PhantomData }
+        Self { integer }
     }
 }
 
-impl<E: Environment, I: IntegerType> TypeName for Integer<E, I> {
+impl<I: IntegerType> TypeName for Integer<I> {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -93,7 +89,7 @@ impl<E: Environment, I: IntegerType> TypeName for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Deref for Integer<E, I> {
+impl<I: IntegerType> Deref for Integer<I> {
     type Target = I;
 
     #[inline]

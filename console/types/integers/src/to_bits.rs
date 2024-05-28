@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> ToBits for Integer<E, I> {
+impl<I: IntegerType> ToBits for Integer<I> {
     /// Outputs the little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         (**self).write_bits_le(vec);
@@ -29,19 +29,16 @@ impl<E: Environment, I: IntegerType> ToBits for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
     fn check_to_bits_le<I: IntegerType>(rng: &mut TestRng) {
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let integer: Integer<CurrentEnvironment, I> = Uniform::rand(rng);
+            let integer: Integer<I> = Uniform::rand(rng);
 
             let candidate = integer.to_bits_le();
-            assert_eq!(Integer::<CurrentEnvironment, I>::size_in_bits(), candidate.len());
+            assert_eq!(Integer::<I>::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*integer).to_bits_le().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);
@@ -52,10 +49,10 @@ mod tests {
     fn check_to_bits_be<I: IntegerType>(rng: &mut TestRng) {
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let integer: Integer<CurrentEnvironment, I> = Uniform::rand(rng);
+            let integer: Integer<I> = Uniform::rand(rng);
 
             let candidate = integer.to_bits_be();
-            assert_eq!(Integer::<CurrentEnvironment, I>::size_in_bits(), candidate.len());
+            assert_eq!(Integer::<I>::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*integer).to_bits_be().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);

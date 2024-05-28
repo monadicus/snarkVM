@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Access<N> {
+impl Serialize for Access {
     /// Serializes the access into a string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Access<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Access<N> {
+impl<'de> Deserialize<'de> for Access {
     /// Deserializes the access from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, N: Network> Deserialize<'de> for Access<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     fn check_serde_json<
         T: Serialize + for<'a> Deserialize<'a> + Debug + Display + PartialEq + Eq + FromStr + ToBytes + FromBytes,
@@ -74,16 +71,16 @@ mod tests {
     #[test]
     fn test_serde_json() {
         for i in 0..1000 {
-            check_serde_json(Access::<CurrentNetwork>::from_str(&format!(".owner_{i}")).unwrap());
-            check_serde_json(Access::<CurrentNetwork>::from_str(&format!("[{i}u32]")).unwrap());
+            check_serde_json(Access::from_str(&format!(".owner_{i}")).unwrap());
+            check_serde_json(Access::from_str(&format!("[{i}u32]")).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for i in 0..1000 {
-            check_bincode(Access::<CurrentNetwork>::from_str(&format!(".owner_{i}")).unwrap());
-            check_bincode(Access::<CurrentNetwork>::from_str(&format!("[{i}u32]")).unwrap());
+            check_bincode(Access::from_str(&format!(".owner_{i}")).unwrap());
+            check_bincode(Access::from_str(&format!("[{i}u32]")).unwrap());
         }
     }
 }

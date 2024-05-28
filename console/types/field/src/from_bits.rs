@@ -14,14 +14,14 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Field<E> {
+impl FromBits for Field {
     /// Initializes a new field from a list of **little-endian** bits.
     ///   - If `bits_le` is longer than `E::Field::size_in_bits()`, the excess bits are enforced to be `0`s.
     ///   - If `bits_le` is shorter than `E::Field::size_in_bits()`, it is padded with `0`s up to field size.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
         // Retrieve the data and field size.
-        let size_in_data_bits = Field::<E>::size_in_data_bits();
-        let size_in_bits = Field::<E>::size_in_bits();
+        let size_in_data_bits = Field::size_in_data_bits();
+        let size_in_bits = Field::size_in_bits();
 
         // Ensure the list of booleans is within the allowed size in bits.
         let num_bits = bits_le.len();
@@ -37,13 +37,13 @@ impl<E: Environment> FromBits for Field<E> {
             // Recover the field as a `BigInteger` for comparison.
             // As `bits_le[size_in_bits..]` is guaranteed to be zero from the above logic,
             // and `bits_le` is greater than `size_in_data_bits`, it is safe to truncate `bits_le` to `size_in_bits`.
-            let field = E::BigInteger::from_bits_le(&bits_le[..size_in_bits])?;
+            let field = ConsoleBigInteger::from_bits_le(&bits_le[..size_in_bits])?;
 
             // Ensure the field is less than `Field::MODULUS`.
-            ensure!(field < E::Field::modulus(), "The field is greater than or equal to the modulus.");
+            ensure!(field < ConsoleField::modulus(), "The field is greater than or equal to the modulus.");
 
             // Return the field.
-            Ok(Field { field: E::Field::from_bigint(field).ok_or_else(|| anyhow!("Invalid field from bits"))? })
+            Ok(Field { field: ConsoleField::from_bigint(field).ok_or_else(|| anyhow!("Invalid field from bits"))? })
         } else {
             // Construct the sanitized list of bits padded with `false`
             let mut sanitized_bits = vec![false; size_in_bits];
@@ -52,7 +52,7 @@ impl<E: Environment> FromBits for Field<E> {
             sanitized_bits[..num_bits].copy_from_slice(bits_le);
 
             // Recover the native field.
-            let field = E::Field::from_bigint(E::BigInteger::from_bits_le(&sanitized_bits)?)
+            let field = ConsoleField::from_bigint(ConsoleBigInteger::from_bits_le(&sanitized_bits)?)
                 .ok_or_else(|| anyhow!("Invalid field from bits"))?;
 
             // Return the field.

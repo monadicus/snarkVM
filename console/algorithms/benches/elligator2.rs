@@ -25,9 +25,9 @@ fn elligator2_256(c: &mut Criterion) {
     let rng = &mut TestRng::default();
 
     let input = Field::rand(rng);
-    c.bench_function(&format!("Elligator2 - Field of {}-bits", Field::<Console>::size_in_bits()), |b| {
+    c.bench_function(&format!("Elligator2 - Field of {}-bits", Field::size_in_bits()), |b| {
         b.iter(|| {
-            let (_group, _sign) = Elligator2::<Console>::encode(&input).unwrap();
+            let (_group, _sign) = Elligator2::encode(&input).unwrap();
         })
     });
 }

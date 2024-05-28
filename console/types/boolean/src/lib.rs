@@ -27,22 +27,18 @@ mod to_bits;
 
 pub use snarkvm_console_network_environment::prelude::*;
 
-use core::marker::PhantomData;
-
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Boolean<E: Environment> {
+pub struct Boolean {
     /// The underlying boolean.
     boolean: bool,
-    /// PhantomData.
-    _phantom: PhantomData<E>,
 }
 
-impl<E: Environment> BooleanTrait for Boolean<E> {}
+impl BooleanTrait for Boolean {}
 
-impl<E: Environment> Boolean<E> {
+impl Boolean {
     /// Initializes a new boolean.
     pub const fn new(boolean: bool) -> Self {
-        Self { boolean, _phantom: PhantomData }
+        Self { boolean }
     }
 
     /// Initializes a `false` boolean.
@@ -52,7 +48,7 @@ impl<E: Environment> Boolean<E> {
     }
 }
 
-impl<E: Environment> TypeName for Boolean<E> {
+impl TypeName for Boolean {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -60,7 +56,7 @@ impl<E: Environment> TypeName for Boolean<E> {
     }
 }
 
-impl<E: Environment> Deref for Boolean<E> {
+impl Deref for Boolean {
     type Target = bool;
 
     #[inline]
@@ -69,8 +65,8 @@ impl<E: Environment> Deref for Boolean<E> {
     }
 }
 
-impl<E: Environment> PartialEq<Boolean<E>> for bool {
-    fn eq(&self, other: &Boolean<E>) -> bool {
+impl PartialEq<Boolean> for bool {
+    fn eq(&self, other: &Boolean) -> bool {
         *self == **other
     }
 }

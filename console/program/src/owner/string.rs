@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for ProgramOwner<N> {
+impl FromStr for ProgramOwner {
     type Err = Error;
 
     /// Initializes the program owner from a JSON-string.
@@ -23,14 +23,14 @@ impl<N: Network> FromStr for ProgramOwner<N> {
     }
 }
 
-impl<N: Network> Debug for ProgramOwner<N> {
+impl Debug for ProgramOwner {
     /// Prints the program owner as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for ProgramOwner<N> {
+impl Display for ProgramOwner {
     /// Displays the program owner as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", serde_json::to_string(self).map_err::<fmt::Error, _>(ser::Error::custom)?)

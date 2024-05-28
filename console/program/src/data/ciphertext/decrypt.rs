@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<N: Network> Ciphertext<N> {
+impl Ciphertext {
     /// Decrypts `self` into plaintext using the given account view key & nonce.
-    pub fn decrypt(&self, view_key: ViewKey<N>, nonce: Group<N>) -> Result<Plaintext<N>> {
+    pub fn decrypt(&self, view_key: ViewKey, nonce: Group) -> Result<Plaintext> {
         // Compute the plaintext view key.
         let plaintext_view_key = (nonce * *view_key).to_x_coordinate();
         // Decrypt the record.
@@ -24,17 +24,18 @@ impl<N: Network> Ciphertext<N> {
     }
 
     /// Decrypts `self` into plaintext using the given plaintext view key.
-    pub fn decrypt_symmetric(&self, plaintext_view_key: Field<N>) -> Result<Plaintext<N>> {
+    pub fn decrypt_symmetric(&self, plaintext_view_key: Field) -> Result<Plaintext> {
         // Determine the number of randomizers needed to encrypt the plaintext.
         let num_randomizers = self.num_randomizers()?;
         // Prepare a randomizer for each field element.
-        let randomizers = N::hash_many_psd8(&[N::encryption_domain(), plaintext_view_key], num_randomizers);
+        let randomizers =
+            AleoNetwork::hash_many_psd8(&[AleoNetwork::encryption_domain(), plaintext_view_key], num_randomizers);
         // Decrypt the plaintext.
         self.decrypt_with_randomizers(&randomizers)
     }
 
     /// Decrypts `self` into plaintext using the given randomizers.
-    pub(crate) fn decrypt_with_randomizers(&self, randomizers: &[Field<N>]) -> Result<Plaintext<N>> {
+    pub(crate) fn decrypt_with_randomizers(&self, randomizers: &[Field]) -> Result<Plaintext> {
         // Decrypt the ciphertext.
         Plaintext::from_fields(
             &self
@@ -57,7 +58,7 @@ mod tests {
 
     const ITERATIONS: u64 = 100;
 
-    fn check_encrypt_and_decrypt<N: Network>(rng: &mut TestRng) -> Result<()> {
+    fn check_encrypt_and_decrypt(rng: &mut TestRng) -> Result<()> {
         // Prepare the plaintext.
         let plaintext_string = r"{
   foo: 5u8,
@@ -84,12 +85,12 @@ mod tests {
     }
   }
 }";
-        let plaintext = Plaintext::<N>::from_str(plaintext_string)?;
+        let plaintext = Plaintext::from_str(plaintext_string)?;
 
         // Sample a random address.
-        let private_key = PrivateKey::<N>::new(rng)?;
-        let view_key = ViewKey::<N>::try_from(private_key)?;
-        let address = Address::<N>::try_from(view_key)?;
+        let private_key = PrivateKey::new(rng)?;
+        let view_key = ViewKey::try_from(private_key)?;
+        let address = Address::try_from(view_key)?;
 
         // Encrypt the plaintext.
         let randomizer = Uniform::rand(rng);
@@ -101,9 +102,9 @@ mod tests {
         Ok(())
     }
 
-    fn check_encrypt_and_decrypt_symmetric<N: Network>(rng: &mut TestRng) -> Result<()> {
+    fn check_encrypt_and_decrypt_symmetric(rng: &mut TestRng) -> Result<()> {
         // Prepare the plaintext.
-        let plaintext = Plaintext::<N>::from(Literal::Field(Uniform::rand(rng)));
+        let plaintext = Plaintext::from(Literal::Field(Uniform::rand(rng)));
 
         // Encrypt the plaintext.
         let plaintext_view_key = Uniform::rand(rng);
@@ -118,8 +119,8 @@ mod tests {
         let mut rng = TestRng::default();
 
         for _ in 0..ITERATIONS {
-            check_encrypt_and_decrypt::<CurrentNetwork>(&mut rng)?;
-            check_encrypt_and_decrypt_symmetric::<CurrentNetwork>(&mut rng)?;
+            check_encrypt_and_decrypt(&mut rng)?;
+            check_encrypt_and_decrypt_symmetric(&mut rng)?;
         }
         Ok(())
     }

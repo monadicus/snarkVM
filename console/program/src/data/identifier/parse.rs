@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for Identifier<N> {
+impl Parser for Identifier {
     /// Parses a string into an identifier.
     ///
     /// # Requirements
@@ -30,7 +30,7 @@ impl<N: Network> Parser for Identifier<N> {
     }
 }
 
-impl<N: Network> FromStr for Identifier<N> {
+impl FromStr for Identifier {
     type Err = Error;
 
     /// Reads in an identifier from a string.
@@ -47,7 +47,7 @@ impl<N: Network> FromStr for Identifier<N> {
         }
 
         // Ensure identifier fits within the data capacity of the base field.
-        let max_bytes = Field::<N>::size_in_data_bits() / 8; // Note: This intentionally rounds down.
+        let max_bytes = Field::size_in_data_bits() / 8; // Note: This intentionally rounds down.
         if identifier.len() > max_bytes {
             bail!("Identifier is too large. Identifiers must be <= {max_bytes} bytes long")
         }
@@ -61,19 +61,19 @@ impl<N: Network> FromStr for Identifier<N> {
         // Note: The string bytes themselves are **not** little-endian. Rather, they are order-preserving
         // for reconstructing the string when recovering the field element back into bytes.
         Ok(Self(
-            Field::<N>::from_bits_le(&identifier.as_bytes().to_bits_le())?,
-            u8::try_from(identifier.len()).or_halt_with::<N>("Identifier `from_str` exceeds maximum length"),
+            Field::from_bits_le(&identifier.as_bytes().to_bits_le())?,
+            u8::try_from(identifier.len()).or_halt_with("Identifier `from_str` exceeds maximum length"),
         ))
     }
 }
 
-impl<N: Network> Debug for Identifier<N> {
+impl Debug for Identifier {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Identifier<N> {
+impl Display for Identifier {
     /// Prints the identifier as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // Convert the identifier to bytes.

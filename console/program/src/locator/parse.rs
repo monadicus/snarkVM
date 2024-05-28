@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for Locator<N> {
+impl Parser for Locator {
     /// Parses a string into a locator of the form `{program_id}/{resource}`.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -27,7 +27,7 @@ impl<N: Network> Parser for Locator<N> {
     }
 }
 
-impl<N: Network> FromStr for Locator<N> {
+impl FromStr for Locator {
     type Err = Error;
 
     /// Parses a string into a locator.
@@ -45,14 +45,14 @@ impl<N: Network> FromStr for Locator<N> {
     }
 }
 
-impl<N: Network> Debug for Locator<N> {
+impl Debug for Locator {
     /// Prints the locator as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Locator<N> {
+impl Display for Locator {
     /// Prints the locator as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{id}/{resource}", id = self.id, resource = self.resource)
@@ -62,30 +62,27 @@ impl<N: Network> Display for Locator<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     #[test]
     fn test_import_parse() -> Result<()> {
-        let locator = Locator::<CurrentNetwork>::parse("foo.aleo/compute").unwrap().1;
-        assert_eq!(locator.name(), &Identifier::<CurrentNetwork>::from_str("foo")?);
-        assert_eq!(locator.network(), &Identifier::<CurrentNetwork>::from_str("aleo")?);
-        assert_eq!(locator.resource(), &Identifier::<CurrentNetwork>::from_str("compute")?);
+        let locator = Locator::parse("foo.aleo/compute").unwrap().1;
+        assert_eq!(locator.name(), &Identifier::from_str("foo")?);
+        assert_eq!(locator.network(), &Identifier::from_str("aleo")?);
+        assert_eq!(locator.resource(), &Identifier::from_str("compute")?);
 
-        assert!(Locator::<CurrentNetwork>::parse("foo.aleo").is_err());
-        assert!(Locator::<CurrentNetwork>::parse("foo/compute").is_err());
+        assert!(Locator::parse("foo.aleo").is_err());
+        assert!(Locator::parse("foo/compute").is_err());
 
         Ok(())
     }
 
     #[test]
     fn test_import_display() -> Result<()> {
-        let id = Locator::<CurrentNetwork>::from_str("foo.aleo/compute")?;
+        let id = Locator::from_str("foo.aleo/compute")?;
         assert_eq!("foo.aleo/compute", id.to_string());
 
-        assert!(Locator::<CurrentNetwork>::parse("foo.aleo").is_err());
-        assert!(Locator::<CurrentNetwork>::parse("foo/compute").is_err());
+        assert!(Locator::parse("foo.aleo").is_err());
+        assert!(Locator::parse("foo/compute").is_err());
 
         Ok(())
     }

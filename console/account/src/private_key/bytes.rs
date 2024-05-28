@@ -14,14 +14,14 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for PrivateKey<N> {
+impl FromBytes for PrivateKey {
     /// Reads an account private key from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         Self::try_from(Field::new(FromBytes::read_le(&mut reader)?)).map_err(|e| error(format!("{e}")))
     }
 }
 
-impl<N: Network> ToBytes for PrivateKey<N> {
+impl ToBytes for PrivateKey {
     /// Writes an account private key to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.seed.write_le(&mut writer)
@@ -31,9 +31,6 @@ impl<N: Network> ToBytes for PrivateKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -43,12 +40,12 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new private key.
-            let expected = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let expected = PrivateKey::new(&mut rng)?;
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, PrivateKey::read_le(&expected_bytes[..])?);
-            assert!(PrivateKey::<CurrentNetwork>::read_le(&expected_bytes[1..]).is_err());
+            assert!(PrivateKey::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

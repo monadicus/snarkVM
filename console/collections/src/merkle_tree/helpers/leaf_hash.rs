@@ -36,8 +36,8 @@ pub trait LeafHash: Clone + Send + Sync {
     }
 }
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Hash = Field<E>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Hash = Field;
     type Leaf = Vec<bool>;
 
     /// Returns the hash of the given leaf node.
@@ -51,8 +51,8 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash for 
     }
 }
 
-impl<E: Environment, const RATE: usize> LeafHash for Poseidon<E, RATE> {
-    type Hash = Field<E>;
+impl<const RATE: usize> LeafHash for Poseidon<RATE> {
+    type Hash = Field;
     type Leaf = Vec<Self::Hash>;
 
     /// Returns the hash of the given leaf node.

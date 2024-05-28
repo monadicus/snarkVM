@@ -16,7 +16,7 @@ use super::*;
 
 static RECORD_CIPHERTEXT_PREFIX: &str = "record";
 
-impl<N: Network> Parser for Record<N, Ciphertext<N>> {
+impl Parser for Record<Ciphertext> {
     /// Parses a string into an ciphertext.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -33,7 +33,7 @@ impl<N: Network> Parser for Record<N, Ciphertext<N>> {
     }
 }
 
-impl<N: Network> FromStr for Record<N, Ciphertext<N>> {
+impl FromStr for Record<Ciphertext> {
     type Err = Error;
 
     /// Reads in the ciphertext string.
@@ -52,13 +52,13 @@ impl<N: Network> FromStr for Record<N, Ciphertext<N>> {
     }
 }
 
-impl<N: Network> Debug for Record<N, Ciphertext<N>> {
+impl Debug for Record<Ciphertext> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Record<N, Ciphertext<N>> {
+impl Display for Record<Ciphertext> {
     /// Writes the record ciphertext as a bech32m string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // Convert the ciphertext to bytes.

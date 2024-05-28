@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> Equal for Signature<N> {
-    type Output = Boolean<N>;
+impl Equal for Signature {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -28,8 +28,8 @@ impl<N: Network> Equal for Signature<N> {
     }
 }
 
-impl<N: Network> Ternary for Signature<N> {
-    type Boolean = Boolean<N>;
+impl Ternary for Signature {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.

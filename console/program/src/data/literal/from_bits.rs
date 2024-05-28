@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> Literal<N> {
+impl Literal {
     /// Initializes a new literal from a list of little-endian bits *without* trailing zeros.
     pub fn from_bits_le(variant: u8, bits_le: &[bool]) -> Result<Self> {
         let literal = bits_le;
         let literal = match variant {
-            0 => Literal::Address(Address::new(Group::from_x_coordinate(Field::<N>::from_bits_le(literal)?)?)),
+            0 => Literal::Address(Address::new(Group::from_x_coordinate(Field::from_bits_le(literal)?)?)),
             1 => match bits_le.len() {
                 1 => Literal::Boolean(Boolean::new(literal[0])),
                 _ => bail!("Expected a boolean literal, but found a list of {} bits.", bits_le.len()),
@@ -40,12 +42,12 @@ impl<N: Network> Literal<N> {
             15 => Literal::Signature(Box::new(Signature::from_bits_le(literal)?)),
             16 => {
                 let buffer = Vec::<u8>::from_bits_le(literal)?;
-                match buffer.len() <= N::MAX_STRING_BYTES as usize {
+                match buffer.len() <= AleoNetwork::MAX_STRING_BYTES as usize {
                     true => {
                         let string = String::from_utf8(buffer).map_err(|e| error(format!("{e}")))?;
                         Self::String(StringType::new(&string))
                     }
-                    false => bail!("String literal exceeds maximum length of {} bytes.", N::MAX_STRING_BYTES),
+                    false => bail!("String literal exceeds maximum length of {} bytes.", AleoNetwork::MAX_STRING_BYTES),
                 }
             }
             17.. => bail!("Failed to initialize literal variant {} from bits (LE)", variant),
@@ -78,12 +80,12 @@ impl<N: Network> Literal<N> {
             15 => Literal::Signature(Box::new(Signature::from_bits_be(literal)?)),
             16 => {
                 let buffer = Vec::<u8>::from_bits_be(literal)?;
-                match buffer.len() <= N::MAX_STRING_BYTES as usize {
+                match buffer.len() <= AleoNetwork::MAX_STRING_BYTES as usize {
                     true => {
                         let string = String::from_utf8(buffer).map_err(|e| error(format!("{e}")))?;
                         Self::String(StringType::new(&string))
                     }
-                    false => bail!("String literal exceeds maximum length of {} bytes.", N::MAX_STRING_BYTES),
+                    false => bail!("String literal exceeds maximum length of {} bytes.", AleoNetwork::MAX_STRING_BYTES),
                 }
             }
             17.. => bail!("Failed to initialize literal variant {} from bits (BE)", variant),
@@ -95,13 +97,10 @@ impl<N: Network> Literal<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u32 = 1000;
 
-    fn check_serialization(expected: Literal<CurrentNetwork>) -> Result<()> {
+    fn check_serialization(expected: Literal) -> Result<()> {
         println!("{expected}");
         assert_eq!(expected, Literal::from_bits_le(expected.variant(), &expected.to_bits_le())?);
         assert_eq!(expected, Literal::from_bits_be(expected.variant(), &expected.to_bits_be())?);
@@ -113,44 +112,44 @@ mod tests {
         let rng = &mut TestRng::default();
 
         for _ in 0..ITERATIONS {
-            let private_key = snarkvm_console_account::PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = snarkvm_console_account::PrivateKey::new(rng)?;
 
             // Address
-            check_serialization(Literal::<CurrentNetwork>::Address(Address::try_from(private_key)?))?;
+            check_serialization(Literal::Address(Address::try_from(private_key)?))?;
             // Boolean
-            check_serialization(Literal::<CurrentNetwork>::Boolean(Boolean::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::Boolean(Boolean::new(Uniform::rand(rng))))?;
             // Field
-            check_serialization(Literal::<CurrentNetwork>::Field(Uniform::rand(rng)))?;
+            check_serialization(Literal::Field(Uniform::rand(rng)))?;
             // Group
-            check_serialization(Literal::<CurrentNetwork>::Group(Uniform::rand(rng)))?;
+            check_serialization(Literal::Group(Uniform::rand(rng)))?;
             // I8
-            check_serialization(Literal::<CurrentNetwork>::I8(I8::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::I8(I8::new(Uniform::rand(rng))))?;
             // I16
-            check_serialization(Literal::<CurrentNetwork>::I16(I16::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::I16(I16::new(Uniform::rand(rng))))?;
             // I32
-            check_serialization(Literal::<CurrentNetwork>::I32(I32::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::I32(I32::new(Uniform::rand(rng))))?;
             // I64
-            check_serialization(Literal::<CurrentNetwork>::I64(I64::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::I64(I64::new(Uniform::rand(rng))))?;
             // I128
-            check_serialization(Literal::<CurrentNetwork>::I128(I128::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::I128(I128::new(Uniform::rand(rng))))?;
             // U8
-            check_serialization(Literal::<CurrentNetwork>::U8(U8::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::U8(U8::new(Uniform::rand(rng))))?;
             // U16
-            check_serialization(Literal::<CurrentNetwork>::U16(U16::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::U16(U16::new(Uniform::rand(rng))))?;
             // U32
-            check_serialization(Literal::<CurrentNetwork>::U32(U32::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::U32(U32::new(Uniform::rand(rng))))?;
             // U64
-            check_serialization(Literal::<CurrentNetwork>::U64(U64::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::U64(U64::new(Uniform::rand(rng))))?;
             // U128
-            check_serialization(Literal::<CurrentNetwork>::U128(U128::new(Uniform::rand(rng))))?;
+            check_serialization(Literal::U128(U128::new(Uniform::rand(rng))))?;
             // Scalar
-            check_serialization(Literal::<CurrentNetwork>::Scalar(Uniform::rand(rng)))?;
+            check_serialization(Literal::Scalar(Uniform::rand(rng)))?;
             // Signature
             check_serialization(Literal::sample(LiteralType::Signature, rng))?;
             // String
             // Sample a random string. Take 1/4th to ensure we fit for all code points.
             let string = rng.next_string(CurrentNetwork::MAX_STRING_BYTES / 4, false);
-            check_serialization(Literal::<CurrentNetwork>::String(StringType::new(&string)))?;
+            check_serialization(Literal::String(StringType::new(&string)))?;
         }
         Ok(())
     }

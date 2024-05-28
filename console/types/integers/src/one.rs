@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> One for Integer<E, I> {
+impl<I: IntegerType> One for Integer<I> {
     /// Returns the `1` element of the integer.
     fn one() -> Self {
         Self::new(I::one())

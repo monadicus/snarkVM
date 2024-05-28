@@ -22,33 +22,33 @@ use snarkvm_console_types::Field;
 
 /// The Merkle leaf for a function or transition in the transaction.
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub struct TransactionLeaf<N: Network> {
+pub struct TransactionLeaf {
     /// The variant of the Merkle leaf.
     variant: u8,
     /// The index of the Merkle leaf.
     index: u16,
     /// The ID.
-    id: Field<N>,
+    id: Field,
 }
 
-impl<N: Network> TransactionLeaf<N> {
+impl TransactionLeaf {
     /// Initializes a new instance of `TransactionLeaf`.
-    pub const fn new_deployment(index: u16, id: Field<N>) -> Self {
+    pub const fn new_deployment(index: u16, id: Field) -> Self {
         Self { variant: 0, index, id }
     }
 
     /// Initializes a new instance of `TransactionLeaf`.
-    pub const fn new_execution(index: u16, id: Field<N>) -> Self {
+    pub const fn new_execution(index: u16, id: Field) -> Self {
         Self { variant: 1, index, id }
     }
 
     /// Initializes a new instance of `TransactionLeaf`.
-    pub const fn new_fee(index: u16, id: Field<N>) -> Self {
+    pub const fn new_fee(index: u16, id: Field) -> Self {
         Self { variant: 1, index, id }
     }
 
     /// Initializes a new instance of `TransactionLeaf`.
-    pub const fn from(variant: u8, index: u16, id: Field<N>) -> Self {
+    pub const fn from(variant: u8, index: u16, id: Field) -> Self {
         Self { variant, index, id }
     }
 
@@ -63,7 +63,7 @@ impl<N: Network> TransactionLeaf<N> {
     }
 
     /// Returns the ID in the Merkle leaf.
-    pub const fn id(&self) -> Field<N> {
+    pub const fn id(&self) -> Field {
         self.id
     }
 }

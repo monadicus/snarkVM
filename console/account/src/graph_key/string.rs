@@ -16,7 +16,7 @@ use super::*;
 
 static GRAPH_KEY_PREFIX: [u8; 9] = [42, 72, 193, 144, 65, 126, 212, 229, 211]; // AGraphKey1
 
-impl<N: Network> FromStr for GraphKey<N> {
+impl FromStr for GraphKey {
     type Err = Error;
 
     /// Reads in an account graph key from a base58 string.
@@ -33,7 +33,7 @@ impl<N: Network> FromStr for GraphKey<N> {
     }
 }
 
-impl<N: Network> fmt::Display for GraphKey<N> {
+impl fmt::Display for GraphKey {
     /// Writes the account graph key as a base58 string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Write the graph key bytes.
@@ -49,9 +49,6 @@ impl<N: Network> fmt::Display for GraphKey<N> {
 mod tests {
     use super::*;
     use crate::PrivateKey;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -61,7 +58,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new graph key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let view_key = ViewKey::try_from(private_key)?;
             let expected = GraphKey::try_from(view_key)?;
 

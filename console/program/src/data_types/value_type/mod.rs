@@ -22,23 +22,23 @@ use snarkvm_console_network::prelude::*;
 use enum_index::EnumIndex;
 
 #[derive(Clone, PartialEq, Eq, Hash, EnumIndex)]
-pub enum ValueType<N: Network> {
+pub enum ValueType {
     /// A constant type.
-    Constant(PlaintextType<N>),
+    Constant(PlaintextType),
     /// A publicly-visible type.
-    Public(PlaintextType<N>),
+    Public(PlaintextType),
     /// A private type decrypted with the account owner's address.
-    Private(PlaintextType<N>),
+    Private(PlaintextType),
     /// A record type inherits its visibility from the record definition.
-    Record(Identifier<N>),
+    Record(Identifier),
     /// An external record type inherits its visibility from its record definition.
-    ExternalRecord(Locator<N>),
+    ExternalRecord(Locator),
     /// A publicly-visible future.
-    Future(Locator<N>),
+    Future(Locator),
 }
 
-impl<N: Network> From<EntryType<N>> for ValueType<N> {
-    fn from(entry: EntryType<N>) -> Self {
+impl From<EntryType> for ValueType {
+    fn from(entry: EntryType) -> Self {
         match entry {
             EntryType::Constant(plaintext) => ValueType::Constant(plaintext),
             EntryType::Public(plaintext) => ValueType::Public(plaintext),

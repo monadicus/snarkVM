@@ -16,7 +16,7 @@ use super::*;
 
 use snarkvm_utilities::DeserializeExt;
 
-impl<N: Network> Serialize for Request<N> {
+impl Serialize for Request {
     /// Serializes the request into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -40,7 +40,7 @@ impl<N: Network> Serialize for Request<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Request<N> {
+impl<'de> Deserialize<'de> for Request {
     /// Deserializes the request from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {

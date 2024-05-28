@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for TransactionLeaf<N> {
+impl FromBytes for TransactionLeaf {
     /// Reads the transaction leaf from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the variant.
@@ -28,7 +28,7 @@ impl<N: Network> FromBytes for TransactionLeaf<N> {
     }
 }
 
-impl<N: Network> ToBytes for TransactionLeaf<N> {
+impl ToBytes for TransactionLeaf {
     /// Writes the transaction leaf to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the variant.

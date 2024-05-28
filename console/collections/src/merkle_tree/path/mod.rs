@@ -15,18 +15,18 @@
 use super::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct MerklePath<E: Environment, const DEPTH: u8> {
+pub struct MerklePath<const DEPTH: u8> {
     /// The leaf index for the path.
-    leaf_index: U64<E>,
+    leaf_index: U64,
     /// The `siblings` contains a list of sibling hashes from the leaf to the root.
-    siblings: Vec<Field<E>>,
+    siblings: Vec<Field>,
 }
 
-impl<E: Environment, const DEPTH: u8> TryFrom<(U64<E>, Vec<Field<E>>)> for MerklePath<E, DEPTH> {
+impl<const DEPTH: u8> TryFrom<(U64, Vec<Field>)> for MerklePath<DEPTH> {
     type Error = Error;
 
     /// Returns a new instance of a Merkle path.
-    fn try_from((leaf_index, siblings): (U64<E>, Vec<Field<E>>)) -> Result<Self> {
+    fn try_from((leaf_index, siblings): (U64, Vec<Field>)) -> Result<Self> {
         // Ensure the Merkle tree depth is greater than 0.
         ensure!(DEPTH > 0, "Merkle tree depth must be greater than 0");
         // Ensure the Merkle tree depth is less than or equal to 64.
@@ -40,19 +40,19 @@ impl<E: Environment, const DEPTH: u8> TryFrom<(U64<E>, Vec<Field<E>>)> for Merkl
     }
 }
 
-impl<E: Environment, const DEPTH: u8> MerklePath<E, DEPTH> {
+impl<const DEPTH: u8> MerklePath<DEPTH> {
     /// Returns the leaf index for the path.
-    pub fn leaf_index(&self) -> U64<E> {
+    pub fn leaf_index(&self) -> U64 {
         self.leaf_index
     }
 
     /// Returns the siblings for the path.
-    pub fn siblings(&self) -> &[Field<E>] {
+    pub fn siblings(&self) -> &[Field] {
         &self.siblings
     }
 
     /// Returns `true` if the Merkle path is valid for the given root and leaf.
-    pub fn verify<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>>(
+    pub fn verify<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>>(
         &self,
         leaf_hasher: &LH,
         path_hasher: &PH,
@@ -106,7 +106,7 @@ impl<E: Environment, const DEPTH: u8> MerklePath<E, DEPTH> {
     }
 }
 
-impl<E: Environment, const DEPTH: u8> FromBytes for MerklePath<E, DEPTH> {
+impl<const DEPTH: u8> FromBytes for MerklePath<DEPTH> {
     /// Reads in a Merkle path from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -120,7 +120,7 @@ impl<E: Environment, const DEPTH: u8> FromBytes for MerklePath<E, DEPTH> {
     }
 }
 
-impl<E: Environment, const DEPTH: u8> ToBytes for MerklePath<E, DEPTH> {
+impl<const DEPTH: u8> ToBytes for MerklePath<DEPTH> {
     /// Writes the Merkle path to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
@@ -131,16 +131,16 @@ impl<E: Environment, const DEPTH: u8> ToBytes for MerklePath<E, DEPTH> {
     }
 }
 
-impl<E: Environment, const DEPTH: u8> Serialize for MerklePath<E, DEPTH> {
+impl<const DEPTH: u8> Serialize for MerklePath<DEPTH> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         ToBytesSerializer::serialize(self, serializer)
     }
 }
 
-impl<'de, E: Environment, const DEPTH: u8> Deserialize<'de> for MerklePath<E, DEPTH> {
+impl<'de, const DEPTH: u8> Deserialize<'de> for MerklePath<DEPTH> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         // Compute the size for: u64 + (Field::SIZE_IN_BYTES * DEPTH).
-        let size = 8 + DEPTH as usize * (Field::<E>::size_in_bits() + 7) / 8;
+        let size = 8 + DEPTH as usize * (Field::size_in_bits() + 7) / 8;
         FromBytesDeserializer::<Self>::deserialize(deserializer, "Merkle path", size)
     }
 }

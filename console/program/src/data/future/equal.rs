@@ -14,17 +14,17 @@
 
 use super::*;
 
-impl<N: Network> Eq for Future<N> {}
+impl Eq for Future {}
 
-impl<N: Network> PartialEq for Future<N> {
+impl PartialEq for Future {
     /// Returns `true` if `self` and `other` are equal.
     fn eq(&self, other: &Self) -> bool {
         *self.is_equal(other)
     }
 }
 
-impl<N: Network> Equal<Self> for Future<N> {
-    type Output = Boolean<N>;
+impl Equal<Self> for Future {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

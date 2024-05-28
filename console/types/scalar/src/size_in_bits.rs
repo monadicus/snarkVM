@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBits for Scalar<E> {
+impl SizeInBits for Scalar {
     /// Returns the scalar size in bits.
     #[inline]
     fn size_in_bits() -> usize {
@@ -22,7 +22,7 @@ impl<E: Environment> SizeInBits for Scalar<E> {
     }
 }
 
-impl<E: Environment> SizeInDataBits for Scalar<E> {
+impl SizeInDataBits for Scalar {
     /// Returns the scalar capacity for data bits.
     #[inline]
     fn size_in_data_bits() -> usize {

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> FromBytes for Field<E> {
+impl FromBytes for Field {
     /// Reads the field from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -22,7 +22,7 @@ impl<E: Environment> FromBytes for Field<E> {
     }
 }
 
-impl<E: Environment> ToBytes for Field<E> {
+impl ToBytes for Field {
     /// Writes the field to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {

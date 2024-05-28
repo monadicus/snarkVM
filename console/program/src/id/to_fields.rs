@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> ToFields for ProgramID<N> {
-    type Field = Field<N>;
+impl ToFields for ProgramID {
+    type Field = Field;
 
     /// Returns this program ID as a list of field elements.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {

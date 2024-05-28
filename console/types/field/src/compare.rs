@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Ord for Field<E> {
+impl Ord for Field {
     /// Returns the lexicographic ordering of `self` and `other`.
     #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
@@ -22,7 +22,7 @@ impl<E: Environment> Ord for Field<E> {
     }
 }
 
-impl<E: Environment> PartialOrd for Field<E> {
+impl PartialOrd for Field {
     /// Returns the lexicographic ordering of `self` and `other`.
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {

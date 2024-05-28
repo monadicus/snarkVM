@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> StatePath<N> {
+impl StatePath {
     /// Checks if the state path is valid.
     ///
     /// # Parameters
@@ -51,12 +51,16 @@ impl<N: Network> StatePath<N> {
     ///                                                                                 |
     ///                                                                          transition_leaf
     /// ```
-    pub fn verify(&self, is_global: bool, local_state_root: Field<N>) -> Result<()> {
+    pub fn verify(&self, is_global: bool, local_state_root: Field) -> Result<()> {
         // Ensure the transition leaf variant is 3 (Input::Record).
         ensure!(self.transition_leaf.variant() == 3, "Transition leaf variant must be 3 (Input::Record)");
         // Ensure the transition path is valid.
         ensure!(
-            N::verify_merkle_path_bhp(&self.transition_path, &self.transition_root, &self.transition_leaf.to_bits_le()),
+            AleoNetwork::verify_merkle_path_bhp(
+                &self.transition_path,
+                &self.transition_root,
+                &self.transition_leaf.to_bits_le()
+            ),
             "'{}' (an input or output ID) does not belong to '{}' (a function or transition)",
             self.transition_leaf.id(),
             self.transaction_leaf.id()
@@ -64,7 +68,7 @@ impl<N: Network> StatePath<N> {
 
         // Ensure the transaction leaf is correct.
         ensure!(
-            *self.transaction_leaf.id() == *N::hash_bhp512(&(*self.transition_root, self.tcm).to_bits_le())?,
+            *self.transaction_leaf.id() == *AleoNetwork::hash_bhp512(&(*self.transition_root, self.tcm).to_bits_le())?,
             "Transaction leaf id '{}' is incorrect. Double-check the tcm and transition root.",
             self.transaction_leaf.id()
         );
@@ -73,7 +77,7 @@ impl<N: Network> StatePath<N> {
         ensure!(self.transaction_leaf.variant() == 1, "Transaction leaf variant must be 1 (Transaction::Execution)");
         // Ensure the transaction path is valid.
         ensure!(
-            N::verify_merkle_path_bhp(
+            AleoNetwork::verify_merkle_path_bhp(
                 &self.transaction_path,
                 &self.transaction_id,
                 &self.transaction_leaf.to_bits_le()
@@ -88,7 +92,7 @@ impl<N: Network> StatePath<N> {
             ensure!(self.header_leaf.index() == 1, "Header leaf index must be 1 (Header::transactions_root)");
             // Ensure the transactions path is valid.
             ensure!(
-                N::verify_merkle_path_bhp(
+                AleoNetwork::verify_merkle_path_bhp(
                     &self.transactions_path,
                     &self.header_leaf.id(),
                     &self.transaction_id.to_bits_le()
@@ -99,20 +103,29 @@ impl<N: Network> StatePath<N> {
             );
             // Ensure the header path is valid.
             ensure!(
-                N::verify_merkle_path_bhp(&self.header_path, &self.header_root, &self.header_leaf.to_bits_le()),
+                AleoNetwork::verify_merkle_path_bhp(
+                    &self.header_path,
+                    &self.header_root,
+                    &self.header_leaf.to_bits_le()
+                ),
                 "'{}' (a header leaf) does not belong to '{}' (a block header)",
                 self.header_leaf,
                 self.block_hash
             );
             // Ensure the block hash is correct.
             ensure!(
-                *self.block_hash == N::hash_bhp1024(&to_bits_le![(*self.previous_block_hash), self.header_root])?,
+                *self.block_hash
+                    == AleoNetwork::hash_bhp1024(&to_bits_le![(*self.previous_block_hash), self.header_root])?,
                 "Block hash '{}' is incorrect. Double-check the previous block hash and block header root.",
                 self.block_hash
             );
             // Ensure the global state root is correct.
             ensure!(
-                N::verify_merkle_path_bhp(&self.block_path, &self.global_state_root, &self.block_hash.to_bits_le()),
+                AleoNetwork::verify_merkle_path_bhp(
+                    &self.block_path,
+                    &self.global_state_root,
+                    &self.block_hash.to_bits_le()
+                ),
                 "'{}' (a block hash) does not belong to '{}' (a global state root)",
                 self.block_hash,
                 self.global_state_root

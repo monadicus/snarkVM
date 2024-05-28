@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Identifier<N> {
+impl Serialize for Identifier {
     /// Serializes the identifier into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Identifier<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Identifier<N> {
+impl<'de> Deserialize<'de> for Identifier {
     /// Deserializes the identifier from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -38,9 +38,6 @@ impl<'de, N: Network> Deserialize<'de> for Identifier<N> {
 mod tests {
     use super::*;
     use crate::data::identifier::tests::sample_identifier;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -50,7 +47,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric identifier, that always starts with an alphabetic character.
-            let expected = sample_identifier::<CurrentNetwork>(&mut rng)?;
+            let expected = sample_identifier(&mut rng)?;
 
             // Serialize
             let expected_string = &expected.to_string();
@@ -70,7 +67,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric identifier, that always starts with an alphabetic character.
-            let expected = sample_identifier::<CurrentNetwork>(&mut rng)?;
+            let expected = sample_identifier(&mut rng)?;
 
             // Serialize
             let expected_bytes = expected.to_bytes_le()?;

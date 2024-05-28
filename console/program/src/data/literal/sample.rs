@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Literal<N> {
+impl Literal {
     /// Returns a randomly-sampled literal of the given literal type.
     pub fn sample<R: Rng + CryptoRng>(literal_type: LiteralType, rng: &mut R) -> Self {
         match literal_type {

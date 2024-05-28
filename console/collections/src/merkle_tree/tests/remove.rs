@@ -14,9 +14,6 @@
 
 use super::*;
 use snarkvm_console_algorithms::{Poseidon, BHP1024, BHP512};
-use snarkvm_console_types::prelude::Console;
-
-type CurrentEnvironment = Console;
 
 const ITERATIONS: u128 = 10;
 
@@ -25,14 +22,14 @@ const ITERATIONS: u128 = 10;
 /// 2. Add the additional leaves to the a clone of the original Merkle tree.
 /// 3. Remove the additional leaves from the clone of the original Merkle tree.
 /// 4. Check that the two Merkle trees are equal.
-fn check_merkle_tree<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>, const DEPTH: u8>(
+fn check_merkle_tree<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>, const DEPTH: u8>(
     leaf_hasher: &LH,
     path_hasher: &PH,
     leaves: &[LH::Leaf],
     additional_leaves: &[LH::Leaf],
 ) -> Result<()> {
     // Construct the Merkle tree for the given leaves.
-    let merkle_tree = MerkleTree::<E, LH, PH, DEPTH>::new(leaf_hasher, path_hasher, leaves)?;
+    let merkle_tree = MerkleTree::<LH, PH, DEPTH>::new(leaf_hasher, path_hasher, leaves)?;
     assert_eq!(leaves.len(), merkle_tree.number_of_leaves);
 
     // Append additional leaves to a new Merkle tree.
@@ -71,8 +68,8 @@ fn check_merkle_tree<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash
 #[test]
 fn test_merkle_tree_bhp_remove() -> Result<()> {
     fn run_test<const DEPTH: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = BHP1024<CurrentEnvironment>;
-        type PH = BHP512<CurrentEnvironment>;
+        type LH = BHP1024;
+        type PH = BHP512;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -87,12 +84,8 @@ fn test_merkle_tree_bhp_remove() -> Result<()> {
                 check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
-                    &(0..num_leaves)
-                        .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                        .collect::<Vec<Vec<bool>>>(),
-                    &(0..num_additional_leaves)
-                        .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                        .collect::<Vec<Vec<bool>>>(),
+                    &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+                    &(0..num_additional_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
                 )?;
             }
         }
@@ -114,12 +107,8 @@ fn test_merkle_tree_bhp_remove() -> Result<()> {
             check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
                 &leaf_hasher,
                 &path_hasher,
-                &(0..num_leaves)
-                    .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                    .collect::<Vec<Vec<bool>>>(),
-                &(0..num_additional_leaves)
-                    .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                    .collect::<Vec<Vec<bool>>>(),
+                &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+                &(0..num_additional_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
             )?;
         }
 

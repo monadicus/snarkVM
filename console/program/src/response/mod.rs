@@ -13,52 +13,52 @@
 // limitations under the License.
 
 use crate::{compute_function_id, Identifier, ProgramID, Register, Value, ValueType};
-use snarkvm_console_network::Network;
+use snarkvm_console_network::AleoNetwork;
 use snarkvm_console_types::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum OutputID<N: Network> {
+pub enum OutputID {
     /// The hash of the constant output.
-    Constant(Field<N>),
+    Constant(Field),
     /// The hash of the public output.
-    Public(Field<N>),
+    Public(Field),
     /// The ciphertext hash of the private output.
-    Private(Field<N>),
+    Private(Field),
     /// The `(commitment, checksum)` tuple of the record output.
-    Record(Field<N>, Field<N>),
+    Record(Field, Field),
     /// The hash of the external record output.
-    ExternalRecord(Field<N>),
+    ExternalRecord(Field),
     /// The hash of the future output.
-    Future(Field<N>),
+    Future(Field),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Response<N: Network> {
+pub struct Response {
     /// The output ID for the transition.
-    output_ids: Vec<OutputID<N>>,
+    output_ids: Vec<OutputID>,
     /// The function outputs.
-    outputs: Vec<Value<N>>,
+    outputs: Vec<Value>,
 }
 
-impl<N: Network> From<(Vec<OutputID<N>>, Vec<Value<N>>)> for Response<N> {
+impl From<(Vec<OutputID>, Vec<Value>)> for Response {
     /// Note: This method is used to eject from a circuit.
-    fn from((output_ids, outputs): (Vec<OutputID<N>>, Vec<Value<N>>)) -> Self {
+    fn from((output_ids, outputs): (Vec<OutputID>, Vec<Value>)) -> Self {
         Self { output_ids, outputs }
     }
 }
 
-impl<N: Network> Response<N> {
+impl Response {
     /// Initializes a new response.
     pub fn new(
-        network_id: &U16<N>,
-        program_id: &ProgramID<N>,
-        function_name: &Identifier<N>,
+        network_id: &U16,
+        program_id: &ProgramID,
+        function_name: &Identifier,
         num_inputs: usize,
-        tvk: &Field<N>,
-        tcm: &Field<N>,
-        outputs: Vec<Value<N>>,
-        output_types: &[ValueType<N>],
-        output_operands: &[Option<Register<N>>],
+        tvk: &Field,
+        tcm: &Field,
+        outputs: Vec<Value>,
+        output_types: &[ValueType],
+        output_operands: &[Option<Register>],
     ) -> Result<Self> {
         // Compute the function ID.
         let function_id = compute_function_id(network_id, program_id, function_name)?;
@@ -77,9 +77,8 @@ impl<N: Network> Response<N> {
                         ensure!(matches!(output, Value::Plaintext(..)), "Expected a plaintext output");
 
                         // Construct the (console) output index as a field element.
-                        let index = Field::from_u16(
-                            u16::try_from(num_inputs + index).or_halt_with::<N>("Output index exceeds u16"),
-                        );
+                        let index =
+                            Field::from_u16(u16::try_from(num_inputs + index).or_halt_with("Output index exceeds u16"));
                         // Construct the preimage as `(function ID || output || tcm || index)`.
                         let mut preimage = Vec::new();
                         preimage.push(function_id);
@@ -87,7 +86,7 @@ impl<N: Network> Response<N> {
                         preimage.push(*tcm);
                         preimage.push(index);
                         // Hash the output to a field element.
-                        let output_hash = N::hash_psd8(&preimage)?;
+                        let output_hash = AleoNetwork::hash_psd8(&preimage)?;
 
                         // Return the output ID.
                         Ok(OutputID::Constant(output_hash))
@@ -98,9 +97,8 @@ impl<N: Network> Response<N> {
                         ensure!(matches!(output, Value::Plaintext(..)), "Expected a plaintext output");
 
                         // Construct the (console) output index as a field element.
-                        let index = Field::from_u16(
-                            u16::try_from(num_inputs + index).or_halt_with::<N>("Output index exceeds u16"),
-                        );
+                        let index =
+                            Field::from_u16(u16::try_from(num_inputs + index).or_halt_with("Output index exceeds u16"));
                         // Construct the preimage as `(function ID || output || tcm || index)`.
                         let mut preimage = Vec::new();
                         preimage.push(function_id);
@@ -108,7 +106,7 @@ impl<N: Network> Response<N> {
                         preimage.push(*tcm);
                         preimage.push(index);
                         // Hash the output to a field element.
-                        let output_hash = N::hash_psd8(&preimage)?;
+                        let output_hash = AleoNetwork::hash_psd8(&preimage)?;
 
                         // Return the output ID.
                         Ok(OutputID::Public(output_hash))
@@ -118,11 +116,10 @@ impl<N: Network> Response<N> {
                         // Ensure the output is a plaintext.
                         ensure!(matches!(output, Value::Plaintext(..)), "Expected a plaintext output");
                         // Construct the (console) output index as a field element.
-                        let index = Field::from_u16(
-                            u16::try_from(num_inputs + index).or_halt_with::<N>("Output index exceeds u16"),
-                        );
+                        let index =
+                            Field::from_u16(u16::try_from(num_inputs + index).or_halt_with("Output index exceeds u16"));
                         // Compute the output view key as `Hash(function ID || tvk || index)`.
-                        let output_view_key = N::hash_psd4(&[function_id, *tvk, index])?;
+                        let output_view_key = AleoNetwork::hash_psd4(&[function_id, *tvk, index])?;
                         // Compute the ciphertext.
                         let ciphertext = match &output {
                             Value::Plaintext(plaintext) => plaintext.encrypt_symmetric(output_view_key)?,
@@ -131,7 +128,7 @@ impl<N: Network> Response<N> {
                             Value::Future(..) => bail!("Expected a plaintext output, found a future output"),
                         };
                         // Hash the ciphertext to a field element.
-                        let output_hash = N::hash_psd8(&ciphertext.to_fields()?)?;
+                        let output_hash = AleoNetwork::hash_psd8(&ciphertext.to_fields()?)?;
                         // Return the output ID.
                         Ok(OutputID::Private(output_hash))
                     }
@@ -157,12 +154,12 @@ impl<N: Network> Response<N> {
                         // Construct the (console) output index as a field element.
                         let index = Field::from_u64(output_register.locator());
                         // Compute the encryption randomizer as `HashToScalar(tvk || index)`.
-                        let randomizer = N::hash_to_scalar_psd2(&[*tvk, index])?;
+                        let randomizer = AleoNetwork::hash_to_scalar_psd2(&[*tvk, index])?;
 
                         // Encrypt the record, using the randomizer.
                         let encrypted_record = record.encrypt(randomizer)?;
                         // Compute the record checksum, as the hash of the encrypted record.
-                        let checksum = N::hash_bhp1024(&encrypted_record.to_bits_le())?;
+                        let checksum = AleoNetwork::hash_bhp1024(&encrypted_record.to_bits_le())?;
 
                         // Return the output ID.
                         Ok(OutputID::Record(commitment, checksum))
@@ -173,9 +170,8 @@ impl<N: Network> Response<N> {
                         ensure!(matches!(output, Value::Record(..)), "Expected a record output");
 
                         // Construct the (console) output index as a field element.
-                        let index = Field::from_u16(
-                            u16::try_from(num_inputs + index).or_halt_with::<N>("Output index exceeds u16"),
-                        );
+                        let index =
+                            Field::from_u16(u16::try_from(num_inputs + index).or_halt_with("Output index exceeds u16"));
                         // Construct the preimage as `(function ID || output || tvk || index)`.
                         let mut preimage = Vec::new();
                         preimage.push(function_id);
@@ -183,7 +179,7 @@ impl<N: Network> Response<N> {
                         preimage.push(*tvk);
                         preimage.push(index);
                         // Hash the output to a field element.
-                        let output_hash = N::hash_psd8(&preimage)?;
+                        let output_hash = AleoNetwork::hash_psd8(&preimage)?;
 
                         // Return the output ID.
                         Ok(OutputID::ExternalRecord(output_hash))
@@ -194,9 +190,8 @@ impl<N: Network> Response<N> {
                         ensure!(matches!(output, Value::Future(..)), "Expected a future output");
 
                         // Construct the (console) output index as a field element.
-                        let index = Field::from_u16(
-                            u16::try_from(num_inputs + index).or_halt_with::<N>("Output index exceeds u16"),
-                        );
+                        let index =
+                            Field::from_u16(u16::try_from(num_inputs + index).or_halt_with("Output index exceeds u16"));
                         // Construct the preimage as `(function ID || output || tcm || index)`.
                         let mut preimage = Vec::new();
                         preimage.push(function_id);
@@ -204,7 +199,7 @@ impl<N: Network> Response<N> {
                         preimage.push(*tcm);
                         preimage.push(index);
                         // Hash the output to a field element.
-                        let output_hash = N::hash_psd8(&preimage)?;
+                        let output_hash = AleoNetwork::hash_psd8(&preimage)?;
 
                         // Return the output ID.
                         Ok(OutputID::Future(output_hash))
@@ -217,12 +212,12 @@ impl<N: Network> Response<N> {
     }
 
     /// Returns the output ID for the transition.
-    pub fn output_ids(&self) -> &[OutputID<N>] {
+    pub fn output_ids(&self) -> &[OutputID] {
         &self.output_ids
     }
 
     /// Returns the function outputs.
-    pub fn outputs(&self) -> &[Value<N>] {
+    pub fn outputs(&self) -> &[Value] {
         &self.outputs
     }
 }

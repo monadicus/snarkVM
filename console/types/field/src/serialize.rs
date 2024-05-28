@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Serialize for Field<E> {
+impl Serialize for Field {
     /// Serializes the field into a string or as bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<E: Environment> Serialize for Field<E> {
     }
 }
 
-impl<'de, E: Environment> Deserialize<'de> for Field<E> {
+impl<'de> Deserialize<'de> for Field {
     /// Deserializes the field from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, E: Environment> Deserialize<'de> for Field<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 1000;
 
@@ -49,7 +46,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new field.
-            let expected = Field::<CurrentEnvironment>::new(Uniform::rand(&mut rng));
+            let expected = Field::new(Uniform::rand(&mut rng));
 
             // Serialize
             let expected_string = &expected.to_string();
@@ -69,7 +66,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new field.
-            let expected = Field::<CurrentEnvironment>::new(Uniform::rand(&mut rng));
+            let expected = Field::new(Uniform::rand(&mut rng));
 
             // Serialize
             let expected_bytes = expected.to_bytes_le()?;

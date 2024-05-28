@@ -14,19 +14,19 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for ComputeKey<N> {
+impl FromBytes for ComputeKey {
     /// Reads an account compute key from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
-        let pk_sig =
-            Group::from_x_coordinate(Field::new(N::Field::read_le(&mut reader)?)).map_err(|e| error(format!("{e}")))?;
-        let pr_sig =
-            Group::from_x_coordinate(Field::new(N::Field::read_le(&mut reader)?)).map_err(|e| error(format!("{e}")))?;
+        let pk_sig = Group::from_x_coordinate(Field::new(ConsoleField::read_le(&mut reader)?))
+            .map_err(|e| error(format!("{e}")))?;
+        let pr_sig = Group::from_x_coordinate(Field::new(ConsoleField::read_le(&mut reader)?))
+            .map_err(|e| error(format!("{e}")))?;
         Self::try_from((pk_sig, pr_sig)).map_err(|e| error(format!("{e}")))
     }
 }
 
-impl<N: Network> ToBytes for ComputeKey<N> {
+impl ToBytes for ComputeKey {
     /// Writes an account compute key to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.pk_sig.to_x_coordinate().write_le(&mut writer)?;

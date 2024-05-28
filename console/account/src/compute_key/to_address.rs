@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<N: Network> ComputeKey<N> {
+impl ComputeKey {
     /// Returns the address corresponding to the compute key.
-    pub fn to_address(&self) -> Address<N> {
+    pub fn to_address(&self) -> Address {
         // Compute pk_prf := G^sk_prf.
-        let pk_prf = N::g_scalar_multiply(&self.sk_prf);
+        let pk_prf = AleoNetwork::g_scalar_multiply(&self.sk_prf);
         // Compute the address := pk_sig + pr_sig + pk_prf.
         Address::new(self.pk_sig + self.pr_sig + pk_prf)
     }
@@ -27,9 +27,6 @@ impl<N: Network> ComputeKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -39,7 +36,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new compute key and address.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let compute_key = ComputeKey::try_from(private_key)?;
             let address = Address::try_from(private_key)?;
 

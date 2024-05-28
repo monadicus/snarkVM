@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Value<N> {
+impl FromBytes for Value {
     /// Reads the entry from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the index.
@@ -30,7 +30,7 @@ impl<N: Network> FromBytes for Value<N> {
     }
 }
 
-impl<N: Network> ToBytes for Value<N> {
+impl ToBytes for Value {
     /// Writes the entry to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {

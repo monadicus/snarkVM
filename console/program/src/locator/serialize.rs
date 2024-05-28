@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Locator<N> {
+impl Serialize for Locator {
     /// Serializes the locator into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Locator<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Locator<N> {
+impl<'de> Deserialize<'de> for Locator {
     /// Deserializes the locator from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,9 +37,6 @@ impl<'de, N: Network> Deserialize<'de> for Locator<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     /// Add test cases here to be checked for serialization.
     const TEST_CASES: &[&str] = &["testing.aleo/abc", "hello.aleo/u1r02r", "hello_world.aleo/foo", "foo123.aleo/run"];
@@ -77,14 +74,14 @@ mod tests {
     #[test]
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
-            check_serde_json(Locator::<CurrentNetwork>::from_str(case).unwrap());
+            check_serde_json(Locator::from_str(case).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for case in TEST_CASES.iter() {
-            check_bincode(Locator::<CurrentNetwork>::from_str(case).unwrap());
+            check_bincode(Locator::from_str(case).unwrap());
         }
     }
 }

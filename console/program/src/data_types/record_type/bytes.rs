@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for RecordType<N> {
+impl FromBytes for RecordType {
     /// Reads a record type from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the name of the record type.
@@ -25,10 +25,10 @@ impl<N: Network> FromBytes for RecordType<N> {
         // Read the number of entries.
         let num_entries = u16::read_le(&mut reader)?;
         // Ensure the number of entries is within the maximum limit.
-        if num_entries as usize > N::MAX_DATA_ENTRIES {
+        if num_entries as usize > AleoNetwork::MAX_DATA_ENTRIES {
             return Err(error(format!(
                 "RecordType exceeds size: expected <= {}, found {num_entries}",
-                N::MAX_DATA_ENTRIES
+                AleoNetwork::MAX_DATA_ENTRIES
             )));
         }
         // Read the entries.
@@ -51,7 +51,7 @@ impl<N: Network> FromBytes for RecordType<N> {
             return Err(error(format!("Duplicate entry type found in record '{name}'")));
         }
         // Ensure the number of members is within the maximum limit.
-        if entries.len() > N::MAX_DATA_ENTRIES {
+        if entries.len() > AleoNetwork::MAX_DATA_ENTRIES {
             return Err(error("Failed to parse record: too many entries"));
         }
 
@@ -59,11 +59,11 @@ impl<N: Network> FromBytes for RecordType<N> {
     }
 }
 
-impl<N: Network> ToBytes for RecordType<N> {
+impl ToBytes for RecordType {
     /// Writes the record type to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Ensure the number of entries is within the maximum limit.
-        if self.entries.len() > N::MAX_DATA_ENTRIES {
+        if self.entries.len() > AleoNetwork::MAX_DATA_ENTRIES {
             return Err(error("Failed to serialize record: too many entries"));
         }
 
@@ -73,7 +73,7 @@ impl<N: Network> ToBytes for RecordType<N> {
         self.owner.write_le(&mut writer)?;
 
         // Write the number of entries.
-        u16::try_from(self.entries.len()).or_halt_with::<N>("Record length exceeds u16").write_le(&mut writer)?;
+        u16::try_from(self.entries.len()).or_halt_with("Record length exceeds u16").write_le(&mut writer)?;
         // Write the entries as bytes.
         for (identifier, value_type) in &self.entries {
             // Write the identifier.

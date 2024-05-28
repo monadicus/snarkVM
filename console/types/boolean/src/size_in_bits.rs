@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBits for Boolean<E> {
+impl SizeInBits for Boolean {
     /// Returns the field size in bits.
     #[inline]
     fn size_in_bits() -> usize {
@@ -22,7 +22,7 @@ impl<E: Environment> SizeInBits for Boolean<E> {
     }
 }
 
-impl<E: Environment> SizeInDataBits for Boolean<E> {
+impl SizeInDataBits for Boolean {
     /// Returns the field capacity for data bits.
     #[inline]
     fn size_in_data_bits() -> usize {

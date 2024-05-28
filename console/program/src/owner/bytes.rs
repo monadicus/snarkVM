@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for ProgramOwner<N> {
+impl FromBytes for ProgramOwner {
     /// Reads the program owner from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the version.
@@ -34,7 +34,7 @@ impl<N: Network> FromBytes for ProgramOwner<N> {
     }
 }
 
-impl<N: Network> ToBytes for ProgramOwner<N> {
+impl ToBytes for ProgramOwner {
     /// Writes the program owner to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the version.

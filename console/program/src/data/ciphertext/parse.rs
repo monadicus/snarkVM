@@ -16,7 +16,7 @@ use super::*;
 
 static CIPHERTEXT_PREFIX: &str = "ciphertext";
 
-impl<N: Network> Parser for Ciphertext<N> {
+impl Parser for Ciphertext {
     /// Parses a string into an ciphertext.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -33,7 +33,7 @@ impl<N: Network> Parser for Ciphertext<N> {
     }
 }
 
-impl<N: Network> FromStr for Ciphertext<N> {
+impl FromStr for Ciphertext {
     type Err = Error;
 
     /// Reads in the ciphertext string.
@@ -52,13 +52,13 @@ impl<N: Network> FromStr for Ciphertext<N> {
     }
 }
 
-impl<N: Network> Debug for Ciphertext<N> {
+impl Debug for Ciphertext {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Ciphertext<N> {
+impl Display for Ciphertext {
     /// Writes the ciphertext as a bech32m string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // Convert the ciphertext to bytes.
@@ -74,27 +74,23 @@ impl<N: Network> Display for Ciphertext<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1_000;
 
     #[test]
     fn test_parse() -> Result<()> {
         // Ensure type and empty value fails.
-        assert!(Ciphertext::<CurrentNetwork>::parse(&format!("{CIPHERTEXT_PREFIX}1")).is_err());
-        assert!(Ciphertext::<CurrentNetwork>::parse("").is_err());
+        assert!(Ciphertext::parse(&format!("{CIPHERTEXT_PREFIX}1")).is_err());
+        assert!(Ciphertext::parse("").is_err());
 
         let mut rng = TestRng::default();
 
         for _ in 0..ITERATIONS {
             // Sample a new ciphertext.
-            let ciphertext =
-                Ciphertext::<CurrentNetwork>((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
+            let ciphertext = Ciphertext((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
 
             let expected = format!("{ciphertext}");
-            let (remainder, candidate) = Ciphertext::<CurrentNetwork>::parse(&expected).unwrap();
+            let (remainder, candidate) = Ciphertext::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!(CIPHERTEXT_PREFIX, candidate.to_string().split('1').next().unwrap());
             assert_eq!("", remainder);
@@ -108,7 +104,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new ciphertext.
-            let expected = Ciphertext::<CurrentNetwork>((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
+            let expected = Ciphertext((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
 
             // Check the string representation.
             let candidate = format!("{expected}");
@@ -124,13 +120,13 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new ciphertext.
-            let expected = Ciphertext::<CurrentNetwork>((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
+            let expected = Ciphertext((0..100).map(|_| Uniform::rand(&mut rng)).collect::<Vec<_>>());
 
             let candidate = expected.to_string();
             assert_eq!(format!("{expected}"), candidate);
             assert_eq!(CIPHERTEXT_PREFIX, candidate.split('1').next().unwrap());
 
-            let candidate_recovered = Ciphertext::<CurrentNetwork>::from_str(&candidate.to_string())?;
+            let candidate_recovered = Ciphertext::from_str(&candidate.to_string())?;
             assert_eq!(expected, candidate_recovered);
         }
         Ok(())

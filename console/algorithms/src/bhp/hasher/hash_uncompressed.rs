@@ -16,11 +16,9 @@ use super::*;
 
 use std::borrow::Cow;
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed
-    for BHPHasher<E, NUM_WINDOWS, WINDOW_SIZE>
-{
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed for BHPHasher<NUM_WINDOWS, WINDOW_SIZE> {
     type Input = bool;
-    type Output = Group<E>;
+    type Output = Group;
 
     /// Returns the BHP hash of the given input as an affine group element.
     ///

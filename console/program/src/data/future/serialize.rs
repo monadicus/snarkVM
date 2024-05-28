@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Future<N> {
+impl Serialize for Future {
     /// Serializes the future into a string or as bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for Future<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Future<N> {
+impl<'de> Deserialize<'de> for Future {
     /// Deserializes the future from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {

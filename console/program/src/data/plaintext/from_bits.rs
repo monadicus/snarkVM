@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> FromBits for Plaintext<N> {
+impl FromBits for Plaintext {
     /// Initializes a new plaintext from a list of little-endian bits *without* trailing zeros.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
         let bits = bits_le;
@@ -52,7 +54,7 @@ impl<N: Network> FromBits for Plaintext<N> {
         // Struct
         else if variant == [false, true] {
             let num_members = u8::from_bits_le(next_bits(8)?)?;
-            if num_members as usize > N::MAX_STRUCT_ENTRIES {
+            if num_members as usize > AleoNetwork::MAX_STRUCT_ENTRIES {
                 bail!("Struct exceeds maximum of entries.");
             }
 
@@ -75,7 +77,7 @@ impl<N: Network> FromBits for Plaintext<N> {
         // Array
         else if variant == [true, false] {
             let num_elements = u32::from_bits_le(next_bits(32)?)?;
-            if num_elements as usize > N::MAX_ARRAY_ELEMENTS {
+            if num_elements as usize > AleoNetwork::MAX_ARRAY_ELEMENTS {
                 bail!("Array exceeds maximum of elements.");
             }
 
@@ -133,7 +135,7 @@ impl<N: Network> FromBits for Plaintext<N> {
         // Struct
         else if variant == [false, true] {
             let num_members = u8::from_bits_be(next_bits(8)?)?;
-            if num_members as usize > N::MAX_STRUCT_ENTRIES {
+            if num_members as usize > AleoNetwork::MAX_STRUCT_ENTRIES {
                 bail!("Struct exceeds maximum of entries.");
             }
 
@@ -156,7 +158,7 @@ impl<N: Network> FromBits for Plaintext<N> {
         // Array
         else if variant == [true, false] {
             let num_elements = u32::from_bits_be(next_bits(32)?)?;
-            if num_elements as usize > N::MAX_ARRAY_ELEMENTS {
+            if num_elements as usize > AleoNetwork::MAX_ARRAY_ELEMENTS {
                 bail!("Array exceeds maximum of elements.");
             }
 

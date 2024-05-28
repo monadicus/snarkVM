@@ -14,12 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> CommitUncompressed
-    for BHP<E, NUM_WINDOWS, WINDOW_SIZE>
-{
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> CommitUncompressed for BHP<NUM_WINDOWS, WINDOW_SIZE> {
     type Input = bool;
-    type Output = Group<E>;
-    type Randomizer = Scalar<E>;
+    type Output = Group;
+    type Randomizer = Scalar;
 
     /// Returns the BHP commitment of the given input and randomizer as an affine group element.
     fn commit_uncompressed(&self, input: &[Self::Input], randomizer: &Self::Randomizer) -> Result<Self::Output> {

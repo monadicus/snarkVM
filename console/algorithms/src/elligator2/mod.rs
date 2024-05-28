@@ -18,6 +18,6 @@ mod encode;
 use snarkvm_console_types::prelude::*;
 use snarkvm_fields::LegendreSymbol;
 
-use core::{cmp, marker::PhantomData};
+use core::cmp;
 
-pub struct Elligator2<E: Environment>(PhantomData<E>);
+pub struct Elligator2;

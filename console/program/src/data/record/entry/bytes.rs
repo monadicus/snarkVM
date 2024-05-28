@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Private: Visibility> FromBytes for Entry<N, Private> {
+impl<Private: Visibility> FromBytes for Entry<Private> {
     /// Reads the entry from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the index.
@@ -30,7 +30,7 @@ impl<N: Network, Private: Visibility> FromBytes for Entry<N, Private> {
     }
 }
 
-impl<N: Network, Private: Visibility> ToBytes for Entry<N, Private> {
+impl<Private: Visibility> ToBytes for Entry<Private> {
     /// Writes the entry to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {

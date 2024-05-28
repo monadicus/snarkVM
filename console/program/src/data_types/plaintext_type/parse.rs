@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for PlaintextType<N> {
+impl Parser for PlaintextType {
     /// Parses a string into a plaintext type.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -27,7 +27,7 @@ impl<N: Network> Parser for PlaintextType<N> {
     }
 }
 
-impl<N: Network> FromStr for PlaintextType<N> {
+impl FromStr for PlaintextType {
     type Err = Error;
 
     /// Returns a plaintext type from a string literal.
@@ -44,14 +44,14 @@ impl<N: Network> FromStr for PlaintextType<N> {
     }
 }
 
-impl<N: Network> Debug for PlaintextType<N> {
+impl Debug for PlaintextType {
     /// Prints the plaintext type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for PlaintextType<N> {
+impl Display for PlaintextType {
     /// Prints the plaintext type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

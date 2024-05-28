@@ -14,14 +14,14 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Scalar<E> {
+impl FromBits for Scalar {
     /// Initializes a new scalar from a list of **little-endian** bits.
-    ///   - If `bits_le` is longer than `E::Scalar::size_in_bits()`, the excess bits are enforced to be `0`s.
-    ///   - If `bits_le` is shorter than `E::Scalar::size_in_bits()`, it is padded with `0`s up to scalar size.
+    ///   - If `bits_le` is longer than `ConsoleScalar::size_in_bits()`, the excess bits are enforced to be `0`s.
+    ///   - If `bits_le` is shorter than `ConsoleScalar::size_in_bits()`, it is padded with `0`s up to scalar size.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
         // Retrieve the data and scalar size.
-        let size_in_data_bits = Scalar::<E>::size_in_data_bits();
-        let size_in_bits = Scalar::<E>::size_in_bits();
+        let size_in_data_bits = Scalar::size_in_data_bits();
+        let size_in_bits = Scalar::size_in_bits();
 
         // Ensure the list of booleans is within the allowed size in bits.
         let num_bits = bits_le.len();
@@ -35,18 +35,20 @@ impl<E: Environment> FromBits for Scalar<E> {
         // If `num_bits` is greater than `size_in_data_bits`, check it is less than `Scalar::MODULUS`.
         if num_bits > size_in_data_bits {
             // Retrieve the modulus as we'll check `bits_le` is less than this value.
-            let modulus = E::Scalar::modulus();
+            let modulus = ConsoleScalar::modulus();
 
             // Recover the scalar as a `BigInteger` for comparison.
             // As `bits_le[size_in_bits..]` is guaranteed to be zero from the above logic,
             // and `bits_le` is greater than `size_in_data_bits`, it is safe to truncate `bits_le` to `size_in_bits`.
-            let scalar = E::BigInteger::from_bits_le(&bits_le[..size_in_bits])?;
+            let scalar = ConsoleBigInteger::from_bits_le(&bits_le[..size_in_bits])?;
 
             // Ensure the scalar is less than `Scalar::MODULUS`.
             ensure!(scalar < modulus, "The scalar is greater than or equal to the modulus.");
 
             // Return the scalar.
-            Ok(Scalar { scalar: E::Scalar::from_bigint(scalar).ok_or_else(|| anyhow!("Invalid scalar from bits"))? })
+            Ok(Scalar {
+                scalar: ConsoleScalar::from_bigint(scalar).ok_or_else(|| anyhow!("Invalid scalar from bits"))?,
+            })
         } else {
             // Construct the sanitized list of bits padded with `false`
             let mut sanitized_bits = vec![false; size_in_bits];
@@ -55,7 +57,7 @@ impl<E: Environment> FromBits for Scalar<E> {
             sanitized_bits[..num_bits].copy_from_slice(bits_le);
 
             // Recover the native scalar.
-            let scalar = E::Scalar::from_bigint(E::BigInteger::from_bits_le(&sanitized_bits)?)
+            let scalar = ConsoleScalar::from_bigint(ConsoleBigInteger::from_bits_le(&sanitized_bits)?)
                 .ok_or_else(|| anyhow!("Invalid scalar from bits"))?;
 
             // Return the scalar.
@@ -77,9 +79,6 @@ impl<E: Environment> FromBits for Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -88,19 +87,19 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: Scalar<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Scalar = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_le();
-            assert_eq!(Scalar::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Scalar::size_in_bits(), given_bits.len());
 
-            let candidate = Scalar::<CurrentEnvironment>::from_bits_le(&given_bits)?;
+            let candidate = Scalar::from_bits_le(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [given_bits, vec![false; i]].concat();
 
-            let candidate = Scalar::<CurrentEnvironment>::from_bits_le(&candidate)?;
+            let candidate = Scalar::from_bits_le(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Scalar::<CurrentEnvironment>::size_in_bits(), candidate.to_bits_le().len());
+            assert_eq!(Scalar::size_in_bits(), candidate.to_bits_le().len());
         }
         Ok(())
     }
@@ -110,19 +109,19 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: Scalar<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Scalar = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_be();
-            assert_eq!(Scalar::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Scalar::size_in_bits(), given_bits.len());
 
-            let candidate = Scalar::<CurrentEnvironment>::from_bits_be(&given_bits)?;
+            let candidate = Scalar::from_bits_be(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [vec![false; i], given_bits].concat();
 
-            let candidate = Scalar::<CurrentEnvironment>::from_bits_be(&candidate)?;
+            let candidate = Scalar::from_bits_be(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Scalar::<CurrentEnvironment>::size_in_bits(), candidate.to_bits_be().len());
+            assert_eq!(Scalar::size_in_bits(), candidate.to_bits_be().len());
         }
         Ok(())
     }

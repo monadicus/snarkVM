@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> FromField for Identifier<N> {
-    type Field = Field<N>;
+impl FromField for Identifier {
+    type Field = Field;
 
     /// Initializes a new identifier from a field element.
     fn from_field(field: &Self::Field) -> Result<Self> {
@@ -28,9 +28,6 @@ impl<N: Network> FromField for Identifier<N> {
 mod tests {
     use super::*;
     use crate::data::identifier::tests::sample_identifier;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: usize = 100;
 
@@ -40,7 +37,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric identifier, that always starts with an alphabetic character.
-            let identifier = sample_identifier::<CurrentNetwork>(&mut rng)?;
+            let identifier = sample_identifier(&mut rng)?;
             assert_eq!(identifier, Identifier::from_field(&identifier.to_field()?)?);
         }
         Ok(())

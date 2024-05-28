@@ -35,70 +35,70 @@ pub use snarkvm_console_types_boolean::Boolean;
 use zeroize::Zeroize;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Zeroize)]
-pub struct Field<E: Environment> {
+pub struct Field {
     /// The underlying field element.
-    field: E::Field,
+    field: ConsoleField,
 }
 
-impl<E: Environment> FieldTrait for Field<E> {}
+impl FieldTrait for Field {}
 
-impl<E: Environment> Field<E> {
+impl Field {
     /// The field size in bits.
-    pub const SIZE_IN_BITS: usize = E::Field::SIZE_IN_BITS;
+    pub const SIZE_IN_BITS: usize = ConsoleField::SIZE_IN_BITS;
     /// The field size in bytes.
-    pub const SIZE_IN_BYTES: usize = (E::Field::SIZE_IN_BITS + 7) / 8;
+    pub const SIZE_IN_BYTES: usize = (ConsoleField::SIZE_IN_BITS + 7) / 8;
     /// The field capacity for data bits.
-    pub const SIZE_IN_DATA_BITS: usize = E::Field::SIZE_IN_DATA_BITS;
+    pub const SIZE_IN_DATA_BITS: usize = ConsoleField::SIZE_IN_DATA_BITS;
 
     /// Initializes a new field.
-    pub const fn new(field: E::Field) -> Self {
+    pub const fn new(field: ConsoleField) -> Self {
         Self { field }
     }
 
     /// Initializes a new field as a domain separator.
     pub fn new_domain_separator(domain: &str) -> Self {
-        Self::new(E::Field::from_bytes_le_mod_order(domain.as_bytes()))
+        Self::new(ConsoleField::from_bytes_le_mod_order(domain.as_bytes()))
     }
 
     /// Initializes a new field from a `u8`.
     pub fn from_u8(value: u8) -> Self {
-        Self { field: E::Field::from(value as u128) }
+        Self { field: ConsoleField::from(value as u128) }
     }
 
     /// Initializes a new field from a `u16`.
     pub fn from_u16(value: u16) -> Self {
-        Self { field: E::Field::from(value as u128) }
+        Self { field: ConsoleField::from(value as u128) }
     }
 
     /// Initializes a new field from a `u32`.
     pub fn from_u32(value: u32) -> Self {
-        Self { field: E::Field::from(value as u128) }
+        Self { field: ConsoleField::from(value as u128) }
     }
 
     /// Initializes a new field from a `u64`.
     pub fn from_u64(value: u64) -> Self {
-        Self { field: E::Field::from(value as u128) }
+        Self { field: ConsoleField::from(value as u128) }
     }
 
     /// Initializes a new field from a `u128`.
     pub fn from_u128(value: u128) -> Self {
-        Self { field: E::Field::from(value) }
+        Self { field: ConsoleField::from(value) }
     }
 
     /// Returns `1 * 2^{-1}`.
     pub fn half() -> Self {
-        Self { field: E::Field::half() }
+        Self { field: ConsoleField::half() }
     }
 }
 
-impl<E: Environment> Default for Field<E> {
+impl Default for Field {
     /// Returns the default field element.
     fn default() -> Self {
         Self::zero()
     }
 }
 
-impl<E: Environment> TypeName for Field<E> {
+impl TypeName for Field {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -106,8 +106,8 @@ impl<E: Environment> TypeName for Field<E> {
     }
 }
 
-impl<E: Environment> Deref for Field<E> {
-    type Target = E::Field;
+impl Deref for Field {
+    type Target = ConsoleField;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
@@ -115,7 +115,7 @@ impl<E: Environment> Deref for Field<E> {
     }
 }
 
-impl<E: Environment> DerefMut for Field<E> {
+impl DerefMut for Field {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.field

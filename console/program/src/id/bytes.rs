@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for ProgramID<N> {
+impl FromBytes for ProgramID {
     /// Reads the program ID from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let name = FromBytes::read_le(&mut reader)?;
@@ -23,7 +23,7 @@ impl<N: Network> FromBytes for ProgramID<N> {
     }
 }
 
-impl<N: Network> ToBytes for ProgramID<N> {
+impl ToBytes for ProgramID {
     /// Writes the program ID to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.name.write_le(&mut writer)?;

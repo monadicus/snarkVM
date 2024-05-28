@@ -24,14 +24,14 @@ use snarkvm_console_network::prelude::*;
 use snarkvm_console_types::Field;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct GraphKey<N: Network> {
+pub struct GraphKey {
     /// The graph key `sk_tag` := Hash(view_key || ctr).
-    sk_tag: Field<N>,
+    sk_tag: Field,
 }
 
-impl<N: Network> GraphKey<N> {
+impl GraphKey {
     /// Returns the graph key.
-    pub const fn sk_tag(&self) -> Field<N> {
+    pub const fn sk_tag(&self) -> Field {
         self.sk_tag
     }
 }

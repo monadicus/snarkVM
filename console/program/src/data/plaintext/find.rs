@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<N: Network> Plaintext<N> {
+impl Plaintext {
     /// Returns the plaintext member from the given path.
-    pub fn find<A: Into<Access<N>> + Copy + Debug>(&self, path: &[A]) -> Result<Plaintext<N>> {
+    pub fn find<A: Into<Access> + Copy + Debug>(&self, path: &[A]) -> Result<Plaintext> {
         // Ensure the path is not empty.
         ensure!(!path.is_empty(), "Attempted to find a member with an empty path.");
 

@@ -14,16 +14,16 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Integer<E, I> {
+impl<I: IntegerType> Integer<I> {
     /// Casts an integer from a base field, with lossy truncation.
     ///
     /// This method is commonly-used by hash-to-integer algorithms,
     /// where the hash output does not need to preserve the full base field.
-    pub fn from_field_lossy(field: &Field<E>) -> Self {
+    pub fn from_field_lossy(field: &Field) -> Self {
         // Note: We are reconstituting the integer from the base field.
         // This is safe as the number of bits in the integer is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(I::BITS < Field::<E>::size_in_bits() as u64);
+        debug_assert!(I::BITS < Field::size_in_bits() as u64);
 
         // Truncate the field to the size of the integer domain.
         // Slicing here is safe as the base field is larger than the integer domain.
@@ -36,9 +36,6 @@ impl<E: Environment, I: IntegerType> Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -47,16 +44,16 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random integer.
-            let expected = Integer::<CurrentEnvironment, I>::rand(&mut rng);
+            let expected = Integer::<I>::rand(&mut rng);
 
             // Perform the operation.
             let candidate = Integer::from_field_lossy(&expected.to_field()?);
             assert_eq!(expected, candidate);
 
             // Sample a random field.
-            let expected = Field::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Field::rand(&mut rng);
             // Perform the operation.
-            Integer::<_, I>::from_field_lossy(&expected);
+            Integer::<I>::from_field_lossy(&expected);
         }
         Ok(())
     }

@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<N: Network> ViewKey<N> {
+impl ViewKey {
     /// Returns the address corresponding to the view key.
-    pub fn to_address(&self) -> Address<N> {
-        Address::new(N::g_scalar_multiply(self))
+    pub fn to_address(&self) -> Address {
+        Address::new(AleoNetwork::g_scalar_multiply(self))
     }
 }
 

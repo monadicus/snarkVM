@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment> Zero for Scalar<E> {
+impl Zero for Scalar {
     /// Returns the `0` element of the scalar.
     fn zero() -> Self {
-        Self::new(E::Scalar::zero())
+        Self::new(ConsoleScalar::zero())
     }
 
     /// Returns `true` if the element is zero.
@@ -29,15 +29,12 @@ impl<E: Environment> Zero for Scalar<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 100;
 
     #[test]
     fn test_zero() {
-        let zero = Scalar::<CurrentEnvironment>::zero();
+        let zero = Scalar::zero();
 
         for bit in zero.to_bits_le().iter() {
             assert!(!bit)
@@ -46,13 +43,13 @@ mod tests {
 
     #[test]
     fn test_is_zero() {
-        assert!(Scalar::<CurrentEnvironment>::zero().is_zero());
+        assert!(Scalar::zero().is_zero());
 
         let mut rng = TestRng::default();
 
         // Note: This test technically has a `1 / MODULUS` probability of being flaky.
         for _ in 0..ITERATIONS {
-            let scalar: Scalar<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let scalar: Scalar = Uniform::rand(&mut rng);
             assert!(!scalar.is_zero());
         }
     }

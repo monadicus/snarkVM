@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for StatePath<N> {
+impl FromBytes for StatePath {
     /// Reads the path from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the version.
@@ -25,11 +25,11 @@ impl<N: Network> FromBytes for StatePath<N> {
         }
 
         // Read the state path.
-        let global_state_root = N::StateRoot::read_le(&mut reader)?;
+        let global_state_root = StateRoot::read_le(&mut reader)?;
 
         let block_path = BlockPath::read_le(&mut reader)?;
-        let block_hash = N::BlockHash::read_le(&mut reader)?;
-        let previous_block_hash = N::BlockHash::read_le(&mut reader)?;
+        let block_hash = BlockHash::read_le(&mut reader)?;
+        let previous_block_hash = BlockHash::read_le(&mut reader)?;
         let header_root = Field::read_le(&mut reader)?;
         let header_path = HeaderPath::read_le(&mut reader)?;
         let header_leaf = HeaderLeaf::read_le(&mut reader)?;
@@ -64,7 +64,7 @@ impl<N: Network> FromBytes for StatePath<N> {
     }
 }
 
-impl<N: Network> ToBytes for StatePath<N> {
+impl ToBytes for StatePath {
     /// Writes the path to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the version.

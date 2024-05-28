@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> ToBits for TransitionLeaf<N> {
+impl ToBits for TransitionLeaf {
     /// Returns the little-endian bits of the Merkle leaf.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         // Construct the leaf as (version || index || variant || ID).

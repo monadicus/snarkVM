@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<N: Network> FromBits for ComputeKey<N> {
+impl FromBits for ComputeKey {
     /// Initializes a new compute key from a list of **little-endian** bits.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
-        let group_size_in_bits = Group::<N>::size_in_bits();
+        let group_size_in_bits = Group::size_in_bits();
 
         let (pk_sig_start, pk_sig_end) = (0, group_size_in_bits);
         let (pr_sig_start, pr_sig_end) = (pk_sig_end, pk_sig_end + group_size_in_bits);
@@ -34,7 +34,7 @@ impl<N: Network> FromBits for ComputeKey<N> {
 
     /// Initializes a new compute key from a list of **big-endian** bits.
     fn from_bits_be(bits_be: &[bool]) -> Result<Self> {
-        let group_size_in_bits = Group::<N>::size_in_bits();
+        let group_size_in_bits = Group::size_in_bits();
 
         let (pk_sig_start, pk_sig_end) = (0, group_size_in_bits);
         let (pr_sig_start, pr_sig_end) = (pk_sig_end, pk_sig_end + group_size_in_bits);

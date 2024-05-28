@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for RegisterType<N> {
+impl Parser for RegisterType {
     /// Parses a string into a register type.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -28,7 +28,7 @@ impl<N: Network> Parser for RegisterType<N> {
     }
 }
 
-impl<N: Network> FromStr for RegisterType<N> {
+impl FromStr for RegisterType {
     type Err = Error;
 
     /// Returns a register type from a string literal.
@@ -45,14 +45,14 @@ impl<N: Network> FromStr for RegisterType<N> {
     }
 }
 
-impl<N: Network> Debug for RegisterType<N> {
+impl Debug for RegisterType {
     /// Prints the register type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for RegisterType<N> {
+impl Display for RegisterType {
     /// Prints the register type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

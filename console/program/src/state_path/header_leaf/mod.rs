@@ -22,16 +22,16 @@ use snarkvm_console_types::Field;
 
 /// The Merkle leaf for the block header.
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub struct HeaderLeaf<N: Network> {
+pub struct HeaderLeaf {
     /// The index of the Merkle leaf.
     index: u8,
     /// The ID.
-    id: Field<N>,
+    id: Field,
 }
 
-impl<N: Network> HeaderLeaf<N> {
+impl HeaderLeaf {
     /// Initializes a new instance of `HeaderLeaf`.
-    pub const fn new(index: u8, id: Field<N>) -> Self {
+    pub const fn new(index: u8, id: Field) -> Self {
         Self { index, id }
     }
 
@@ -41,7 +41,7 @@ impl<N: Network> HeaderLeaf<N> {
     }
 
     /// Returns the ID in the Merkle leaf.
-    pub const fn id(&self) -> Field<N> {
+    pub const fn id(&self) -> Field {
         self.id
     }
 }

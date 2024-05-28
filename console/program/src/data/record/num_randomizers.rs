@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Private: Visibility> Record<N, Private> {
+impl<Private: Visibility> Record<Private> {
     /// Returns the number of field elements to encode `self`.
     pub(crate) fn num_randomizers(&self) -> Result<u16> {
         // Initialize an tracker for the number of randomizers.
@@ -33,7 +33,7 @@ impl<N: Network, Private: Visibility> Record<N, Private> {
         }
 
         // Ensure the number of randomizers does not exceed the maximum allowed size.
-        match num_randomizers as u32 <= N::MAX_DATA_SIZE_IN_FIELDS {
+        match num_randomizers as u32 <= AleoNetwork::MAX_DATA_SIZE_IN_FIELDS {
             true => Ok(num_randomizers),
             false => bail!("Number of randomizers exceeds the maximum allowed size."),
         }

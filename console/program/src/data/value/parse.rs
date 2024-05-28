@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for Value<N> {
+impl Parser for Value {
     /// Parses a string into a value.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -27,7 +27,7 @@ impl<N: Network> Parser for Value<N> {
     }
 }
 
-impl<N: Network> FromStr for Value<N> {
+impl FromStr for Value {
     type Err = Error;
 
     /// Parses a string into a value.
@@ -45,14 +45,14 @@ impl<N: Network> FromStr for Value<N> {
     }
 }
 
-impl<N: Network> Debug for Value<N> {
+impl Debug for Value {
     /// Prints the value as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Value<N> {
+impl Display for Value {
     /// Prints the value as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
@@ -66,9 +66,6 @@ impl<N: Network> Display for Value<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     #[test]
     fn test_value_plaintext_parse() {
@@ -78,7 +75,7 @@ mod tests {
   token_amount: 100u64
 }";
         // Construct a new plaintext value.
-        let expected = Value::<CurrentNetwork>::from_str(string).unwrap();
+        let expected = Value::from_str(string).unwrap();
         assert!(matches!(expected, Value::Plaintext(..)));
         assert_eq!(string, format!("{expected}"));
     }
@@ -92,7 +89,7 @@ mod tests {
   _nonce: 6122363155094913586073041054293642159180066699840940609722305038224296461351group.public
 }";
         // Construct a new record value.
-        let expected = Value::<CurrentNetwork>::from_str(string).unwrap();
+        let expected = Value::from_str(string).unwrap();
         assert!(matches!(expected, Value::Record(..)));
         assert_eq!(string, format!("{expected}"));
     }
@@ -109,7 +106,7 @@ mod tests {
   ]
 }";
         // Construct a new future value.
-        let expected = Value::<CurrentNetwork>::from_str(string).unwrap();
+        let expected = Value::from_str(string).unwrap();
         assert!(matches!(expected, Value::Future(..)));
         assert_eq!(string, format!("{expected}"));
     }

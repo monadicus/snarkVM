@@ -14,12 +14,12 @@
 
 use super::*;
 
-impl<N: Network> Parser for Future<N> {
+impl Parser for Future {
     /// Parses a string into a future value.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         /// Parses an array of future arguments: `[arg_0, ..., arg_1]`.
-        fn parse_arguments<N: Network>(string: &str) -> ParserResult<Vec<Argument<N>>> {
+        fn parse_arguments(string: &str) -> ParserResult<Vec<Argument>> {
             // Parse the whitespace and comments from the string.
             let (string, _) = Sanitizer::parse(string)?;
             // Parse the "[" from the string.
@@ -100,7 +100,7 @@ impl<N: Network> Parser for Future<N> {
     }
 }
 
-impl<N: Network> FromStr for Future<N> {
+impl FromStr for Future {
     type Err = Error;
 
     /// Returns a future from a string literal.
@@ -117,21 +117,21 @@ impl<N: Network> FromStr for Future<N> {
     }
 }
 
-impl<N: Network> Debug for Future<N> {
+impl Debug for Future {
     /// Prints the future as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Future<N> {
+impl Display for Future {
     /// Prints the future as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         self.fmt_internal(f, 0)
     }
 }
 
-impl<N: Network> Future<N> {
+impl Future {
     /// Prints the future with the given indentation depth.
     fn fmt_internal(&self, f: &mut Formatter, depth: usize) -> fmt::Result {
         /// The number of spaces to indent.

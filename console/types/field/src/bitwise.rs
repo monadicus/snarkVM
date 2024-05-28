@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal for Field<E> {
-    type Output = Boolean<E>;
+impl Equal for Field {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -28,8 +28,8 @@ impl<E: Environment> Equal for Field<E> {
     }
 }
 
-impl<E: Environment> Compare for Field<E> {
-    type Output = Boolean<E>;
+impl Compare for Field {
+    type Output = Boolean;
 
     /// Returns `true` if `self` is less than `other`.
     fn is_less_than(&self, other: &Self) -> Self::Output {
@@ -52,8 +52,8 @@ impl<E: Environment> Compare for Field<E> {
     }
 }
 
-impl<E: Environment> Ternary for Field<E> {
-    type Boolean = Boolean<E>;
+impl Ternary for Field {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.

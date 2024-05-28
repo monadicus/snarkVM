@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for ValueType<N> {
+impl Parser for ValueType {
     /// Parses the string into a value type.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -31,7 +31,7 @@ impl<N: Network> Parser for ValueType<N> {
     }
 }
 
-impl<N: Network> FromStr for ValueType<N> {
+impl FromStr for ValueType {
     type Err = Error;
 
     /// Returns the value type from a string literal.
@@ -48,14 +48,14 @@ impl<N: Network> FromStr for ValueType<N> {
     }
 }
 
-impl<N: Network> Debug for ValueType<N> {
+impl Debug for ValueType {
     /// Prints the value type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for ValueType<N> {
+impl Display for ValueType {
     /// Prints the value type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

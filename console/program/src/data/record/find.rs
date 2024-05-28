@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<N: Network> Record<N, Plaintext<N>> {
+impl Record<Plaintext> {
     /// Returns the entry from the given path.
-    pub fn find<A: Into<Access<N>> + Copy + Debug>(&self, path: &[A]) -> Result<Entry<N, Plaintext<N>>> {
+    pub fn find<A: Into<Access> + Copy + Debug>(&self, path: &[A]) -> Result<Entry<Plaintext>> {
         // If the path is of length one, check if the path is requesting the `owner`.
         if path.len() == 1 && path[0].into() == Access::Member(Identifier::from_str("owner")?) {
             return Ok(self.owner.to_entry());

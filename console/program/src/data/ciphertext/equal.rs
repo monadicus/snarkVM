@@ -14,17 +14,17 @@
 
 use super::*;
 
-impl<N: Network> Eq for Ciphertext<N> {}
+impl Eq for Ciphertext {}
 
-impl<N: Network> PartialEq for Ciphertext<N> {
+impl PartialEq for Ciphertext {
     /// Returns `true` if `self` and `other` are equal.
     fn eq(&self, other: &Self) -> bool {
         *self.is_equal(other)
     }
 }
 
-impl<N: Network> Equal<Self> for Ciphertext<N> {
-    type Output = Boolean<N>;
+impl Equal<Self> for Ciphertext {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

@@ -14,24 +14,21 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Group<E> {
+impl FromBits for Group {
     /// Initializes a new group by recovering the **x-coordinate** of an affine group from a list of **little-endian** bits.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
-        Self::from_x_coordinate(Field::<E>::from_bits_le(bits_le)?)
+        Self::from_x_coordinate(Field::from_bits_le(bits_le)?)
     }
 
     /// Initializes a new group by recovering the **x-coordinate** of an affine group from a list of **big-endian** bits.
     fn from_bits_be(bits_be: &[bool]) -> Result<Self> {
-        Self::from_x_coordinate(Field::<E>::from_bits_be(bits_be)?)
+        Self::from_x_coordinate(Field::from_bits_be(bits_be)?)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -40,19 +37,19 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: Group<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Group = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_le();
-            assert_eq!(Group::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Group::size_in_bits(), given_bits.len());
 
-            let candidate = Group::<CurrentEnvironment>::from_bits_le(&given_bits)?;
+            let candidate = Group::from_bits_le(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [given_bits, vec![false; i]].concat();
 
-            let candidate = Group::<CurrentEnvironment>::from_bits_le(&candidate)?;
+            let candidate = Group::from_bits_le(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Group::<CurrentEnvironment>::size_in_bits(), candidate.to_bits_le().len());
+            assert_eq!(Group::size_in_bits(), candidate.to_bits_le().len());
         }
         Ok(())
     }
@@ -62,19 +59,19 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: Group<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Group = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_be();
-            assert_eq!(Group::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Group::size_in_bits(), given_bits.len());
 
-            let candidate = Group::<CurrentEnvironment>::from_bits_be(&given_bits)?;
+            let candidate = Group::from_bits_be(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [vec![false; i], given_bits].concat();
 
-            let candidate = Group::<CurrentEnvironment>::from_bits_be(&candidate)?;
+            let candidate = Group::from_bits_be(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Group::<CurrentEnvironment>::size_in_bits(), candidate.to_bits_be().len());
+            assert_eq!(Group::size_in_bits(), candidate.to_bits_be().len());
         }
         Ok(())
     }

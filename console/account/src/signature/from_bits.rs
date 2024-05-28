@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<N: Network> FromBits for Signature<N> {
+impl FromBits for Signature {
     /// Initializes a new signature from a list of **little-endian** bits.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
-        let scalar_size_in_bits = Scalar::<N>::size_in_bits();
-        let compute_key_size_in_bits = ComputeKey::<N>::size_in_bits();
+        let scalar_size_in_bits = Scalar::size_in_bits();
+        let compute_key_size_in_bits = ComputeKey::size_in_bits();
 
         let (challenge_start, challenge_end) = (0, scalar_size_in_bits);
         let (response_start, response_end) = (challenge_end, challenge_end + scalar_size_in_bits);
@@ -43,8 +43,8 @@ impl<N: Network> FromBits for Signature<N> {
 
     /// Initializes a new signature from a list of **big-endian** bits.
     fn from_bits_be(bits_be: &[bool]) -> Result<Self> {
-        let scalar_size_in_bits = Scalar::<N>::size_in_bits();
-        let compute_key_size_in_bits = ComputeKey::<N>::size_in_bits();
+        let scalar_size_in_bits = Scalar::size_in_bits();
+        let compute_key_size_in_bits = ComputeKey::size_in_bits();
 
         let (challenge_start, challenge_end) = (0, scalar_size_in_bits);
         let (response_start, response_end) = (challenge_end, challenge_end + scalar_size_in_bits);

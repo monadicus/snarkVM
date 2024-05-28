@@ -18,27 +18,27 @@ use snarkvm_console_types::{Address, Boolean, Field};
 
 /// A value stored in program data.
 #[derive(Clone)]
-pub enum Owner<N: Network, Private: Visibility> {
+pub enum Owner<Private: Visibility> {
     /// A publicly-visible value.
-    Public(Address<N>),
+    Public(Address),
     /// A private value is encrypted under the account owner's address.
     Private(Private),
 }
 
-impl<N: Network> Deref for Owner<N, Plaintext<N>> {
-    type Target = Address<N>;
+impl Deref for Owner<Plaintext> {
+    type Target = Address;
 
     /// Returns the address of the owner.
     fn deref(&self) -> &Self::Target {
         match self {
             Self::Public(public) => public,
             Self::Private(Plaintext::Literal(Literal::Address(address), ..)) => address,
-            _ => N::halt("Internal error: plaintext deref corrupted in record owner"),
+            _ => Console::halt("Internal error: plaintext deref corrupted in record owner"),
         }
     }
 }
 
-impl<N: Network, Private: Visibility> Owner<N, Private> {
+impl<Private: Visibility> Owner<Private> {
     /// Returns `true` if `self` is public.
     pub const fn is_public(&self) -> bool {
         matches!(self, Self::Public(..))
@@ -50,9 +50,9 @@ impl<N: Network, Private: Visibility> Owner<N, Private> {
     }
 }
 
-impl<N: Network> Owner<N, Plaintext<N>> {
+impl Owner<Plaintext> {
     /// Returns the owner as an `Entry`.
-    pub fn to_entry(&self) -> Entry<N, Plaintext<N>> {
+    pub fn to_entry(&self) -> Entry<Plaintext> {
         match self {
             Self::Public(owner) => Entry::Public(Plaintext::from(Literal::Address(*owner))),
             Self::Private(plaintext, ..) => Entry::Private(plaintext.clone()),
@@ -60,17 +60,17 @@ impl<N: Network> Owner<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network, Private: Visibility<Boolean = Boolean<N>>> Eq for Owner<N, Private> {}
+impl<Private: Visibility<Boolean = Boolean>> Eq for Owner<Private> {}
 
-impl<N: Network, Private: Visibility<Boolean = Boolean<N>>> PartialEq for Owner<N, Private> {
+impl<Private: Visibility<Boolean = Boolean>> PartialEq for Owner<Private> {
     /// Returns `true` if `self` and `other` are equal.
     fn eq(&self, other: &Self) -> bool {
         *self.is_equal(other)
     }
 }
 
-impl<N: Network, Private: Visibility<Boolean = Boolean<N>>> Equal<Self> for Owner<N, Private> {
-    type Output = Boolean<N>;
+impl<Private: Visibility<Boolean = Boolean>> Equal<Self> for Owner<Private> {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -91,9 +91,9 @@ impl<N: Network, Private: Visibility<Boolean = Boolean<N>>> Equal<Self> for Owne
     }
 }
 
-impl<N: Network> Owner<N, Plaintext<N>> {
+impl Owner<Plaintext> {
     /// Encrypts `self` under the given randomizer.
-    pub fn encrypt_with_randomizer(&self, randomizer: &[Field<N>]) -> Result<Owner<N, Ciphertext<N>>> {
+    pub fn encrypt_with_randomizer(&self, randomizer: &[Field]) -> Result<Owner<Ciphertext>> {
         match self {
             Self::Public(public) => {
                 // Ensure there is exactly zero randomizers.
@@ -114,9 +114,9 @@ impl<N: Network> Owner<N, Plaintext<N>> {
     }
 }
 
-impl<N: Network> Owner<N, Ciphertext<N>> {
+impl Owner<Ciphertext> {
     /// Decrypts the owner under the given randomizer.
-    pub fn decrypt_with_randomizer(&self, randomizer: &[Field<N>]) -> Result<Owner<N, Plaintext<N>>> {
+    pub fn decrypt_with_randomizer(&self, randomizer: &[Field]) -> Result<Owner<Plaintext>> {
         match self {
             Self::Public(public) => {
                 // Ensure there is exactly zero randomizers.
@@ -138,14 +138,14 @@ impl<N: Network> Owner<N, Ciphertext<N>> {
     }
 }
 
-impl<N: Network> ToBits for Owner<N, Plaintext<N>> {
+impl ToBits for Owner<Plaintext> {
     /// Returns `self` as a boolean vector in little-endian order.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         vec.push(self.is_private());
         match self {
             Self::Public(public) => public.write_bits_le(vec),
             Self::Private(Plaintext::Literal(Literal::Address(address), ..)) => address.write_bits_le(vec),
-            _ => N::halt("Internal error: plaintext to_bits_le corrupted in record owner"),
+            _ => Console::halt("Internal error: plaintext to_bits_le corrupted in record owner"),
         };
     }
 
@@ -155,12 +155,12 @@ impl<N: Network> ToBits for Owner<N, Plaintext<N>> {
         match self {
             Self::Public(public) => public.write_bits_be(vec),
             Self::Private(Plaintext::Literal(Literal::Address(address), ..)) => address.write_bits_be(vec),
-            _ => N::halt("Internal error: plaintext to_bits_be corrupted in record owner"),
+            _ => Console::halt("Internal error: plaintext to_bits_be corrupted in record owner"),
         };
     }
 }
 
-impl<N: Network> ToBits for Owner<N, Ciphertext<N>> {
+impl ToBits for Owner<Ciphertext> {
     /// Returns `self` as a boolean vector in little-endian order.
     fn write_bits_le(&self, vec: &mut Vec<bool>) {
         vec.push(self.is_private());
@@ -170,7 +170,7 @@ impl<N: Network> ToBits for Owner<N, Ciphertext<N>> {
                 // Ensure there is exactly one field element in the ciphertext.
                 match ciphertext.len() == 1 {
                     true => ciphertext[0].write_bits_le(vec),
-                    false => N::halt("Internal error: ciphertext to_bits_le corrupted in record owner"),
+                    false => Console::halt("Internal error: ciphertext to_bits_le corrupted in record owner"),
                 }
             }
         };
@@ -185,32 +185,32 @@ impl<N: Network> ToBits for Owner<N, Ciphertext<N>> {
                 // Ensure there is exactly one field element in the ciphertext.
                 match ciphertext.len() == 1 {
                     true => ciphertext[0].write_bits_be(vec),
-                    false => N::halt("Internal error: ciphertext to_bits_be corrupted in record owner"),
+                    false => Console::halt("Internal error: ciphertext to_bits_be corrupted in record owner"),
                 }
             }
         };
     }
 }
 
-impl<N: Network> Debug for Owner<N, Plaintext<N>> {
+impl Debug for Owner<Plaintext> {
     /// Prints the owner as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Owner<N, Plaintext<N>> {
+impl Display for Owner<Plaintext> {
     /// Prints the owner as a string, i.e. `aleo1xxx.public`.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             Self::Public(owner) => write!(f, "{owner}.public"),
             Self::Private(Plaintext::Literal(Literal::Address(owner), ..)) => write!(f, "{owner}.private"),
-            _ => N::halt("Internal error: plaintext fmt corrupted in record owner"),
+            _ => Console::halt("Internal error: plaintext fmt corrupted in record owner"),
         }
     }
 }
 
-impl<N: Network, Private: Visibility> FromBytes for Owner<N, Private> {
+impl<Private: Visibility> FromBytes for Owner<Private> {
     /// Reads the owner from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the index.
@@ -225,7 +225,7 @@ impl<N: Network, Private: Visibility> FromBytes for Owner<N, Private> {
     }
 }
 
-impl<N: Network, Private: Visibility> ToBytes for Owner<N, Private> {
+impl<Private: Visibility> ToBytes for Owner<Private> {
     /// Writes the owner to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {

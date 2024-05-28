@@ -14,20 +14,20 @@
 
 use super::*;
 
-impl<N: Network> Signature<N> {
+impl Signature {
     /// Returns a signature `(challenge, response, compute_key)` for a given message and RNG, where:
     ///     challenge := HashToScalar(nonce * G, pk_sig, pr_sig, address, message)
     ///     response := nonce - challenge * private_key.sk_sig()
-    pub fn sign<R: Rng + CryptoRng>(private_key: &PrivateKey<N>, message: &[Field<N>], rng: &mut R) -> Result<Self> {
+    pub fn sign<R: Rng + CryptoRng>(private_key: &PrivateKey, message: &[Field], rng: &mut R) -> Result<Self> {
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        if message.len() > N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        if message.len() > AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             bail!("Cannot sign the message: the message exceeds maximum allowed size")
         }
 
         // Sample a random nonce from the scalar field.
         let nonce = Scalar::rand(rng);
         // Compute `g_r` as `nonce * G`.
-        let g_r = N::g_scalar_multiply(&nonce);
+        let g_r = AleoNetwork::g_scalar_multiply(&nonce);
 
         // Derive the compute key from the private key.
         let compute_key = ComputeKey::try_from(private_key)?;
@@ -45,7 +45,7 @@ impl<N: Network> Signature<N> {
         preimage.extend(message);
 
         // Compute the verifier challenge.
-        let challenge = N::hash_to_scalar_psd8(&preimage)?;
+        let challenge = AleoNetwork::hash_to_scalar_psd8(&preimage)?;
         // Compute the prover response.
         let response = nonce - (challenge * private_key.sk_sig());
 
@@ -54,24 +54,15 @@ impl<N: Network> Signature<N> {
     }
 
     /// Returns a signature for the given message (as bytes) using the private key.
-    pub fn sign_bytes<R: Rng + CryptoRng>(
-        private_key: &PrivateKey<N>,
-        message: &[u8],
-        rng: &mut R,
-    ) -> Result<Signature<N>> {
+    pub fn sign_bytes<R: Rng + CryptoRng>(private_key: &PrivateKey, message: &[u8], rng: &mut R) -> Result<Signature> {
         // Convert the message into bits, and sign the message.
         Self::sign_bits(private_key, &message.to_bits_le(), rng)
     }
 
     /// Returns a signature for the given message (as bits) using the private key.
-    pub fn sign_bits<R: Rng + CryptoRng>(
-        private_key: &PrivateKey<N>,
-        message: &[bool],
-        rng: &mut R,
-    ) -> Result<Signature<N>> {
+    pub fn sign_bits<R: Rng + CryptoRng>(private_key: &PrivateKey, message: &[bool], rng: &mut R) -> Result<Signature> {
         // Pack the bits into field elements.
-        let fields =
-            message.chunks(Field::<N>::size_in_data_bits()).map(Field::from_bits_le).collect::<Result<Vec<_>>>()?;
+        let fields = message.chunks(Field::size_in_data_bits()).map(Field::from_bits_le).collect::<Result<Vec<_>>>()?;
         // Sign the message.
         Self::sign(private_key, &fields, rng)
     }

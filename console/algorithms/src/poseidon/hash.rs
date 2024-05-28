@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const RATE: usize> Hash for Poseidon<E, RATE> {
-    type Input = Field<E>;
-    type Output = Field<E>;
+impl<const RATE: usize> Hash for Poseidon<RATE> {
+    type Input = Field;
+    type Output = Field;
 
     /// Returns the cryptographic hash for a list of field elements as input.
     #[inline]

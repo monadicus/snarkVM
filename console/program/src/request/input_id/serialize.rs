@@ -16,7 +16,7 @@ use super::*;
 
 use snarkvm_utilities::DeserializeExt;
 
-impl<N: Network> Serialize for InputID<N> {
+impl Serialize for InputID {
     /// Serializes the input ID into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -60,7 +60,7 @@ impl<N: Network> Serialize for InputID<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for InputID<N> {
+impl<'de> Deserialize<'de> for InputID {
     /// Deserializes the input ID from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -93,9 +93,6 @@ impl<'de, N: Network> Deserialize<'de> for InputID<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     /// Add test cases here to be checked for serialization.
     const TEST_CASES: &[&str] = &[
@@ -142,14 +139,14 @@ mod tests {
     #[test]
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
-            check_serde_json(InputID::<CurrentNetwork>::from_str(case).unwrap());
+            check_serde_json(InputID::from_str(case).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for case in TEST_CASES.iter() {
-            check_bincode(InputID::<CurrentNetwork>::from_str(case).unwrap());
+            check_bincode(InputID::from_str(case).unwrap());
         }
     }
 }

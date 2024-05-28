@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> ToFields for ComputeKey<N> {
-    type Field = Field<N>;
+impl ToFields for ComputeKey {
+    type Field = Field;
 
     /// Casts a compute key into a list of base fields.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {

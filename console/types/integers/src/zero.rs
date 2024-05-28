@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Zero for Integer<E, I> {
+impl<I: IntegerType> Zero for Integer<I> {
     /// Returns the `0` element of the integer.
     fn zero() -> Self {
         Self::new(I::zero())

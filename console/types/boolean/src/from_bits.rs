@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Boolean<E> {
+impl FromBits for Boolean {
     /// Initializes a new boolean by extracting the first bit from a list of length 1.
     fn from_bits_le(bits_le: &[bool]) -> Result<Self> {
         match bits_le.len().is_one() {
@@ -35,9 +35,6 @@ impl<E: Environment> FromBits for Boolean<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -46,16 +43,16 @@ mod tests {
 
         for i in 1..ITERATIONS {
             // Sample a random element.
-            let expected: Boolean<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Boolean = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_le();
-            assert_eq!(Boolean::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Boolean::size_in_bits(), given_bits.len());
 
-            let candidate = Boolean::<CurrentEnvironment>::from_bits_le(&given_bits)?;
+            let candidate = Boolean::from_bits_le(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [given_bits, vec![false; i]].concat();
-            assert!(Boolean::<CurrentEnvironment>::from_bits_le(&candidate).is_err());
+            assert!(Boolean::from_bits_le(&candidate).is_err());
         }
         Ok(())
     }
@@ -65,16 +62,16 @@ mod tests {
 
         for i in 1..ITERATIONS {
             // Sample a random element.
-            let expected: Boolean<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Boolean = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_be();
-            assert_eq!(Boolean::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Boolean::size_in_bits(), given_bits.len());
 
-            let candidate = Boolean::<CurrentEnvironment>::from_bits_be(&given_bits)?;
+            let candidate = Boolean::from_bits_be(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [vec![false; i], given_bits].concat();
-            assert!(Boolean::<CurrentEnvironment>::from_bits_be(&candidate).is_err());
+            assert!(Boolean::from_bits_be(&candidate).is_err());
         }
         Ok(())
     }

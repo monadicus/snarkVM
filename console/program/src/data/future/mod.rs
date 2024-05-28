@@ -24,44 +24,43 @@ mod to_bits;
 mod to_fields;
 
 use crate::{Access, Identifier, Plaintext, ProgramID, Value};
-use snarkvm_console_network::Network;
 use snarkvm_console_types::prelude::*;
 
 // TODO (@d0cd). Implement `FromBytes` and `FromBits` for `Future`.
 
 /// A future.
 #[derive(Clone)]
-pub struct Future<N: Network> {
+pub struct Future {
     /// The program ID.
-    program_id: ProgramID<N>,
+    program_id: ProgramID,
     /// The name of the function.
-    function_name: Identifier<N>,
+    function_name: Identifier,
     /// The arguments.
-    arguments: Vec<Argument<N>>,
+    arguments: Vec<Argument>,
 }
 
-impl<N: Network> Future<N> {
+impl Future {
     /// Initializes a new future.
     #[inline]
-    pub const fn new(program_id: ProgramID<N>, function_name: Identifier<N>, arguments: Vec<Argument<N>>) -> Self {
+    pub const fn new(program_id: ProgramID, function_name: Identifier, arguments: Vec<Argument>) -> Self {
         Self { program_id, function_name, arguments }
     }
 
     /// Returns the program ID.
     #[inline]
-    pub const fn program_id(&self) -> &ProgramID<N> {
+    pub const fn program_id(&self) -> &ProgramID {
         &self.program_id
     }
 
     /// Returns the name of the function.
     #[inline]
-    pub const fn function_name(&self) -> &Identifier<N> {
+    pub const fn function_name(&self) -> &Identifier {
         &self.function_name
     }
 
     /// Returns the arguments.
     #[inline]
-    pub fn arguments(&self) -> &[Argument<N>] {
+    pub fn arguments(&self) -> &[Argument] {
         &self.arguments
     }
 }

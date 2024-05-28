@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for ViewKey<N> {
+impl Serialize for ViewKey {
     /// Serializes an account view key into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,16 +24,14 @@ impl<N: Network> Serialize for ViewKey<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for ViewKey<N> {
+impl<'de> Deserialize<'de> for ViewKey {
     /// Deserializes an account view key from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
             true => FromStr::from_str(&String::deserialize(deserializer)?).map_err(de::Error::custom),
-            false => FromBytesDeserializer::<Self>::deserialize(
-                deserializer,
-                "view key",
-                (N::Scalar::size_in_bits() + 7) / 8,
-            ),
+            false => {
+                FromBytesDeserializer::<Self>::deserialize(deserializer, "view key", (Scalar::size_in_bits() + 7) / 8)
+            }
         }
     }
 }
@@ -41,9 +39,6 @@ impl<'de, N: Network> Deserialize<'de> for ViewKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -53,7 +48,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new view key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let expected = ViewKey::try_from(private_key)?;
 
             // Serialize
@@ -74,7 +69,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new view key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let expected = ViewKey::try_from(private_key)?;
 
             // Serialize

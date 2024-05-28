@@ -21,35 +21,35 @@ use snarkvm_console_network::prelude::*;
 
 /// A `PlaintextType` defines the type parameter for a literal, struct, or array.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub enum PlaintextType<N: Network> {
+pub enum PlaintextType {
     /// A literal type contains its type name.
     /// The format of the type is `<type_name>`.
     Literal(LiteralType),
     /// An struct type contains its identifier.
     /// The format of the type is `<identifier>`.
-    Struct(Identifier<N>),
+    Struct(Identifier),
     /// An array type contains its element type and length.
     /// The format of the type is `[<element_type>; <length>]`.
-    Array(ArrayType<N>),
+    Array(ArrayType),
 }
 
-impl<N: Network> From<LiteralType> for PlaintextType<N> {
+impl From<LiteralType> for PlaintextType {
     /// Initializes a plaintext type from a literal type.
     fn from(literal: LiteralType) -> Self {
         PlaintextType::Literal(literal)
     }
 }
 
-impl<N: Network> From<Identifier<N>> for PlaintextType<N> {
+impl From<Identifier> for PlaintextType {
     /// Initializes a plaintext type from a struct type.
-    fn from(struct_: Identifier<N>) -> Self {
+    fn from(struct_: Identifier) -> Self {
         PlaintextType::Struct(struct_)
     }
 }
 
-impl<N: Network> From<ArrayType<N>> for PlaintextType<N> {
+impl From<ArrayType> for PlaintextType {
     /// Initializes a plaintext type from an array type.
-    fn from(array: ArrayType<N>) -> Self {
+    fn from(array: ArrayType) -> Self {
         PlaintextType::Array(array)
     }
 }

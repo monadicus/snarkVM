@@ -14,20 +14,20 @@
 
 use super::*;
 
-impl<N: Network> Serialize for ComputeKey<N> {
+impl Serialize for ComputeKey {
     /// Serializes an account compute key into bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         ToBytesSerializer::serialize(self, serializer)
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for ComputeKey<N> {
+impl<'de> Deserialize<'de> for ComputeKey {
     /// Deserializes an account compute key from bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         FromBytesDeserializer::<Self>::deserialize(
             deserializer,
             "compute key",
-            2 * ((N::Field::size_in_bits() + 7) / 8),
+            2 * ((ConsoleField::size_in_bits() + 7) / 8),
         )
     }
 }
@@ -35,9 +35,6 @@ impl<'de, N: Network> Deserialize<'de> for ComputeKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -47,7 +44,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new compute key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let expected = ComputeKey::try_from(private_key)?;
 
             // Serialize

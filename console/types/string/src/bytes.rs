@@ -14,15 +14,18 @@
 
 use super::*;
 
-impl<E: Environment> FromBytes for StringType<E> {
+impl FromBytes for StringType {
     /// Reads the string from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the number of bytes.
         let num_bytes = u16::read_le(&mut reader)?;
         // Ensure the number of bytes is within the allowed bounds.
-        if num_bytes as u32 > E::MAX_STRING_BYTES {
-            return Err(error(format!("String literal exceeds maximum length of {} bytes.", E::MAX_STRING_BYTES)));
+        if num_bytes as u32 > Console::MAX_STRING_BYTES {
+            return Err(error(format!(
+                "String literal exceeds maximum length of {} bytes.",
+                Console::MAX_STRING_BYTES
+            )));
         }
         // Read the bytes.
         let mut bytes = vec![0u8; num_bytes as usize];
@@ -32,16 +35,19 @@ impl<E: Environment> FromBytes for StringType<E> {
     }
 }
 
-impl<E: Environment> ToBytes for StringType<E> {
+impl ToBytes for StringType {
     /// Writes the string to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Ensure the number of bytes is within the allowed bounds.
-        if self.string.len() > E::MAX_STRING_BYTES as usize {
-            return Err(error(format!("String literal exceeds maximum length of {} bytes.", E::MAX_STRING_BYTES)));
+        if self.string.len() > Console::MAX_STRING_BYTES as usize {
+            return Err(error(format!(
+                "String literal exceeds maximum length of {} bytes.",
+                Console::MAX_STRING_BYTES
+            )));
         }
         // Write the number of bytes.
-        u16::try_from(self.string.len()).or_halt_with::<E>("String exceeds u16::MAX bytes").write_le(&mut writer)?;
+        u16::try_from(self.string.len()).or_halt_with("String exceeds u16::MAX bytes").write_le(&mut writer)?;
         // Write the bytes.
         self.string.as_bytes().write_le(&mut writer)
     }
@@ -50,7 +56,7 @@ impl<E: Environment> ToBytes for StringType<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
+    use snarkvm_console_network_Console::Console;
 
     type CurrentEnvironment = Console;
 

@@ -20,18 +20,17 @@ mod parse;
 mod to_bits;
 
 use crate::{Access, Ciphertext, Identifier, Literal, Plaintext};
-use snarkvm_console_network::Network;
 use snarkvm_console_types::prelude::*;
 
 use indexmap::IndexMap;
 
 /// An entry stored in program data.
 #[derive(Clone)]
-pub enum Entry<N: Network, Private: Visibility> {
+pub enum Entry<Private: Visibility> {
     /// A constant entry.
-    Constant(Plaintext<N>),
+    Constant(Plaintext),
     /// A publicly-visible entry.
-    Public(Plaintext<N>),
+    Public(Plaintext),
     /// A private entry encrypted under the address of the record owner.
     Private(Private),
 }

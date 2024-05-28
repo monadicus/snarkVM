@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Literal<N> {
+impl Literal {
     /// Returns the size in bytes of this literal.
     #[allow(clippy::cast_possible_truncation)]
     pub fn size_in_bytes(&self) -> u16 {

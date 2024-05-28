@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_BITS: u8> Commit for Pedersen<E, NUM_BITS> {
+impl<const NUM_BITS: u8> Commit for Pedersen<NUM_BITS> {
     type Input = bool;
-    type Output = Field<E>;
-    type Randomizer = Scalar<E>;
+    type Output = Field;
+    type Randomizer = Scalar;
 
     /// Returns the Pedersen commitment of the given input and randomizer as a field element.
     fn commit(&self, input: &[Self::Input], randomizer: &Self::Randomizer) -> Result<Self::Output> {

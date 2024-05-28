@@ -14,17 +14,17 @@
 
 use super::*;
 
-impl<N: Network> Eq for Value<N> {}
+impl Eq for Value {}
 
-impl<N: Network> PartialEq for Value<N> {
+impl PartialEq for Value {
     /// Returns `true` if `self` and `other` are equal.
     fn eq(&self, other: &Self) -> bool {
         *self.is_equal(other)
     }
 }
 
-impl<N: Network> Equal<Self> for Value<N> {
-    type Output = Boolean<N>;
+impl Equal<Self> for Value {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

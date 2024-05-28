@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Serialize for Integer<E, I> {
+impl<I: IntegerType> Serialize for Integer<I> {
     /// Serializes the integer into a string or as bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<E: Environment, I: IntegerType> Serialize for Integer<E, I> {
     }
 }
 
-impl<'de, E: Environment, I: IntegerType> Deserialize<'de> for Integer<E, I> {
+impl<'de, I: IntegerType> Deserialize<'de> for Integer<I> {
     /// Deserializes the integer from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -37,16 +37,13 @@ impl<'de, E: Environment, I: IntegerType> Deserialize<'de> for Integer<E, I> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 1000;
 
     fn check_serde_json<I: IntegerType>(rng: &mut TestRng) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Sample a new integer.
-            let expected = Integer::<CurrentEnvironment, I>::new(Uniform::rand(rng));
+            let expected = Integer::<I>::new(Uniform::rand(rng));
 
             // Serialize
             let expected_string = &expected.to_string();
@@ -63,7 +60,7 @@ mod tests {
     fn check_bincode<I: IntegerType>(rng: &mut TestRng) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Sample a new integer.
-            let expected = Integer::<CurrentEnvironment, I>::new(Uniform::rand(rng));
+            let expected = Integer::<I>::new(Uniform::rand(rng));
 
             // Serialize
             let expected_bytes = expected.to_bytes_le()?;

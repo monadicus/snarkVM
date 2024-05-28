@@ -22,11 +22,10 @@ mod size_in_bits;
 mod to_bits;
 mod to_field;
 
-use snarkvm_console_network::Network;
 use snarkvm_console_types::{prelude::*, Field};
 
 /// An identifier is an **immutable** UTF-8 string,
-/// represented as a **constant** field element in the CurrentNetwork.
+/// represented as a **constant** field element.
 ///
 /// # Requirements
 /// The identifier must not be an empty string.
@@ -35,16 +34,16 @@ use snarkvm_console_types::{prelude::*, Field};
 /// The identifier must not consist solely of underscores.
 /// The identifier must fit within the data capacity of a base field element.
 #[derive(Copy, Clone)]
-pub struct Identifier<N: Network>(Field<N>, u8); // Number of bytes in the identifier.
+pub struct Identifier(Field, u8); // Number of bytes in the identifier.
 
-impl<N: Network> From<&Identifier<N>> for Identifier<N> {
+impl From<&Identifier> for Identifier {
     /// Returns a copy of the identifier.
-    fn from(identifier: &Identifier<N>) -> Self {
+    fn from(identifier: &Identifier) -> Self {
         *identifier
     }
 }
 
-impl<N: Network> TryFrom<String> for Identifier<N> {
+impl TryFrom<String> for Identifier {
     type Error = Error;
 
     /// Initializes an identifier from a string.
@@ -53,7 +52,7 @@ impl<N: Network> TryFrom<String> for Identifier<N> {
     }
 }
 
-impl<N: Network> TryFrom<&String> for Identifier<N> {
+impl TryFrom<&String> for Identifier {
     type Error = Error;
 
     /// Initializes an identifier from a string.
@@ -62,7 +61,7 @@ impl<N: Network> TryFrom<&String> for Identifier<N> {
     }
 }
 
-impl<N: Network> TryFrom<&str> for Identifier<N> {
+impl TryFrom<&str> for Identifier {
     type Error = Error;
 
     /// Initializes an identifier from a string.
@@ -74,33 +73,30 @@ impl<N: Network> TryFrom<&str> for Identifier<N> {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: usize = 100;
 
     /// Samples a random identifier.
-    pub(crate) fn sample_identifier<N: Network>(rng: &mut TestRng) -> Result<Identifier<N>> {
+    pub(crate) fn sample_identifier(rng: &mut TestRng) -> Result<Identifier> {
         // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-        let string = sample_identifier_as_string::<N>(rng)?;
+        let string = sample_identifier_as_string(rng)?;
         // Recover the field element from the bits.
-        let field = Field::<N>::from_bits_le(&string.as_bytes().to_bits_le())?;
+        let field = Field::from_bits_le(&string.as_bytes().to_bits_le())?;
         // Return the identifier.
-        Ok(Identifier(field, u8::try_from(string.len()).or_halt_with::<CurrentNetwork>("Invalid identifier length")))
+        Ok(Identifier(field, u8::try_from(string.len()).or_halt_with("Invalid identifier length")))
     }
 
     /// Samples a random identifier as a string.
-    pub(crate) fn sample_identifier_as_string<N: Network>(rng: &mut TestRng) -> Result<String> {
+    pub(crate) fn sample_identifier_as_string(rng: &mut TestRng) -> Result<String> {
         // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
         let string = "a".to_string()
             + &rng
                 .sample_iter(&Alphanumeric)
-                .take(Field::<N>::size_in_data_bits() / (8 * 2))
+                .take(Field::size_in_data_bits() / (8 * 2))
                 .map(char::from)
                 .collect::<String>();
         // Ensure identifier fits within the data capacity of the base field.
-        let max_bytes = Field::<N>::size_in_data_bits() / 8; // Note: This intentionally rounds down.
+        let max_bytes = Field::size_in_data_bits() / 8; // Note: This intentionally rounds down.
         match string.len() <= max_bytes {
             // Return the identifier.
             true => Ok(string),
@@ -109,9 +105,9 @@ pub(crate) mod tests {
     }
 
     /// Samples a random lowercase identifier as a string.
-    pub(crate) fn sample_lowercase_identifier_as_string<N: Network>(rng: &mut TestRng) -> Result<String> {
+    pub(crate) fn sample_lowercase_identifier_as_string(rng: &mut TestRng) -> Result<String> {
         // Sample a random identifier.
-        let string = sample_identifier_as_string::<N>(rng)?;
+        let string = sample_identifier_as_string(rng)?;
         // Return the identifier as lowercase.
         Ok(string.to_lowercase())
     }
@@ -122,12 +118,12 @@ pub(crate) mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_string = sample_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_string = sample_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_field = Field::<CurrentNetwork>::from_bits_le(&expected_string.as_bytes().to_bits_le())?;
+            let expected_field = Field::from_bits_le(&expected_string.as_bytes().to_bits_le())?;
 
             // Try to initialize an identifier from the string.
-            let candidate = Identifier::<CurrentNetwork>::try_from(expected_string.as_str())?;
+            let candidate = Identifier::try_from(expected_string.as_str())?;
             assert_eq!(expected_field, candidate.0);
             assert_eq!(expected_string.len(), candidate.1 as usize);
         }
@@ -136,8 +132,8 @@ pub(crate) mod tests {
 
     #[test]
     fn test_identifier_try_from_illegal() {
-        assert!(Identifier::<CurrentNetwork>::try_from("123").is_err());
-        assert!(Identifier::<CurrentNetwork>::try_from("abc\x08def").is_err());
-        assert!(Identifier::<CurrentNetwork>::try_from("abc\u{202a}def").is_err());
+        assert!(Identifier::try_from("123").is_err());
+        assert!(Identifier::try_from("abc\x08def").is_err());
+        assert!(Identifier::try_from("abc\u{202a}def").is_err());
     }
 }

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> SizeInBytes for Field<E> {
+impl SizeInBytes for Field {
     /// Returns the field size in bytes.
     #[inline]
     fn size_in_bytes() -> usize {

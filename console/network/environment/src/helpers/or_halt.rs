@@ -12,31 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::Environment;
+use crate::{Console, Environment};
 
 /// A trait to unwrap a `Result` or `Halt`.
 pub trait OrHalt<T> {
     /// Returns the result if it is successful, otherwise halt.
-    fn or_halt<E: Environment>(self) -> T;
+    fn or_halt(self) -> T;
 
     /// Returns the result if it is successful, otherwise halts with the message.
-    fn or_halt_with<E: Environment>(self, msg: &str) -> T;
+    fn or_halt_with(self, msg: &str) -> T;
 }
 
 impl<T, Error: core::fmt::Display> OrHalt<T> for Result<T, Error> {
     /// Returns the result if it is successful, otherwise halt.
-    fn or_halt<E: Environment>(self) -> T {
+    fn or_halt(self) -> T {
         match self {
             Ok(result) => result,
-            Err(error) => E::halt(error.to_string()),
+            Err(error) => Console::halt(error.to_string()),
         }
     }
 
     /// Returns the result if it is successful, otherwise halts with the message.
-    fn or_halt_with<E: Environment>(self, msg: &str) -> T {
+    fn or_halt_with(self, msg: &str) -> T {
         match self {
             Ok(result) => result,
-            Err(error) => E::halt(format!("{msg}: {error}")),
+            Err(error) => Console::halt(format!("{msg}: {error}")),
         }
     }
 }

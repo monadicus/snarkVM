@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<N: Network> SizeInBits for Signature<N> {
+impl SizeInBits for Signature {
     /// Returns the signature size in bits.
     #[inline]
     fn size_in_bits() -> usize {
-        Scalar::<N>::size_in_bits() + Scalar::<N>::size_in_bits() + ComputeKey::<N>::size_in_bits()
+        Scalar::size_in_bits() + Scalar::size_in_bits() + ComputeKey::size_in_bits()
     }
 }

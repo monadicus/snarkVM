@@ -22,20 +22,20 @@ use snarkvm_console_network::prelude::*;
 use enum_index::EnumIndex;
 
 #[derive(Clone, PartialEq, Eq, Hash, EnumIndex)]
-pub enum RegisterType<N: Network> {
+pub enum RegisterType {
     /// A plaintext type.
-    Plaintext(PlaintextType<N>),
+    Plaintext(PlaintextType),
     /// A record name.
-    Record(Identifier<N>),
+    Record(Identifier),
     /// A record locator.
-    ExternalRecord(Locator<N>),
+    ExternalRecord(Locator),
     /// A future.
-    Future(Locator<N>),
+    Future(Locator),
 }
 
-impl<N: Network> From<ValueType<N>> for RegisterType<N> {
+impl From<ValueType> for RegisterType {
     /// Converts a value type to a register type.
-    fn from(value: ValueType<N>) -> Self {
+    fn from(value: ValueType) -> Self {
         match value {
             ValueType::Constant(plaintext_type)
             | ValueType::Public(plaintext_type)
@@ -47,9 +47,9 @@ impl<N: Network> From<ValueType<N>> for RegisterType<N> {
     }
 }
 
-impl<N: Network> From<FinalizeType<N>> for RegisterType<N> {
+impl From<FinalizeType> for RegisterType {
     /// Converts a finalize type to a register type.
-    fn from(finalize: FinalizeType<N>) -> Self {
+    fn from(finalize: FinalizeType) -> Self {
         match finalize {
             FinalizeType::Plaintext(plaintext_type) => Self::Plaintext(plaintext_type),
             FinalizeType::Future(locator) => Self::Future(locator),

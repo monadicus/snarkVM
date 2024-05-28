@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment> Distribution<StringType<E>> for Standard {
+impl Distribution<StringType> for Standard {
     #[inline]
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> StringType<E> {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> StringType {
         // Sample a random number up to 1/4th of the maximum bytes.
-        let num_bytes = rng.gen_range(1..(E::MAX_STRING_BYTES / 4) as usize);
+        let num_bytes = rng.gen_range(1..(Console::MAX_STRING_BYTES / 4) as usize);
         // Sample a random string.
         StringType::new(&rng.sample_iter(&Alphanumeric).take(num_bytes).map(char::from).collect::<String>())
     }
@@ -27,11 +27,8 @@ impl<E: Environment> Distribution<StringType<E>> for Standard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
 
     use std::collections::HashMap;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -44,7 +41,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let string: StringType<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let string: StringType = Uniform::rand(&mut rng);
 
             // Add the new random value to the set.
             map.entry(string).and_modify(|count| *count += 1).or_insert(1);

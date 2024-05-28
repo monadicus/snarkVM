@@ -14,42 +14,42 @@
 
 use super::*;
 
-impl<E: Environment> CastLossy<Address<E>> for Field<E> {
+impl CastLossy<Address> for Field {
     /// Casts a `Field` to an `Address`.
     ///
     /// This operation attempts to recover the group element from the given field,
     /// which is then used to construct the address. See the documentation of `Field::cast_lossy`
     /// on the `Group` type for more details.
     #[inline]
-    fn cast_lossy(&self) -> Address<E> {
+    fn cast_lossy(&self) -> Address {
         // Perform a lossy cast to a group element.
-        let group: Group<E> = self.cast_lossy();
+        let group: Group = self.cast_lossy();
         // Convert the group element to an address.
         Address::new(group)
     }
 }
 
-impl<E: Environment> CastLossy<Boolean<E>> for Field<E> {
+impl CastLossy<Boolean> for Field {
     /// Casts a `Field` to a `Boolean`, with lossy truncation.
     /// This operation returns the least significant bit of the field.
     #[inline]
-    fn cast_lossy(&self) -> Boolean<E> {
+    fn cast_lossy(&self) -> Boolean {
         let bits_le = self.to_bits_le();
         debug_assert!(!bits_le.is_empty(), "An integer must have at least one bit");
         Boolean::new(bits_le[0])
     }
 }
 
-impl<E: Environment> CastLossy<Field<E>> for Field<E> {
+impl CastLossy<Field> for Field {
     /// Casts a `Field` to a `Field`.
     /// This is an identity cast, so it is **always** lossless.
     #[inline]
-    fn cast_lossy(&self) -> Field<E> {
+    fn cast_lossy(&self) -> Field {
         *self
     }
 }
 
-impl<E: Environment> CastLossy<Group<E>> for Field<E> {
+impl CastLossy<Group> for Field {
     /// Casts a `Field` to a `Group`.
     ///
     /// This operation attempts to recover the group element from the given field.
@@ -59,7 +59,7 @@ impl<E: Environment> CastLossy<Group<E>> for Field<E> {
     /// the generator of the prime-order subgroup is returned.
     /// Otherwise, Elligator-2 is applied to the field element to recover a group element.
     #[inline]
-    fn cast_lossy(&self) -> Group<E> {
+    fn cast_lossy(&self) -> Group {
         match Group::from_x_coordinate(*self) {
             Ok(group) => group,
             Err(_) => match self.is_one() {
@@ -75,20 +75,20 @@ impl<E: Environment> CastLossy<Group<E>> for Field<E> {
     }
 }
 
-impl<E: Environment, I: IntegerType> CastLossy<Integer<E, I>> for Field<E> {
+impl<I: IntegerType> CastLossy<Integer<I>> for Field {
     /// Casts a `Field` to an `Integer`, with lossy truncation.
     /// This operation truncates the field to an integer.
     #[inline]
-    fn cast_lossy(&self) -> Integer<E, I> {
+    fn cast_lossy(&self) -> Integer<I> {
         Integer::from_field_lossy(self)
     }
 }
 
-impl<E: Environment> CastLossy<Scalar<E>> for Field<E> {
+impl CastLossy<Scalar> for Field {
     /// Casts a `Field` to a `Scalar`, with lossy truncation.
     /// This operation truncates the field to a scalar.
     #[inline]
-    fn cast_lossy(&self) -> Scalar<E> {
+    fn cast_lossy(&self) -> Scalar {
         Scalar::from_field_lossy(self)
     }
 }
@@ -96,9 +96,6 @@ impl<E: Environment> CastLossy<Scalar<E>> for Field<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -106,23 +103,23 @@ mod tests {
     fn test_field_to_address() {
         let rng = &mut TestRng::default();
 
-        let field = Field::<CurrentEnvironment>::one();
-        let address: Address<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::one();
+        let address: Address = field.cast_lossy();
         assert_eq!(address, Address::new(Group::generator()));
         assert_eq!(address.to_group(), &Group::generator());
 
-        let field = Field::<CurrentEnvironment>::zero();
-        let address: Address<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::zero();
+        let address: Address = field.cast_lossy();
         assert_eq!(address, Address::zero());
         assert_eq!(address.to_group(), &Group::zero());
 
         for _ in 0..ITERATIONS {
             // Sample a random field.
-            let field = Field::<CurrentEnvironment>::rand(rng);
+            let field = Field::rand(rng);
             // Perform the operation.
-            let candidate: Address<CurrentEnvironment> = field.cast_lossy();
+            let candidate: Address = field.cast_lossy();
             // Compare the result against the group element. (This is the most we can do.)
-            let expected: Group<CurrentEnvironment> = field.cast_lossy();
+            let expected: Group = field.cast_lossy();
             assert_eq!(Address::new(expected), candidate);
         }
     }
@@ -131,19 +128,19 @@ mod tests {
     fn test_field_to_boolean() {
         let rng = &mut TestRng::default();
 
-        let field = Field::<CurrentEnvironment>::one();
-        let boolean: Boolean<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::one();
+        let boolean: Boolean = field.cast_lossy();
         assert_eq!(boolean, Boolean::new(true));
 
-        let field = Field::<CurrentEnvironment>::zero();
-        let boolean: Boolean<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::zero();
+        let boolean: Boolean = field.cast_lossy();
         assert_eq!(boolean, Boolean::new(false));
 
         for _ in 0..ITERATIONS {
             // Sample a random field.
-            let field = Field::<CurrentEnvironment>::rand(rng);
+            let field = Field::rand(rng);
             // Perform the operation.
-            let candidate: Boolean<CurrentEnvironment> = field.cast_lossy();
+            let candidate: Boolean = field.cast_lossy();
             // Compare the result against the least significant bit of the field.
             let expected = Boolean::new(field.to_bits_be().pop().unwrap());
             assert_eq!(expected, candidate);
@@ -156,9 +153,9 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random field.
-            let field = Field::<CurrentEnvironment>::rand(rng);
+            let field = Field::rand(rng);
             // Perform the operation.
-            let candidate: Field<CurrentEnvironment> = field.cast_lossy();
+            let candidate: Field = field.cast_lossy();
             assert_eq!(field, candidate);
         }
     }
@@ -167,21 +164,21 @@ mod tests {
     fn test_field_to_group() {
         let rng = &mut TestRng::default();
 
-        let field = Field::<CurrentEnvironment>::one();
-        let group: Group<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::one();
+        let group: Group = field.cast_lossy();
         assert_eq!(group, Group::generator());
 
-        let field = Field::<CurrentEnvironment>::zero();
-        let group: Group<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::zero();
+        let group: Group = field.cast_lossy();
         assert_eq!(group, Group::zero());
 
         for _ in 0..ITERATIONS {
             // Sample a random field.
-            let field = Field::<CurrentEnvironment>::rand(rng);
+            let field = Field::rand(rng);
             // Perform the operation.
-            let candidate: Group<CurrentEnvironment> = field.cast_lossy();
+            let candidate: Group = field.cast_lossy();
             // Compare the result against the address. (This is the most we can do.)
-            let expected: Address<CurrentEnvironment> = field.cast_lossy();
+            let expected: Address = field.cast_lossy();
             assert_eq!(expected.to_group(), &candidate);
         }
     }
@@ -190,19 +187,19 @@ mod tests {
     fn test_field_to_scalar() {
         let rng = &mut TestRng::default();
 
-        let field = Field::<CurrentEnvironment>::one();
-        let scalar: Scalar<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::one();
+        let scalar: Scalar = field.cast_lossy();
         assert_eq!(scalar, Scalar::one());
 
-        let field = Field::<CurrentEnvironment>::zero();
-        let scalar: Scalar<CurrentEnvironment> = field.cast_lossy();
+        let field = Field::zero();
+        let scalar: Scalar = field.cast_lossy();
         assert_eq!(scalar, Scalar::zero());
 
         for _ in 0..ITERATIONS {
             // Sample a random field.
-            let field = Field::<CurrentEnvironment>::rand(rng);
+            let field = Field::rand(rng);
             // Perform the operation.
-            let candidate: Scalar<CurrentEnvironment> = field.cast_lossy();
+            let candidate: Scalar = field.cast_lossy();
             assert_eq!(Scalar::from_field_lossy(&field), candidate);
         }
     }
@@ -211,17 +208,17 @@ mod tests {
         ($type:ty) => {
             let rng = &mut TestRng::default();
 
-            let field = Field::<CurrentEnvironment>::one();
+            let field = Field::one();
             let integer: $type = field.cast_lossy();
             assert_eq!(integer, <$type>::one());
 
-            let field = Field::<CurrentEnvironment>::zero();
+            let field = Field::zero();
             let integer: $type = field.cast_lossy();
             assert_eq!(integer, <$type>::zero());
 
             for _ in 0..ITERATIONS {
                 // Sample a random field.
-                let field = Field::<CurrentEnvironment>::rand(rng);
+                let field = Field::rand(rng);
                 // Perform the operation.
                 let candidate: $type = field.cast_lossy();
                 assert_eq!(<$type>::from_field_lossy(&field), candidate);
@@ -231,51 +228,51 @@ mod tests {
 
     #[test]
     fn test_field_to_i8() {
-        check_field_to_integer!(I8<CurrentEnvironment>);
+        check_field_to_integer!(I8);
     }
 
     #[test]
     fn test_field_to_i16() {
-        check_field_to_integer!(I16<CurrentEnvironment>);
+        check_field_to_integer!(I16);
     }
 
     #[test]
     fn test_field_to_i32() {
-        check_field_to_integer!(I32<CurrentEnvironment>);
+        check_field_to_integer!(I32);
     }
 
     #[test]
     fn test_field_to_i64() {
-        check_field_to_integer!(I64<CurrentEnvironment>);
+        check_field_to_integer!(I64);
     }
 
     #[test]
     fn test_field_to_i128() {
-        check_field_to_integer!(I128<CurrentEnvironment>);
+        check_field_to_integer!(I128);
     }
 
     #[test]
     fn test_field_to_u8() {
-        check_field_to_integer!(U8<CurrentEnvironment>);
+        check_field_to_integer!(U8);
     }
 
     #[test]
     fn test_field_to_u16() {
-        check_field_to_integer!(U16<CurrentEnvironment>);
+        check_field_to_integer!(U16);
     }
 
     #[test]
     fn test_field_to_u32() {
-        check_field_to_integer!(U32<CurrentEnvironment>);
+        check_field_to_integer!(U32);
     }
 
     #[test]
     fn test_field_to_u64() {
-        check_field_to_integer!(U64<CurrentEnvironment>);
+        check_field_to_integer!(U64);
     }
 
     #[test]
     fn test_field_to_u128() {
-        check_field_to_integer!(U128<CurrentEnvironment>);
+        check_field_to_integer!(U128);
     }
 }

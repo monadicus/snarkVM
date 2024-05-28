@@ -15,42 +15,42 @@
 use super::*;
 use crate::data::literal::cast_lossy::CastLossy;
 
-impl<E: Environment> Cast<Address<E>> for Boolean<E> {
+impl Cast<Address> for Boolean {
     /// Casts a `Boolean` to an `Address`.
     #[inline]
-    fn cast(&self) -> Result<Address<E>> {
+    fn cast(&self) -> Result<Address> {
         Ok(self.cast_lossy())
     }
 }
 
-impl<E: Environment> Cast<Boolean<E>> for Boolean<E> {
+impl Cast<Boolean> for Boolean {
     /// Casts a `Boolean` to a `Boolean`.
     #[inline]
-    fn cast(&self) -> Result<Boolean<E>> {
+    fn cast(&self) -> Result<Boolean> {
         Ok(self.cast_lossy())
     }
 }
 
-impl<E: Environment> Cast<Field<E>> for Boolean<E> {
+impl Cast<Field> for Boolean {
     /// Casts a `Boolean` to a `Field`.
     #[inline]
-    fn cast(&self) -> Result<Field<E>> {
+    fn cast(&self) -> Result<Field> {
         Ok(self.cast_lossy())
     }
 }
 
-impl<E: Environment> Cast<Group<E>> for Boolean<E> {
+impl Cast<Group> for Boolean {
     /// Casts a `Boolean` to a `Group`.
     #[inline]
-    fn cast(&self) -> Result<Group<E>> {
+    fn cast(&self) -> Result<Group> {
         Ok(self.cast_lossy())
     }
 }
 
-impl<E: Environment, I: IntegerType> Cast<Integer<E, I>> for Boolean<E> {
+impl<I: IntegerType> Cast<Integer<I>> for Boolean {
     /// Casts a `Boolean` to an `Integer`.
     #[inline]
-    fn cast(&self) -> Result<Integer<E, I>> {
+    fn cast(&self) -> Result<Integer<I>> {
         match **self {
             true => Ok(Integer::one()),
             false => Ok(Integer::zero()),
@@ -58,10 +58,10 @@ impl<E: Environment, I: IntegerType> Cast<Integer<E, I>> for Boolean<E> {
     }
 }
 
-impl<E: Environment> Cast<Scalar<E>> for Boolean<E> {
+impl Cast<Scalar> for Boolean {
     /// Casts a `Boolean` to a `Scalar`.
     #[inline]
-    fn cast(&self) -> Result<Scalar<E>> {
+    fn cast(&self) -> Result<Scalar> {
         Ok(self.cast_lossy())
     }
 }

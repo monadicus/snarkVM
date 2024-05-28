@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for TransitionLeaf<N> {
+impl FromStr for TransitionLeaf {
     type Err = Error;
 
     /// Initializes the leaf from a JSON-string.
@@ -23,14 +23,14 @@ impl<N: Network> FromStr for TransitionLeaf<N> {
     }
 }
 
-impl<N: Network> Debug for TransitionLeaf<N> {
+impl Debug for TransitionLeaf {
     /// Prints the leaf as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for TransitionLeaf<N> {
+impl Display for TransitionLeaf {
     /// Displays the leaf as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", serde_json::to_string(self).map_err::<fmt::Error, _>(ser::Error::custom)?)

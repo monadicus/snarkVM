@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Parser for EntryType<N> {
+impl Parser for EntryType {
     /// Parses a string into the entry type.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -27,7 +27,7 @@ impl<N: Network> Parser for EntryType<N> {
     }
 }
 
-impl<N: Network> FromStr for EntryType<N> {
+impl FromStr for EntryType {
     type Err = Error;
 
     /// Returns the entry type from a string literal.
@@ -44,14 +44,14 @@ impl<N: Network> FromStr for EntryType<N> {
     }
 }
 
-impl<N: Network> Debug for EntryType<N> {
+impl Debug for EntryType {
     /// Prints the entry type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for EntryType<N> {
+impl Display for EntryType {
     /// Prints the entry type as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

@@ -14,30 +14,30 @@
 
 use super::*;
 
-impl<N: Network> TryFrom<Vec<Field<N>>> for Ciphertext<N> {
+impl TryFrom<Vec<Field>> for Ciphertext {
     type Error = Error;
 
     /// Initializes a ciphertext from a list of base field elements.
-    fn try_from(fields: Vec<Field<N>>) -> Result<Self, Self::Error> {
+    fn try_from(fields: Vec<Field>) -> Result<Self, Self::Error> {
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => Ok(Self(fields)),
             false => bail!("Ciphertext exceeds maximum allowed size"),
         }
     }
 }
 
-impl<N: Network> TryFrom<&[Field<N>]> for Ciphertext<N> {
+impl TryFrom<&[Field]> for Ciphertext {
     type Error = Error;
 
     /// Initializes a ciphertext from a list of base field elements.
-    fn try_from(fields: &[Field<N>]) -> Result<Self, Self::Error> {
+    fn try_from(fields: &[Field]) -> Result<Self, Self::Error> {
         Self::from_fields(fields)
     }
 }
 
-impl<N: Network> FromFields for Ciphertext<N> {
-    type Field = Field<N>;
+impl FromFields for Ciphertext {
+    type Field = Field;
 
     /// Initializes a ciphertext from a list of base field elements.
     fn from_fields(fields: &[Self::Field]) -> Result<Self> {

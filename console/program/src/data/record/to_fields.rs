@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> ToFields for Record<N, Plaintext<N>> {
-    type Field = Field<N>;
+impl ToFields for Record<Plaintext> {
+    type Field = Field;
 
     /// Returns this record as a list of field elements.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {
@@ -25,20 +25,17 @@ impl<N: Network> ToFields for Record<N, Plaintext<N>> {
         // During decryption, this final bit ensures we've reached the end.
         bits_le.push(true);
         // Pack the bits into field elements.
-        let fields = bits_le
-            .chunks(Field::<N>::size_in_data_bits())
-            .map(Field::<N>::from_bits_le)
-            .collect::<Result<Vec<_>>>()?;
+        let fields = bits_le.chunks(Field::size_in_data_bits()).map(Field::from_bits_le).collect::<Result<Vec<_>>>()?;
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => Ok(fields),
             false => bail!("Record<Plaintext> exceeds maximum allowed size"),
         }
     }
 }
 
-impl<N: Network> ToFields for Record<N, Ciphertext<N>> {
-    type Field = Field<N>;
+impl ToFields for Record<Ciphertext> {
+    type Field = Field;
 
     /// Returns this record as a list of field elements.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {
@@ -48,12 +45,9 @@ impl<N: Network> ToFields for Record<N, Ciphertext<N>> {
         // During decryption, this final bit ensures we've reached the end.
         bits_le.push(true);
         // Pack the bits into field elements.
-        let fields = bits_le
-            .chunks(Field::<N>::size_in_data_bits())
-            .map(Field::<N>::from_bits_le)
-            .collect::<Result<Vec<_>>>()?;
+        let fields = bits_le.chunks(Field::size_in_data_bits()).map(Field::from_bits_le).collect::<Result<Vec<_>>>()?;
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= N::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoNetwork::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => Ok(fields),
             false => bail!("Record<Ciphertext> exceeds maximum allowed size"),
         }

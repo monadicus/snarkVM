@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for PrivateKey<N> {
+impl Serialize for PrivateKey {
     /// Serializes an account private key into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for PrivateKey<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for PrivateKey<N> {
+impl<'de> Deserialize<'de> for PrivateKey {
     /// Deserializes an account private key from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -32,7 +32,7 @@ impl<'de, N: Network> Deserialize<'de> for PrivateKey<N> {
             false => FromBytesDeserializer::<Self>::deserialize(
                 deserializer,
                 "private key",
-                (N::Scalar::size_in_bits() + 7) / 8,
+                (Scalar::size_in_bits() + 7) / 8,
             ),
         }
     }
@@ -41,9 +41,6 @@ impl<'de, N: Network> Deserialize<'de> for PrivateKey<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -53,7 +50,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new private key.
-            let expected = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let expected = PrivateKey::new(&mut rng)?;
 
             // Serialize
             let expected_string = &expected.to_string();
@@ -73,7 +70,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new private key.
-            let expected = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let expected = PrivateKey::new(&mut rng)?;
 
             // Serialize
             let expected_bytes = expected.to_bytes_le()?;

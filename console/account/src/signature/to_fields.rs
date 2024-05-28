@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<N: Network> ToFields for Signature<N> {
-    type Field = Field<N>;
+impl ToFields for Signature {
+    type Field = Field;
 
     /// Casts a signature into a list of base fields.
     fn to_fields(&self) -> Result<Vec<Self::Field>> {

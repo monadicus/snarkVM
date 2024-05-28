@@ -23,7 +23,7 @@ use criterion::Criterion;
 
 fn bhp256(c: &mut Criterion) {
     let rng = &mut TestRng::default();
-    let hash = BHP256::<Console>::setup("BHP256").unwrap();
+    let hash = BHP256::setup("BHP256").unwrap();
 
     let input = (0..hash.window_size() as u64 * hash.num_windows() as u64).map(|_| bool::rand(rng)).collect::<Vec<_>>();
     c.bench_function(&format!("BHP256 Hash - input size {}", input.len()), |b| b.iter(|| hash.hash(&input)));
@@ -34,7 +34,7 @@ fn bhp256(c: &mut Criterion) {
 
 fn bhp512(c: &mut Criterion) {
     let rng = &mut TestRng::default();
-    let hash = BHP512::<Console>::setup("BHP512").unwrap();
+    let hash = BHP512::setup("BHP512").unwrap();
 
     let input = (0..hash.window_size() as u64 * hash.num_windows() as u64).map(|_| bool::rand(rng)).collect::<Vec<_>>();
     c.bench_function(&format!("BHP512 Hash - input size {}", input.len()), |b| b.iter(|| hash.hash(&input)));
@@ -45,7 +45,7 @@ fn bhp512(c: &mut Criterion) {
 
 fn bhp768(c: &mut Criterion) {
     let rng = &mut TestRng::default();
-    let hash = BHP768::<Console>::setup("BHP768").unwrap();
+    let hash = BHP768::setup("BHP768").unwrap();
 
     let input = (0..hash.window_size() as u64 * hash.num_windows() as u64).map(|_| bool::rand(rng)).collect::<Vec<_>>();
     c.bench_function(&format!("BHP768 Hash - input size {}", input.len()), |b| b.iter(|| hash.hash(&input)));
@@ -56,7 +56,7 @@ fn bhp768(c: &mut Criterion) {
 
 fn bhp1024(c: &mut Criterion) {
     let rng = &mut TestRng::default();
-    let hash = BHP1024::<Console>::setup("BHP1024").unwrap();
+    let hash = BHP1024::setup("BHP1024").unwrap();
 
     let input = (0..hash.window_size() as u64 * hash.num_windows() as u64).map(|_| bool::rand(rng)).collect::<Vec<_>>();
     c.bench_function(&format!("BHP1024 Hash - input size {}", input.len()), |b| b.iter(|| hash.hash(&input)));

@@ -65,6 +65,22 @@ pub trait Environment:
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Console;
 
+pub type ConsoleAffine = EdwardsAffine;
+pub type ConsoleBigInteger = <ConsoleField as PrimeField>::BigInteger;
+pub type ConsoleField = <ConsoleAffine as AffineCurve>::BaseField;
+pub type ConsolePairingCurve = Bls12_377;
+pub type ConsoleProjective = <ConsoleAffine as AffineCurve>::Projective;
+pub type ConsoleScalar = <ConsoleAffine as AffineCurve>::ScalarField;
+
+/// The coefficient `A` of the twisted Edwards curve.
+pub const CONSOLE_EDWARDS_A: ConsoleField = <EdwardsParameters as TwistedEdwardsParameters>::EDWARDS_A;
+/// The coefficient `D` of the twisted Edwards curve.
+pub const CONSOLE_EDWARDS_D: ConsoleField = <EdwardsParameters as TwistedEdwardsParameters>::EDWARDS_D;
+/// The coefficient `A` of the Montgomery curve.
+pub const CONSOLE_MONTGOMERY_A: ConsoleField = <EdwardsParameters as MontgomeryParameters>::MONTGOMERY_A;
+/// The coefficient `B` of the Montgomery curve.
+pub const CONSOLE_MONTGOMERY_B: ConsoleField = <EdwardsParameters as MontgomeryParameters>::MONTGOMERY_B;
+
 impl Environment for Console {
     type Affine = EdwardsAffine;
     type BigInteger = <Self::Field as PrimeField>::BigInteger;

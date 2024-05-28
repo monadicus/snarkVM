@@ -24,4 +24,4 @@ use crate::ViewKey;
 use snarkvm_console_network::prelude::*;
 
 /// See `snarkvm/console/types/address` for the `Address` type.
-pub type Address<N> = snarkvm_console_types::Address<N>;
+pub type Address = snarkvm_console_types::Address;

@@ -31,44 +31,43 @@ mod variant;
 
 use crate::{LiteralType, ProgramID};
 use snarkvm_console_account::{ComputeKey, PrivateKey, Signature};
-use snarkvm_console_network::Network;
 use snarkvm_console_types::{prelude::*, Boolean};
 
 /// The literal enum represents all supported types in snarkVM.
 #[derive(Clone)]
-pub enum Literal<N: Network> {
+pub enum Literal {
     /// The Aleo address type.
-    Address(Address<N>),
+    Address(Address),
     /// The boolean type.
-    Boolean(Boolean<N>),
+    Boolean(Boolean),
     /// The field type.
-    Field(Field<N>),
+    Field(Field),
     /// The group type.
-    Group(Group<N>),
+    Group(Group),
     /// The 8-bit signed integer type.
-    I8(I8<N>),
+    I8(I8),
     /// The 16-bit signed integer type.
-    I16(I16<N>),
+    I16(I16),
     /// The 32-bit signed integer type.
-    I32(I32<N>),
+    I32(I32),
     /// The 64-bit signed integer type.
-    I64(I64<N>),
+    I64(I64),
     /// The 128-bit signed integer type.
-    I128(I128<N>),
+    I128(I128),
     /// The 8-bit unsigned integer type.
-    U8(U8<N>),
+    U8(U8),
     /// The 16-bit unsigned integer type.
-    U16(U16<N>),
+    U16(U16),
     /// The 32-bit unsigned integer type.
-    U32(U32<N>),
+    U32(U32),
     /// The 64-bit unsigned integer type.
-    U64(U64<N>),
+    U64(U64),
     /// The 128-bit unsigned integer type.
-    U128(U128<N>),
+    U128(U128),
     /// The scalar type.
-    Scalar(Scalar<N>),
+    Scalar(Scalar),
     /// The signature type.
-    Signature(Box<Signature<N>>),
+    Signature(Box<Signature>),
     /// The string type.
-    String(StringType<N>),
+    String(StringType),
 }

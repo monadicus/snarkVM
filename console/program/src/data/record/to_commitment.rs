@@ -14,19 +14,19 @@
 
 use super::*;
 
-impl<N: Network> Record<N, Plaintext<N>> {
+impl Record<Plaintext> {
     /// Returns the record commitment.
-    pub fn to_commitment(&self, program_id: &ProgramID<N>, record_name: &Identifier<N>) -> Result<Field<N>> {
+    pub fn to_commitment(&self, program_id: &ProgramID, record_name: &Identifier) -> Result<Field> {
         // Construct the input as `(program_id || record_name || record)`.
         let input = to_bits_le![program_id, record_name, self];
         // Compute the BHP hash of the program record.
-        N::hash_bhp1024(&input)
+        AleoNetwork::hash_bhp1024(&input)
     }
 }
 
-impl<N: Network> Record<N, Ciphertext<N>> {
+impl Record<Ciphertext> {
     /// Returns the record commitment.
-    pub fn to_commitment(&self, _program_id: &ProgramID<N>, _record_name: &Identifier<N>) -> Result<Field<N>> {
+    pub fn to_commitment(&self, _program_id: &ProgramID, _record_name: &Identifier) -> Result<Field> {
         bail!("Illegal operation: Record::to_commitment() cannot be invoked on the `Ciphertext` variant.")
     }
 }

@@ -37,34 +37,34 @@ pub const TRANSACTION_DEPTH: u8 = 5;
 pub const TRANSITION_DEPTH: u8 = 5;
 
 /// The Merkle tree for the block state.
-pub type BlockTree<N> = BHPMerkleTree<N, BLOCKS_DEPTH>;
+pub type BlockTree = BHPMerkleTree<BLOCKS_DEPTH>;
 /// The Merkle path for the state tree blocks.
-pub type BlockPath<N> = MerklePath<N, BLOCKS_DEPTH>;
+pub type BlockPath = MerklePath<BLOCKS_DEPTH>;
 
 /// The Merkle tree for the block header.
-pub type HeaderTree<N> = BHPMerkleTree<N, HEADER_DEPTH>;
+pub type HeaderTree = BHPMerkleTree<HEADER_DEPTH>;
 /// The Merkle path for the block header.
-pub type HeaderPath<N> = MerklePath<N, HEADER_DEPTH>;
+pub type HeaderPath = MerklePath<HEADER_DEPTH>;
 
 /// The Merkle tree for ratifications in a block.
-pub type RatificationsTree<N> = BHPMerkleTree<N, RATIFICATIONS_DEPTH>;
+pub type RatificationsTree = BHPMerkleTree<RATIFICATIONS_DEPTH>;
 /// The Merkle path for a ratification in a block.
-pub type RatificationsPath<N> = MerklePath<N, RATIFICATIONS_DEPTH>;
+pub type RatificationsPath = MerklePath<RATIFICATIONS_DEPTH>;
 
 /// The Merkle tree for transactions in a block.
-pub type TransactionsTree<N> = BHPMerkleTree<N, TRANSACTIONS_DEPTH>;
+pub type TransactionsTree = BHPMerkleTree<TRANSACTIONS_DEPTH>;
 /// The Merkle path for a transaction in a block.
-pub type TransactionsPath<N> = MerklePath<N, TRANSACTIONS_DEPTH>;
+pub type TransactionsPath = MerklePath<TRANSACTIONS_DEPTH>;
 
 /// The Merkle tree for the transaction.
-pub type TransactionTree<N> = BHPMerkleTree<N, TRANSACTION_DEPTH>;
+pub type TransactionTree = BHPMerkleTree<TRANSACTION_DEPTH>;
 /// The Merkle path for a function or transition in the transaction.
-pub type TransactionPath<N> = MerklePath<N, TRANSACTION_DEPTH>;
+pub type TransactionPath = MerklePath<TRANSACTION_DEPTH>;
 
 /// The Merkle tree for the transition.
-pub type TransitionTree<N> = BHPMerkleTree<N, TRANSITION_DEPTH>;
+pub type TransitionTree = BHPMerkleTree<TRANSITION_DEPTH>;
 /// The Merkle path for an input or output ID in the transition.
-pub type TransitionPath<N> = MerklePath<N, TRANSITION_DEPTH>;
+pub type TransitionPath = MerklePath<TRANSITION_DEPTH>;
 
 #[cfg(test)]
 mod tests {

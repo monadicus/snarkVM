@@ -61,7 +61,7 @@ impl<E: Environment> Default for Field<E> {
 
 #[cfg(console)]
 impl<E: Environment> Inject for Field<E> {
-    type Primitive = console::Field<E::Network>;
+    type Primitive = console::Field;
 
     /// Initializes a field circuit from a console field.
     fn new(mode: Mode, field: Self::Primitive) -> Self {
@@ -71,7 +71,7 @@ impl<E: Environment> Inject for Field<E> {
 
 #[cfg(console)]
 impl<E: Environment> Eject for Field<E> {
-    type Primitive = console::Field<E::Network>;
+    type Primitive = console::Field;
 
     /// Ejects the mode of the field circuit.
     fn eject_mode(&self) -> Mode {
@@ -125,7 +125,7 @@ impl<E: Environment> TypeName for Field<E> {
     /// Returns the type name of the circuit as a string.
     #[inline]
     fn type_name() -> &'static str {
-        console::Field::<E::Network>::type_name()
+        console::Field::type_name()
     }
 }
 

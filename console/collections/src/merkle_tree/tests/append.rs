@@ -16,8 +16,6 @@ use super::*;
 use snarkvm_console_algorithms::{Poseidon, BHP1024, BHP512};
 use snarkvm_console_types::prelude::Console;
 
-type CurrentEnvironment = Console;
-
 const ITERATIONS: u128 = 10;
 
 /// Runs the following test:
@@ -25,7 +23,7 @@ const ITERATIONS: u128 = 10;
 /// 2. Check that the Merkle proof for every leaf is valid.
 /// 3. Add the additional leaves to the Merkle tree.
 /// 4. Check that the Merkle proof for every additional leaf is valid.
-fn check_merkle_tree<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>, const DEPTH: u8>(
+fn check_merkle_tree<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>, const DEPTH: u8>(
     leaf_hasher: &LH,
     path_hasher: &PH,
     leaves: &[LH::Leaf],
@@ -33,7 +31,7 @@ fn check_merkle_tree<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash
     rng: &mut TestRng,
 ) -> Result<()> {
     // Construct the Merkle tree for the given leaves.
-    let mut merkle_tree = MerkleTree::<E, LH, PH, DEPTH>::new(leaf_hasher, path_hasher, leaves)?;
+    let mut merkle_tree = MerkleTree::<LH, PH, DEPTH>::new(leaf_hasher, path_hasher, leaves)?;
     assert_eq!(leaves.len(), merkle_tree.number_of_leaves);
 
     // Check each leaf in the Merkle tree.
@@ -71,7 +69,7 @@ fn check_merkle_tree<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash
 /// Runs the following test:
 /// 1. Construct a depth-2 Merkle tree with 4 leaves.
 /// 2. Checks that every node hash and the Merkle root is correct.
-fn check_merkle_tree_depth_2<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>>(
+fn check_merkle_tree_depth_2<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>>(
     leaf_hasher: &LH,
     path_hasher: &PH,
     leaves: &[LH::Leaf],
@@ -79,7 +77,7 @@ fn check_merkle_tree_depth_2<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: 
     assert_eq!(4, leaves.len(), "Depth-2 test requires 4 leaves");
 
     // Construct the Merkle tree for the given leaves.
-    let merkle_tree = MerkleTree::<E, LH, PH, 2>::new(leaf_hasher, path_hasher, leaves)?;
+    let merkle_tree = MerkleTree::<LH, PH, 2>::new(leaf_hasher, path_hasher, leaves)?;
     assert_eq!(7, merkle_tree.tree.len());
     assert_eq!(4, merkle_tree.number_of_leaves);
 
@@ -111,7 +109,7 @@ fn check_merkle_tree_depth_2<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: 
 /// 2. Checks that every node hash and the Merkle root is correct.
 /// 3. Add an additional leaf to the Merkle tree.
 /// 4. Checks that every node hash and the Merkle root is correct.
-fn check_merkle_tree_depth_3_padded<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>>(
+fn check_merkle_tree_depth_3_padded<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>>(
     leaf_hasher: &LH,
     path_hasher: &PH,
     leaves: &[LH::Leaf],
@@ -121,7 +119,7 @@ fn check_merkle_tree_depth_3_padded<E: Environment, LH: LeafHash<Hash = PH::Hash
     assert_eq!(1, additional_leaves.len(), "Padded depth-3 test requires 1 additional leaf");
 
     // Construct the Merkle tree for the given leaves.
-    let mut merkle_tree = MerkleTree::<E, LH, PH, 3>::new(leaf_hasher, path_hasher, leaves)?;
+    let mut merkle_tree = MerkleTree::<LH, PH, 3>::new(leaf_hasher, path_hasher, leaves)?;
     assert_eq!(7, merkle_tree.tree.len());
     // assert_eq!(0, merkle_tree.padding_tree.len());
     assert_eq!(4, merkle_tree.number_of_leaves);
@@ -204,7 +202,7 @@ fn check_merkle_tree_depth_3_padded<E: Environment, LH: LeafHash<Hash = PH::Hash
 /// 4. Checks that every node hash and the Merkle root is correct.
 /// 5. Add another additional leaf to the Merkle tree.
 /// 6. Checks that every node hash and the Merkle root is correct.
-fn check_merkle_tree_depth_4_padded<E: Environment, LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field<E>>>(
+fn check_merkle_tree_depth_4_padded<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>>(
     leaf_hasher: &LH,
     path_hasher: &PH,
     leaves: &[LH::Leaf],
@@ -214,7 +212,7 @@ fn check_merkle_tree_depth_4_padded<E: Environment, LH: LeafHash<Hash = PH::Hash
     assert_eq!(2, additional_leaves.len(), "Padded depth-4 test requires 2 additional leaves");
 
     // Construct the Merkle tree for the given leaves.
-    let mut merkle_tree = MerkleTree::<E, LH, PH, 4>::new(leaf_hasher, path_hasher, leaves)?;
+    let mut merkle_tree = MerkleTree::<LH, PH, 4>::new(leaf_hasher, path_hasher, leaves)?;
     assert_eq!(7, merkle_tree.tree.len());
     // assert_eq!(1, merkle_tree.padding_tree.len());
     assert_eq!(4, merkle_tree.number_of_leaves);
@@ -359,8 +357,8 @@ fn check_merkle_tree_depth_4_padded<E: Environment, LH: LeafHash<Hash = PH::Hash
 #[test]
 fn test_merkle_tree_bhp() -> Result<()> {
     fn run_test<const DEPTH: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = BHP1024<CurrentEnvironment>;
-        type PH = BHP512<CurrentEnvironment>;
+        type LH = BHP1024;
+        type PH = BHP512;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -375,12 +373,8 @@ fn test_merkle_tree_bhp() -> Result<()> {
                 check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
-                    &(0..num_leaves)
-                        .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                        .collect::<Vec<Vec<bool>>>(),
-                    &(0..num_additional_leaves)
-                        .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                        .collect::<Vec<Vec<bool>>>(),
+                    &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+                    &(0..num_additional_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
                     rng,
                 )?;
             }
@@ -466,8 +460,8 @@ fn test_merkle_tree_poseidon() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_2_bhp() -> Result<()> {
-    type LH = BHP1024<CurrentEnvironment>;
-    type PH = BHP512<CurrentEnvironment>;
+    type LH = BHP1024;
+    type PH = BHP512;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -478,7 +472,7 @@ fn test_merkle_tree_depth_2_bhp() -> Result<()> {
     check_merkle_tree_depth_2::<CurrentEnvironment, LH, PH>(
         &leaf_hasher,
         &path_hasher,
-        &(0..4).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..4).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
     )
 }
 
@@ -502,8 +496,8 @@ fn test_merkle_tree_depth_2_poseidon() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_3_bhp() -> Result<()> {
-    type LH = BHP1024<CurrentEnvironment>;
-    type PH = BHP512<CurrentEnvironment>;
+    type LH = BHP1024;
+    type PH = BHP512;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -514,8 +508,8 @@ fn test_merkle_tree_depth_3_bhp() -> Result<()> {
     check_merkle_tree_depth_3_padded::<CurrentEnvironment, LH, PH>(
         &leaf_hasher,
         &path_hasher,
-        &(0..4).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
-        &(0..1).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..4).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..1).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
     )
 }
 
@@ -540,8 +534,8 @@ fn test_merkle_tree_depth_3_poseidon() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_4_bhp() -> Result<()> {
-    type LH = BHP1024<CurrentEnvironment>;
-    type PH = BHP512<CurrentEnvironment>;
+    type LH = BHP1024;
+    type PH = BHP512;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -552,8 +546,8 @@ fn test_merkle_tree_depth_4_bhp() -> Result<()> {
     check_merkle_tree_depth_4_padded::<CurrentEnvironment, LH, PH>(
         &leaf_hasher,
         &path_hasher,
-        &(0..4).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
-        &(0..2).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..4).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..2).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
     )
 }
 
@@ -585,11 +579,11 @@ fn test_profiler() -> Result<()> {
 
     /// Generates the specified number of random Merkle tree leaves.
     macro_rules! generate_leaves {
-        ($num_leaves:expr, $rng:expr) => {{ (0..$num_leaves).map(|_| Field::<CurrentEnvironment>::rand($rng).to_bits_le()).collect::<Vec<_>>() }};
+        ($num_leaves:expr, $rng:expr) => {{ (0..$num_leaves).map(|_| Field::rand($rng).to_bits_le()).collect::<Vec<_>>() }};
     }
 
-    type LH = BHP1024<CurrentEnvironment>;
-    type PH = BHP512<CurrentEnvironment>;
+    type LH = BHP1024;
+    type PH = BHP512;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;

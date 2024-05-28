@@ -16,7 +16,7 @@ use super::*;
 
 static ADDRESS_PREFIX: &str = "aleo";
 
-impl<E: Environment> Parser for Address<E> {
+impl Parser for Address {
     /// Parses a string into an address.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -33,7 +33,7 @@ impl<E: Environment> Parser for Address<E> {
     }
 }
 
-impl<E: Environment> FromStr for Address<E> {
+impl FromStr for Address {
     type Err = Error;
 
     /// Reads in an account address string.
@@ -56,13 +56,13 @@ impl<E: Environment> FromStr for Address<E> {
     }
 }
 
-impl<E: Environment> Debug for Address<E> {
+impl Debug for Address {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<E: Environment> Display for Address<E> {
+impl Display for Address {
     /// Writes an account address as a bech32m string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // Convert the address to bytes.
@@ -78,26 +78,23 @@ impl<E: Environment> Display for Address<E> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 1_000;
 
     #[test]
     fn test_parse() -> Result<()> {
         // Ensure type and empty value fails.
-        assert!(Address::<CurrentEnvironment>::parse(Address::<CurrentEnvironment>::type_name()).is_err());
-        assert!(Address::<CurrentEnvironment>::parse("").is_err());
+        assert!(Address::parse(Address::type_name()).is_err());
+        assert!(Address::parse("").is_err());
 
         let mut rng = TestRng::default();
 
         for _ in 0..ITERATIONS {
             // Sample a new address.
-            let address = Address::<CurrentEnvironment>::rand(&mut rng);
+            let address = Address::rand(&mut rng);
 
             let expected = format!("{address}");
-            let (remainder, candidate) = Address::<CurrentEnvironment>::parse(&expected).unwrap();
+            let (remainder, candidate) = Address::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!(ADDRESS_PREFIX, candidate.to_string().split('1').next().unwrap());
             assert_eq!("", remainder);
@@ -111,7 +108,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new address.
-            let expected = Address::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Address::rand(&mut rng);
 
             // Check the string representation.
             let candidate = format!("{expected}");
@@ -127,13 +124,13 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new address.
-            let expected = Address::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Address::rand(&mut rng);
 
             let candidate = expected.to_string();
             assert_eq!(format!("{expected}"), candidate);
             assert_eq!(ADDRESS_PREFIX, candidate.split('1').next().unwrap());
 
-            let candidate_recovered = Address::<CurrentEnvironment>::from_str(&candidate.to_string())?;
+            let candidate_recovered = Address::from_str(&candidate.to_string())?;
             assert_eq!(expected, candidate_recovered);
         }
         Ok(())

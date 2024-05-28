@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<N: Network> Value<N> {
+impl Value {
     /// Returns the value from the given path.
-    pub fn find<A: Into<Access<N>> + Copy + Debug>(&self, path: &[A]) -> Result<Self> {
+    pub fn find<A: Into<Access> + Copy + Debug>(&self, path: &[A]) -> Result<Self> {
         match self {
             Self::Plaintext(plaintext) => Ok(Self::Plaintext(plaintext.find(path)?)),
             Self::Record(record) => {

@@ -16,7 +16,7 @@ use super::*;
 
 use snarkvm_utilities::DeserializeExt;
 
-impl<N: Network> Serialize for HeaderLeaf<N> {
+impl Serialize for HeaderLeaf {
     /// Serializes the leaf into string or bytes.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -31,7 +31,7 @@ impl<N: Network> Serialize for HeaderLeaf<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for HeaderLeaf<N> {
+impl<'de> Deserialize<'de> for HeaderLeaf {
     /// Deserializes the leaf from a string or bytes.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {

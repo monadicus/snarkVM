@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Register<N> {
+impl FromBytes for Register {
     /// Reads the register from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let variant = u8::read_le(&mut reader)?;
@@ -24,7 +24,7 @@ impl<N: Network> FromBytes for Register<N> {
             1 => {
                 // Read the number of accesses.
                 let num_accesses = u16::read_le(&mut reader)?;
-                if num_accesses as usize > N::MAX_DATA_DEPTH {
+                if num_accesses as usize > AleoNetwork::MAX_DATA_DEPTH {
                     return Err(error("Failed to deserialize register: Register access exceeds maximum depth"));
                 }
                 // Read the accesses.
@@ -36,7 +36,7 @@ impl<N: Network> FromBytes for Register<N> {
     }
 }
 
-impl<N: Network> ToBytes for Register<N> {
+impl ToBytes for Register {
     /// Writes the register to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         match self {
@@ -46,7 +46,7 @@ impl<N: Network> ToBytes for Register<N> {
             }
             Self::Access(locator, accesses) => {
                 // Ensure the number of accesses is within the limit.
-                if accesses.len() > N::MAX_DATA_DEPTH {
+                if accesses.len() > AleoNetwork::MAX_DATA_DEPTH {
                     return Err(error("Failed to serialize register: too many accesses"));
                 }
 

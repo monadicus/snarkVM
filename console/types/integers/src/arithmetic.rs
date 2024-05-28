@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Neg for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Neg for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `negation` of `self`.
     #[inline]
@@ -23,15 +23,15 @@ impl<E: Environment, I: IntegerType> Neg for Integer<E, I> {
         match I::is_signed() {
             true => match self.integer.checked_neg() {
                 Some(integer) => Integer::new(integer),
-                None => E::halt(format!("Integer negation failed on: {}", self.integer)),
+                None => Console::halt(format!("Integer negation failed on: {}", self.integer)),
             },
-            false => E::halt("Negation of unsigned integers is not supported."),
+            false => Console::halt("Negation of unsigned integers is not supported."),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> AbsChecked for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> AbsChecked for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `absolute value` of `self`.
     #[inline]
@@ -39,15 +39,15 @@ impl<E: Environment, I: IntegerType> AbsChecked for Integer<E, I> {
         match I::is_signed() {
             true => match self.integer.checked_abs() {
                 Some(integer) => Integer::new(integer),
-                None => E::halt(format!("Integer absolute value failed on: {}", self.integer)),
+                None => Console::halt(format!("Integer absolute value failed on: {}", self.integer)),
             },
             false => self,
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> AbsWrapped for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> AbsWrapped for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `absolute value` of `self`.
     #[inline]
@@ -59,365 +59,365 @@ impl<E: Environment, I: IntegerType> AbsWrapped for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Add<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Add<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: Integer<E, I>) -> Self::Output {
+    fn add(self, other: Integer<I>) -> Self::Output {
         match self.integer.checked_add(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer addition failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer addition failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Add<&Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Add<&Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add(self, other: &Integer<E, I>) -> Self::Output {
+    fn add(self, other: &Integer<I>) -> Self::Output {
         match self.integer.checked_add(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer addition failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer addition failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> AddWrapped<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> AddWrapped<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `sum` of `self` and `other`.
     #[inline]
-    fn add_wrapped(&self, other: &Integer<E, I>) -> Self::Output {
+    fn add_wrapped(&self, other: &Integer<I>) -> Self::Output {
         Integer::new(self.integer.wrapping_add(&other.integer))
     }
 }
 
-impl<E: Environment, I: IntegerType> AddAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> AddAssign<Integer<I>> for Integer<I> {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: Integer<E, I>) {
+    fn add_assign(&mut self, other: Integer<I>) {
         match self.integer.checked_add(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer addition failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer addition failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> AddAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> AddAssign<&Integer<I>> for Integer<I> {
     /// Adds `other` to `self`.
     #[inline]
-    fn add_assign(&mut self, other: &Integer<E, I>) {
+    fn add_assign(&mut self, other: &Integer<I>) {
         match self.integer.checked_add(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer addition failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer addition failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Sub<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Sub<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: Integer<E, I>) -> Self::Output {
+    fn sub(self, other: Integer<I>) -> Self::Output {
         match self.integer.checked_sub(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer subtraction failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer subtraction failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Sub<&Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Sub<&Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub(self, other: &Integer<E, I>) -> Self::Output {
+    fn sub(self, other: &Integer<I>) -> Self::Output {
         match self.integer.checked_sub(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer subtraction failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer subtraction failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> SubWrapped<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> SubWrapped<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `difference` of `self` and `other`.
     #[inline]
-    fn sub_wrapped(&self, other: &Integer<E, I>) -> Self::Output {
+    fn sub_wrapped(&self, other: &Integer<I>) -> Self::Output {
         Integer::new(self.integer.wrapping_sub(&other.integer))
     }
 }
 
-impl<E: Environment, I: IntegerType> SubAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> SubAssign<Integer<I>> for Integer<I> {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: Integer<E, I>) {
+    fn sub_assign(&mut self, other: Integer<I>) {
         match self.integer.checked_sub(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer subtraction failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer subtraction failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> SubAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> SubAssign<&Integer<I>> for Integer<I> {
     /// Subtracts `other` from `self`.
     #[inline]
-    fn sub_assign(&mut self, other: &Integer<E, I>) {
+    fn sub_assign(&mut self, other: &Integer<I>) {
         match self.integer.checked_sub(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer subtraction failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer subtraction failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Mul<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Mul<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: Integer<E, I>) -> Self::Output {
+    fn mul(self, other: Integer<I>) -> Self::Output {
         match self.integer.checked_mul(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer multiplication failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer multiplication failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Mul<&Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Mul<&Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul(self, other: &Integer<E, I>) -> Self::Output {
+    fn mul(self, other: &Integer<I>) -> Self::Output {
         match self.integer.checked_mul(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer multiplication failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer multiplication failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> MulWrapped<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> MulWrapped<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `product` of `self` and `other`.
     #[inline]
-    fn mul_wrapped(&self, other: &Integer<E, I>) -> Self::Output {
+    fn mul_wrapped(&self, other: &Integer<I>) -> Self::Output {
         Integer::new(self.integer.wrapping_mul(&other.integer))
     }
 }
 
-impl<E: Environment, I: IntegerType> MulAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> MulAssign<Integer<I>> for Integer<I> {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: Integer<E, I>) {
+    fn mul_assign(&mut self, other: Integer<I>) {
         match self.integer.checked_mul(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer multiplication failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer multiplication failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> MulAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> MulAssign<&Integer<I>> for Integer<I> {
     /// Multiplies `self` by `other`.
     #[inline]
-    fn mul_assign(&mut self, other: &Integer<E, I>) {
+    fn mul_assign(&mut self, other: &Integer<I>) {
         match self.integer.checked_mul(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer multiplication failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer multiplication failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Div<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Div<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `quotient` of `self` and `other`.
     #[inline]
-    fn div(self, other: Integer<E, I>) -> Self::Output {
+    fn div(self, other: Integer<I>) -> Self::Output {
         match self.integer.checked_div(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer division failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer division failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Div<&Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Div<&Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `quotient` of `self` and `other`.
     #[inline]
-    fn div(self, other: &Integer<E, I>) -> Self::Output {
+    fn div(self, other: &Integer<I>) -> Self::Output {
         match self.integer.checked_div(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer division failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer division failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> DivWrapped<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> DivWrapped<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `quotient` of `self` and `other`.
     #[inline]
-    fn div_wrapped(&self, other: &Integer<E, I>) -> Self::Output {
+    fn div_wrapped(&self, other: &Integer<I>) -> Self::Output {
         match other.is_zero() {
-            true => E::halt(format!("Integer division by zero: {self} / {other}")),
+            true => Console::halt(format!("Integer division by zero: {self} / {other}")),
             false => Integer::new(self.integer.wrapping_div(&other.integer)),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> DivAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> DivAssign<Integer<I>> for Integer<I> {
     /// Divides `self` by `other`.
     #[inline]
-    fn div_assign(&mut self, other: Integer<E, I>) {
+    fn div_assign(&mut self, other: Integer<I>) {
         match self.integer.checked_div(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer division failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer division failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> DivAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> DivAssign<&Integer<I>> for Integer<I> {
     /// Divides `self` by `other`.
     #[inline]
-    fn div_assign(&mut self, other: &Integer<E, I>) {
+    fn div_assign(&mut self, other: &Integer<I>) {
         match self.integer.checked_div(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer division failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer division failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Modulo<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Modulo<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the result of taking the modulus of `self` with respect to `other`.
     #[inline]
-    fn modulo(&self, other: &Integer<E, I>) -> Self {
+    fn modulo(&self, other: &Integer<I>) -> Self {
         match I::is_signed() {
-            true => E::halt("Taking the modulus of signed integers is not supported"),
+            true => Console::halt("Taking the modulus of signed integers is not supported"),
             false => match other.is_zero() {
-                true => E::halt(format!("Integer modulus by zero: {self} % {other}")),
+                true => Console::halt(format!("Integer modulus by zero: {self} % {other}")),
                 false => Integer::new(self.integer.modulo(&other.integer)),
             },
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Rem<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Rem<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `remainder` of `self` divided by `other`.
     #[inline]
-    fn rem(self, other: Integer<E, I>) -> Self {
+    fn rem(self, other: Integer<I>) -> Self {
         match self.integer.checked_rem(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer remainder failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer remainder failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Rem<&Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Rem<&Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `remainder` of `self` divided by `other`.
     #[inline]
-    fn rem(self, other: &Integer<E, I>) -> Self {
+    fn rem(self, other: &Integer<I>) -> Self {
         match self.integer.checked_rem(&other.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer remainder failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer remainder failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> RemWrapped<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> RemWrapped<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `remainder` of `self` divided by `other`.
     #[inline]
-    fn rem_wrapped(&self, other: &Integer<E, I>) -> Self::Output {
+    fn rem_wrapped(&self, other: &Integer<I>) -> Self::Output {
         match other.is_zero() {
-            true => E::halt(format!("Integer remainder by zero: {self} % {other}")),
+            true => Console::halt(format!("Integer remainder by zero: {self} % {other}")),
             false => Integer::new(self.integer.wrapping_rem(&other.integer)),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> RemAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> RemAssign<Integer<I>> for Integer<I> {
     /// Returns the `remainder` of `self` divided by `other`.
     #[inline]
-    fn rem_assign(&mut self, other: Integer<E, I>) {
+    fn rem_assign(&mut self, other: Integer<I>) {
         match self.integer.checked_rem(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer remainder failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer remainder failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> RemAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> RemAssign<&Integer<I>> for Integer<I> {
     /// Returns the `remainder` of `self` divided by `other`.
     #[inline]
-    fn rem_assign(&mut self, other: &Integer<E, I>) {
+    fn rem_assign(&mut self, other: &Integer<I>) {
         match self.integer.checked_rem(&other.integer) {
             Some(integer) => self.integer = integer,
-            None => E::halt(format!("Integer remainder failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer remainder failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Pow<Integer<E, M>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType, M: Magnitude> Pow<Integer<M>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: Integer<E, M>) -> Self::Output {
+    fn pow(self, other: Integer<M>) -> Self::Output {
         match self.integer.checked_pow(&other.integer.to_u32().unwrap()) {
             // Unwrap is safe as we only cast up.
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer power failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer power failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Pow<&Integer<E, M>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType, M: Magnitude> Pow<&Integer<M>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: &Integer<E, M>) -> Self::Output {
+    fn pow(self, other: &Integer<M>) -> Self::Output {
         match self.integer.checked_pow(&other.integer.to_u32().unwrap()) {
             // Unwrap is safe as we only cast up.
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer power failed on: {self} and {other}")),
+            None => Console::halt(format!("Integer power failed on: {self} and {other}")),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> PowWrapped<Integer<E, M>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType, M: Magnitude> PowWrapped<Integer<M>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow_wrapped(&self, other: &Integer<E, M>) -> Self::Output {
+    fn pow_wrapped(&self, other: &Integer<M>) -> Self::Output {
         Integer::new(self.integer.wrapping_pow(&other.integer.to_u32().unwrap()))
     }
 }
 
-impl<E: Environment, I: IntegerType> Square for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Square for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `square` of `self`.
     #[inline]
     fn square(&self) -> Self::Output {
         match self.integer.checked_mul(&self.integer) {
             Some(integer) => Integer::new(integer),
-            None => E::halt(format!("Integer square failed on: {}", self.integer)),
+            None => Console::halt(format!("Integer square failed on: {}", self.integer)),
         }
     }
 }

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Plaintext<N> {
+impl Plaintext {
     /// Returns the number of field elements to encode `self`.
     pub(crate) fn num_randomizers(&self) -> Result<u16> {
         self.size_in_fields()

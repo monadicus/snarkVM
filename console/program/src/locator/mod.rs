@@ -23,42 +23,42 @@ use snarkvm_console_types::Field;
 
 /// A locator is of the form `{program_id}/{resource}` (i.e. `howard.aleo/notify`).
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Locator<N: Network> {
+pub struct Locator {
     /// The program ID.
-    id: ProgramID<N>,
+    id: ProgramID,
     /// The program resource.
-    resource: Identifier<N>,
+    resource: Identifier,
 }
 
-impl<N: Network> Locator<N> {
+impl Locator {
     /// Initializes a locator from a program ID and resource.
-    pub const fn new(program_id: ProgramID<N>, resource: Identifier<N>) -> Self {
+    pub const fn new(program_id: ProgramID, resource: Identifier) -> Self {
         Self { id: program_id, resource }
     }
 }
 
-impl<N: Network> Locator<N> {
+impl Locator {
     /// Returns the program ID.
     #[inline]
-    pub const fn program_id(&self) -> &ProgramID<N> {
+    pub const fn program_id(&self) -> &ProgramID {
         &self.id
     }
 
     /// Returns the program name.
     #[inline]
-    pub const fn name(&self) -> &Identifier<N> {
+    pub const fn name(&self) -> &Identifier {
         self.id.name()
     }
 
     /// Returns the network-level domain (NLD).
     #[inline]
-    pub const fn network(&self) -> &Identifier<N> {
+    pub const fn network(&self) -> &Identifier {
         self.id.network()
     }
 
     /// Returns the resource name.
     #[inline]
-    pub const fn resource(&self) -> &Identifier<N> {
+    pub const fn resource(&self) -> &Identifier {
         &self.resource
     }
 }

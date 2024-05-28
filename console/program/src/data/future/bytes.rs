@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_console_network::AleoNetwork;
+
 use super::*;
 
-impl<N: Network> FromBytes for Future<N> {
+impl FromBytes for Future {
     /// Reads in a future from a buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the program ID.
         let program_id = ProgramID::read_le(&mut reader)?;
         // Read the function name.
-        let function_name = Identifier::<N>::read_le(&mut reader)?;
+        let function_name = Identifier::read_le(&mut reader)?;
         // Read the number of arguments to the future.
         let num_arguments = u8::read_le(&mut reader)? as usize;
-        if num_arguments > N::MAX_INPUTS {
+        if num_arguments > AleoNetwork::MAX_INPUTS {
             return Err(error("Failed to read future: too many arguments"));
         };
         // Read the arguments.
@@ -44,7 +46,7 @@ impl<N: Network> FromBytes for Future<N> {
     }
 }
 
-impl<N: Network> ToBytes for Future<N> {
+impl ToBytes for Future {
     /// Writes a future to a buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the program ID.
@@ -52,7 +54,7 @@ impl<N: Network> ToBytes for Future<N> {
         // Write the function name.
         self.function_name.write_le(&mut writer)?;
         // Write the number of arguments.
-        if self.arguments.len() > N::MAX_INPUTS {
+        if self.arguments.len() > AleoNetwork::MAX_INPUTS {
             return Err(error("Failed to write future: too many arguments"));
         };
         u8::try_from(self.arguments.len()).map_err(error)?.write_le(&mut writer)?;
