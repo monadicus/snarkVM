@@ -54,7 +54,7 @@ impl FromStr for Identifier {
 
         // Ensure that the identifier is not a literal.
         ensure!(
-            crate::LiteralType::from_str(identifier).is_err(),
+            !enum_iterator::all::<crate::LiteralType>().any(|lt| lt.type_name() == identifier),
             "Identifier '{identifier}' is a reserved literal type"
         );
 

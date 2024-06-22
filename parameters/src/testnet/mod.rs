@@ -15,17 +15,20 @@
 pub mod genesis;
 pub use genesis::*;
 
-const REMOTE_URL: &str = "https://s3-us-west-1.amazonaws.com/testnet.parameters";
+/// The restrictions list as a JSON-compatible string.
+pub const RESTRICTIONS_LIST: &str = include_str!("./resources/restrictions.json");
+
+const REMOTE_URL: &str = "https://parameters.aleo.org/testnet";
 
 // BondPublic
 impl_remote!(BondPublicProver, REMOTE_URL, "resources/", "bond_public", "prover");
 impl_local!(BondPublicVerifier, "resources/", "bond_public", "verifier");
+// BondValidator
+impl_remote!(BondValidatorProver, REMOTE_URL, "resources/", "bond_validator", "prover");
+impl_local!(BondValidatorVerifier, "resources/", "bond_validator", "verifier");
 // UnbondPublic
 impl_remote!(UnbondPublicProver, REMOTE_URL, "resources/", "unbond_public", "prover");
 impl_local!(UnbondPublicVerifier, "resources/", "unbond_public", "verifier");
-// UnbondDelegatorAsValidator
-impl_remote!(UnbondDelegatorAsValidatorProver, REMOTE_URL, "resources/", "unbond_delegator_as_validator", "prover");
-impl_local!(UnbondDelegatorAsValidatorVerifier, "resources/", "unbond_delegator_as_validator", "verifier");
 // ClaimUnbondPublic
 impl_remote!(ClaimUnbondPublicProver, REMOTE_URL, "resources/", "claim_unbond_public", "prover");
 impl_local!(ClaimUnbondPublicVerifier, "resources/", "claim_unbond_public", "verifier");
@@ -65,20 +68,20 @@ macro_rules! insert_testnet_credit_keys {
     ($map:ident, $type:ident, $variant:ident) => {{
         paste::paste! {
             let string = stringify!([<$variant:lower>]);
-            $crate::insert_testnet_key!($map, string, $type, ("bond_public", $crate::testnet::[<BondPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("unbond_public", $crate::testnet::[<UnbondPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("unbond_delegator_as_validator", $crate::testnet::[<UnbondDelegatorAsValidator $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("claim_unbond_public", $crate::testnet::[<ClaimUnbondPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("set_validator_state", $crate::testnet::[<SetValidatorState $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("transfer_private", $crate::testnet::[<TransferPrivate $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("transfer_public", $crate::testnet::[<TransferPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("transfer_public_as_signer", $crate::testnet::[<TransferPublicAsSigner $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("transfer_private_to_public", $crate::testnet::[<TransferPrivateToPublic $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("transfer_public_to_private", $crate::testnet::[<TransferPublicToPrivate $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("join", $crate::testnet::[<Join $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("split", $crate::testnet::[<Split $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("fee_private", $crate::testnet::[<FeePrivate $variant>]::load_bytes()));
-            $crate::insert_testnet_key!($map, string, $type, ("fee_public", $crate::testnet::[<FeePublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("bond_public", $crate::testnet::[<BondPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("bond_validator", $crate::testnet::[<BondValidator $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("unbond_public", $crate::testnet::[<UnbondPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("claim_unbond_public", $crate::testnet::[<ClaimUnbondPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("set_validator_state", $crate::testnet::[<SetValidatorState $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_private", $crate::testnet::[<TransferPrivate $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_public", $crate::testnet::[<TransferPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_public_as_signer", $crate::testnet::[<TransferPublicAsSigner $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_private_to_public", $crate::testnet::[<TransferPrivateToPublic $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("transfer_public_to_private", $crate::testnet::[<TransferPublicToPrivate $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("join", $crate::testnet::[<Join $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("split", $crate::testnet::[<Split $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("fee_private", $crate::testnet::[<FeePrivate $variant>]::load_bytes()));
+            $crate::insert_testnet_key!($map, string, $type<$network>, ("fee_public", $crate::testnet::[<FeePublic $variant>]::load_bytes()));
         }
     }};
 }
@@ -118,9 +121,8 @@ mod tests {
     #[wasm_bindgen_test]
     fn test_load_bytes() {
         BondPublicVerifier::load_bytes().expect("Failed to load bond_public verifier");
+        BondValidatorVerifier::load_bytes().expect("Failed to load bond_validator verifier");
         UnbondPublicVerifier::load_bytes().expect("Failed to load unbond_public verifier");
-        UnbondDelegatorAsValidatorVerifier::load_bytes()
-            .expect("Failed to load unbond_delegator_as_validator verifier");
         ClaimUnbondPublicVerifier::load_bytes().expect("Failed to load claim_unbond_public verifier");
         SetValidatorStateVerifier::load_bytes().expect("Failed to load set_validator_state verifier");
         TransferPrivateVerifier::load_bytes().expect("Failed to load transfer_private verifier");
