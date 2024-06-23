@@ -95,23 +95,23 @@ mod tests {
     #[test]
     fn test_output_parse() -> Result<()> {
         // Register
-        let output = Output::<CurrentNetwork>::parse("output r0 as field;").unwrap().1;
-        assert_eq!(output.operand(), &Operand::Register(Register::<CurrentNetwork>::Locator(0)));
-        assert_eq!(output.register_type(), &RegisterType::<CurrentNetwork>::from_str("field")?);
+        let output = Output::parse("output r0 as field;").unwrap().1;
+        assert_eq!(output.operand(), &Operand::Register(Register::Locator(0)));
+        assert_eq!(output.register_type(), &RegisterType::from_str("field")?);
 
-        let output = Output::<CurrentNetwork>::parse("output 0u8 as u8;").unwrap().1;
-        assert_eq!(output.operand(), &Operand::Literal(Literal::<CurrentNetwork>::U8(U8::new(0))));
-        assert_eq!(output.register_type(), &RegisterType::<CurrentNetwork>::from_str("u8")?);
+        let output = Output::parse("output 0u8 as u8;").unwrap().1;
+        assert_eq!(output.operand(), &Operand::Literal(Literal::U8(U8::new(0))));
+        assert_eq!(output.register_type(), &RegisterType::from_str("u8")?);
 
         // Struct
-        let output = Output::<CurrentNetwork>::parse("output r1 as signature;").unwrap().1;
-        assert_eq!(output.operand(), &Operand::Register(Register::<CurrentNetwork>::Locator(1)));
-        assert_eq!(output.register_type(), &RegisterType::<CurrentNetwork>::from_str("signature")?);
+        let output = Output::parse("output r1 as signature;").unwrap().1;
+        assert_eq!(output.operand(), &Operand::Register(Register::Locator(1)));
+        assert_eq!(output.register_type(), &RegisterType::from_str("signature")?);
 
         // Record
-        let output = Output::<CurrentNetwork>::parse("output r2 as token.record;").unwrap().1;
-        assert_eq!(output.operand(), &Operand::Register(Register::<CurrentNetwork>::Locator(2)));
-        assert_eq!(output.register_type(), &RegisterType::<CurrentNetwork>::from_str("token.record")?);
+        let output = Output::parse("output r2 as token.record;").unwrap().1;
+        assert_eq!(output.operand(), &Operand::Register(Register::Locator(2)));
+        assert_eq!(output.register_type(), &RegisterType::from_str("token.record")?);
 
         Ok(())
     }
@@ -119,19 +119,19 @@ mod tests {
     #[test]
     fn test_output_display() {
         // Register
-        let output = Output::<CurrentNetwork>::parse("output r0 as field;").unwrap().1;
+        let output = Output::parse("output r0 as field;").unwrap().1;
         assert_eq!(format!("{output}"), "output r0 as field;");
 
         // Literal
-        let output = Output::<CurrentNetwork>::parse("output 0u8 as u8;").unwrap().1;
+        let output = Output::parse("output 0u8 as u8;").unwrap().1;
         assert_eq!(format!("{output}"), "output 0u8 as u8;");
 
         // Struct
-        let output = Output::<CurrentNetwork>::parse("output r1 as signature;").unwrap().1;
+        let output = Output::parse("output r1 as signature;").unwrap().1;
         assert_eq!(format!("{output}"), "output r1 as signature;");
 
         // Record
-        let output = Output::<CurrentNetwork>::parse("output r2 as token.record;").unwrap().1;
+        let output = Output::parse("output r2 as token.record;").unwrap().1;
         assert_eq!(format!("{output}"), "output r2 as token.record;");
     }
 }

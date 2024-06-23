@@ -15,8 +15,8 @@
 use super::*;
 use snarkvm_circuit_types_field::Field;
 
-impl<E: Environment> ToFields for Scalar<E> {
-    type Field = Field<E>;
+impl ToFields for Scalar {
+    type Field = Field;
 
     /// Casts a scalar into a list of base fields.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -29,7 +29,7 @@ mod tests {
     use super::*;
     use snarkvm_circuit_environment::Circuit;
 
-    fn check_to_fields(name: &str, expected: &[bool], candidate: &Scalar<Circuit>) {
+    fn check_to_fields(name: &str, expected: &[bool], candidate: &Scalar) {
         Circuit::scope(name, || {
             // Perform the operation.
             let fields = candidate.to_fields();
@@ -42,7 +42,7 @@ mod tests {
             assert_eq!(number_of_base_field_bits, candidate_bits_le.len());
 
             // Ensure all scalar bits match with the expected result.
-            let number_of_scalar_field_bits = console::Scalar::<<Circuit as Environment>::Network>::size_in_bits();
+            let number_of_scalar_field_bits = console::Scalar::size_in_bits();
             for (expected_bit, candidate_bit) in
                 expected.iter().zip_eq(&candidate_bits_le[0..number_of_scalar_field_bits])
             {
@@ -60,28 +60,28 @@ mod tests {
     #[test]
     fn test_to_fields_constant() {
         let expected = Uniform::rand(&mut TestRng::default());
-        let candidate = Scalar::<Circuit>::new(Mode::Constant, expected);
+        let candidate = Scalar::new(Mode::Constant, expected);
         check_to_fields("Constant", &expected.to_bits_le(), &candidate);
     }
 
     #[test]
     fn test_to_fields_public() {
         let expected = Uniform::rand(&mut TestRng::default());
-        let candidate = Scalar::<Circuit>::new(Mode::Public, expected);
+        let candidate = Scalar::new(Mode::Public, expected);
         check_to_fields("Public", &expected.to_bits_le(), &candidate);
     }
 
     #[test]
     fn test_to_fields_private() {
         let expected = Uniform::rand(&mut TestRng::default());
-        let candidate = Scalar::<Circuit>::new(Mode::Private, expected);
+        let candidate = Scalar::new(Mode::Private, expected);
         check_to_fields("Private", &expected.to_bits_le(), &candidate);
     }
 
     #[test]
     fn test_one() {
         /// Checks that the `1` scalar field element, when converted to a base field, is well-formed.
-        fn check_to_fields_one(candidate: Scalar<Circuit>) {
+        fn check_to_fields_one(candidate: Scalar) {
             let fields = candidate.to_fields();
             assert_eq!(1, fields.len());
 
@@ -93,13 +93,13 @@ mod tests {
             }
         }
 
-        let one = console::Scalar::<<Circuit as Environment>::Network>::one();
+        let one = console::Scalar::one();
 
         // Constant
-        check_to_fields_one(Scalar::<Circuit>::new(Mode::Constant, one));
+        check_to_fields_one(Scalar::new(Mode::Constant, one));
         // Public
-        check_to_fields_one(Scalar::<Circuit>::new(Mode::Public, one));
+        check_to_fields_one(Scalar::new(Mode::Public, one));
         // Private
-        check_to_fields_one(Scalar::<Circuit>::new(Mode::Private, one));
+        check_to_fields_one(Scalar::new(Mode::Private, one));
     }
 }

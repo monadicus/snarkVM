@@ -979,12 +979,10 @@ mod tests {
         // Initialize 'm'.
         let m = 0usize;
         // Initialize an address.
-        let address =
-            Address::<CurrentNetwork>::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8")
-                .unwrap();
+        let address = Address::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8").unwrap();
 
         // Initialize a map.
-        let map: NestedDataMap<usize, Address<CurrentNetwork>, ()> =
+        let map: NestedDataMap<usize, Address, ()> =
             RocksDB::open_nested_map_testing(temp_dir(), None, MapID::Test(TestMap::Test))
                 .expect("Failed to open data map");
         map.insert(m, address, ()).expect("Failed to insert into data map");

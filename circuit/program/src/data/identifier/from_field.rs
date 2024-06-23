@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> FromField for Identifier<A> {
-    type Field = Field<A>;
+impl FromField for Identifier {
+    type Field = Field;
 
     /// Initializes a new identifier from a field element.
     fn from_field(field: Self::Field) -> Self {
@@ -36,12 +36,12 @@ mod tests {
     fn check_from_field(num_constants: u64, num_public: u64, num_private: u64, num_constraints: u64) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Initialize the console identifier.
-            let console_identifier = sample_console_identifier::<Circuit>()?;
+            let console_identifier = sample_console_identifier()?;
             // Initialize the circuit list of bits.
             let circuit_field = Field::constant(console::ToField::to_field(&console_identifier)?);
 
             Circuit::scope("Identifier FromField", || {
-                let candidate = Identifier::<Circuit>::from_field(circuit_field);
+                let candidate = Identifier::from_field(circuit_field);
                 assert_eq!(Mode::Constant, candidate.eject_mode());
                 assert_eq!(console_identifier, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);

@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> ViewKey<A> {
+impl ViewKey {
     /// Returns the account address for this account view key.
-    pub fn to_address(&self) -> Address<A> {
-        self.1.get_or_init(|| Address::from_group(A::g_scalar_multiply(&self.0))).clone()
+    pub fn to_address(&self) -> Address {
+        self.1.get_or_init(|| Address::from_group(AleoV0::g_scalar_multiply(&self.0))).clone()
     }
 }
 
@@ -42,7 +44,7 @@ mod tests {
             let (_private_key, _compute_key, view_key, address) = generate_account()?;
 
             // Initialize the view key.
-            let candidate = ViewKey::<Circuit>::new(mode, view_key);
+            let candidate = ViewKey::new(mode, view_key);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_address();

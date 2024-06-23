@@ -35,55 +35,55 @@ const TRANSACTION_DEPTH: u8 = console::TRANSACTION_DEPTH;
 /// The depth of the Merkle tree for the transition.
 const TRANSITION_DEPTH: u8 = console::TRANSITION_DEPTH;
 
-type BlockPath<A> = MerklePath<A, BLOCKS_DEPTH>;
-type HeaderPath<A> = MerklePath<A, HEADER_DEPTH>;
-type TransactionsPath<A> = MerklePath<A, TRANSACTIONS_DEPTH>;
-type TransactionPath<A> = MerklePath<A, TRANSACTION_DEPTH>;
-type TransitionPath<A> = MerklePath<A, TRANSITION_DEPTH>;
+type BlockPath = MerklePath<BLOCKS_DEPTH>;
+type HeaderPath = MerklePath<HEADER_DEPTH>;
+type TransactionsPath = MerklePath<TRANSACTIONS_DEPTH>;
+type TransactionPath = MerklePath<TRANSACTION_DEPTH>;
+type TransitionPath = MerklePath<TRANSITION_DEPTH>;
 
 /// The state path proves existence of the transition leaf to either a global or local state root.
-pub struct StatePath<A: Aleo> {
+pub struct StatePath {
     /// The global state root (Public).
-    global_state_root: Field<A>,
+    global_state_root: Field,
     /// The Merkle path for the block hash.
-    block_path: BlockPath<A>,
+    block_path: BlockPath,
     /// The block hash.
-    block_hash: Field<A>,
+    block_hash: Field,
     /// The previous block hash.
-    previous_block_hash: Field<A>,
+    previous_block_hash: Field,
     /// The block header root.
-    header_root: Field<A>,
+    header_root: Field,
     /// The Merkle path for the block header leaf.
-    header_path: HeaderPath<A>,
+    header_path: HeaderPath,
     /// The block header leaf.
-    header_leaf: HeaderLeaf<A>,
+    header_leaf: HeaderLeaf,
     /// The Merkle path for the transaction ID.
-    transactions_path: TransactionsPath<A>,
+    transactions_path: TransactionsPath,
     /// The transaction ID.
-    transaction_id: Field<A>,
+    transaction_id: Field,
     /// The Merkle path for the transaction leaf.
-    transaction_path: TransactionPath<A>,
+    transaction_path: TransactionPath,
     /// The transaction leaf.
-    transaction_leaf: TransactionLeaf<A>,
+    transaction_leaf: TransactionLeaf,
     /// The transition root.
-    transition_root: Field<A>,
+    transition_root: Field,
     /// The transition commitment.
-    tcm: Field<A>,
+    tcm: Field,
     /// The Merkle path for the transition leaf.
-    transition_path: TransitionPath<A>,
+    transition_path: TransitionPath,
     /// The transition leaf.
-    transition_leaf: TransitionLeaf<A>,
+    transition_leaf: TransitionLeaf,
 }
 
-impl<A: Aleo> StatePath<A> {
+impl StatePath {
     /// Returns the transition leaf.
-    pub const fn transition_leaf(&self) -> &TransitionLeaf<A> {
+    pub const fn transition_leaf(&self) -> &TransitionLeaf {
         &self.transition_leaf
     }
 }
 
-impl<A: Aleo> Inject for StatePath<A> {
-    type Primitive = console::StatePath<A::Network>;
+impl Inject for StatePath {
+    type Primitive = console::StatePath;
 
     /// Initializes a new ciphertext circuit from a primitive.
     fn new(mode: Mode, state_path: Self::Primitive) -> Self {
@@ -107,8 +107,8 @@ impl<A: Aleo> Inject for StatePath<A> {
     }
 }
 
-impl<A: Aleo> Eject for StatePath<A> {
-    type Primitive = console::StatePath<A::Network>;
+impl Eject for StatePath {
+    type Primitive = console::StatePath;
 
     /// Ejects the mode of the state path.
     fn eject_mode(&self) -> Mode {
@@ -176,11 +176,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample the console state path.
-            let console_state_path =
-                console::state_path::test_helpers::sample_local_state_path::<CurrentNetwork>(None, rng).unwrap();
+            let console_state_path = console::state_path::test_helpers::sample_local_state_path(None, rng).unwrap();
 
             Circuit::scope(format!("New {mode}"), || {
-                let candidate = StatePath::<Circuit>::new(mode, console_state_path.clone());
+                let candidate = StatePath::new(mode, console_state_path.clone());
                 assert_eq!(console_state_path, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });

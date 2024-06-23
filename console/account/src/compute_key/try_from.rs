@@ -63,7 +63,7 @@ impl TryFrom<&(Group, Group)> for ComputeKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_AleoNetwork::MainnetV0;
+    use snarkvm_console_network::MainnetV0;
 
     type CurrentNetwork = MainnetV0;
 
@@ -75,12 +75,12 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new compute key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let candidate = ComputeKey::try_from(private_key)?;
 
             // Check that sk_prf matches.
             // Compute sk_prf := HashToScalar(pk_sig || pr_sig).
-            let candidate_sk_prf = CurrentAleoNetwork::hash_to_scalar_psd4(&[
+            let candidate_sk_prf = AleoNetwork::hash_to_scalar_psd4(&[
                 candidate.pk_sig().to_x_coordinate(),
                 candidate.pr_sig().to_x_coordinate(),
             ])?;

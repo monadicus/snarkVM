@@ -41,13 +41,13 @@ fn dotenv_load() -> Result<()> {
 pub fn dotenv_private_key() -> Result<PrivateKey<CurrentNetwork>> {
     if cfg!(test) {
         let rng = &mut crate::utilities::TestRng::fixed(123456789);
-        PrivateKey::<CurrentNetwork>::new(rng)
+        PrivateKey::new(rng)
     } else {
         use std::str::FromStr;
         dotenv_load()?;
         // Load the private key from the environment.
         let private_key = dotenvy::var("PRIVATE_KEY").map_err(|e| anyhow!("Missing PRIVATE_KEY - {e}"))?;
         // Parse the private key.
-        PrivateKey::<CurrentNetwork>::from_str(&private_key)
+        PrivateKey::from_str(&private_key)
     }
 }

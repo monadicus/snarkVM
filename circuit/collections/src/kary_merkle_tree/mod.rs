@@ -20,17 +20,23 @@ mod verify;
 #[cfg(all(test, console))]
 use snarkvm_circuit_types::environment::assert_scope;
 
-use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, U16, U64};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Boolean,
+    Field,
+    U16,
+    U64,
+};
 
-pub struct KaryMerklePath<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> {
+pub struct KaryMerklePath<PH: PathHash, const DEPTH: u8, const ARITY: u8> {
     /// The leaf index for the path.
-    leaf_index: U64<E>,
+    leaf_index: U64,
     /// The `siblings` contains a list of sibling hashes from the leaf to the root.
     siblings: Vec<Vec<PH::Hash>>,
 }
 
 #[cfg(console)]
-impl<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> Inject for KaryMerklePath<E, PH, DEPTH, ARITY> {
+impl<PH: PathHash, const DEPTH: u8, const ARITY: u8> Inject for KaryMerklePath<PH, DEPTH, ARITY> {
     type Primitive = console::kary_merkle_tree::KaryMerklePath<PH::Primitive, DEPTH, ARITY>;
 
     /// Initializes a Merkle path from the given mode and native Merkle path.
@@ -47,20 +53,20 @@ impl<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> Inject f
         // Ensure the Merkle path has the correct arity.
         for sibling in &siblings {
             if sibling.len() != ARITY.saturating_sub(1) as usize {
-                return E::halt("Merkle path is not the correct depth");
+                return Circuit::halt("Merkle path is not the correct depth");
             }
         }
         // Ensure the Merkle path is the correct depth.
         match siblings.len() == DEPTH as usize {
             // Return the Merkle path.
             true => Self { leaf_index, siblings },
-            false => E::halt("Merkle path is not the correct depth"),
+            false => Circuit::halt("Merkle path is not the correct depth"),
         }
     }
 }
 
 #[cfg(console)]
-impl<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> Eject for KaryMerklePath<E, PH, DEPTH, ARITY> {
+impl<PH: PathHash, const DEPTH: u8, const ARITY: u8> Eject for KaryMerklePath<PH, DEPTH, ARITY> {
     type Primitive = console::kary_merkle_tree::KaryMerklePath<PH::Primitive, DEPTH, ARITY>;
 
     /// Ejects the mode of the Merkle path.
@@ -72,7 +78,7 @@ impl<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> Eject fo
     fn eject_value(&self) -> Self::Primitive {
         match Self::Primitive::try_from((*self.leaf_index.eject_value(), self.siblings.eject_value())) {
             Ok(merkle_path) => merkle_path,
-            Err(error) => E::halt(format!("Failed to eject the Merkle path: {error}")),
+            Err(error) => Circuit::halt(format!("Failed to eject the Merkle path: {error}")),
         }
     }
 }
@@ -101,19 +107,16 @@ mod tests {
     ) -> Result<()> {
         let mut rng = TestRng::default();
 
-        type PH = BHP512<Circuit>;
+        type PH = BHP512;
 
-        type NativeLH = NativeBHP1024<<Circuit as Environment>::Network>;
-        type NativePH = NativeBHP512<<Circuit as Environment>::Network>;
+        type NativeLH = NativeBHP1024;
+        type NativePH = NativeBHP512;
 
         let leaf_hasher = NativeLH::setup("AleoMerklePathTest0")?;
         let path_hasher = NativePH::setup("AleoMerklePathTest1")?;
 
-        let mut create_leaves = |num_leaves| {
-            (0..num_leaves)
-                .map(|_| console::Field::<<Circuit as Environment>::Network>::rand(&mut rng).to_bits_le())
-                .collect::<Vec<_>>()
-        };
+        let mut create_leaves =
+            |num_leaves| (0..num_leaves).map(|_| console::Field::rand(&mut rng).to_bits_le()).collect::<Vec<_>>();
 
         for i in 0..ITERATIONS {
             // Determine the number of leaves.
@@ -129,10 +132,10 @@ mod tests {
                 let merkle_path = merkle_tree.prove(index, leaf)?;
 
                 // // Initialize the Merkle leaf.
-                // let leaf: Vec<Boolean<_>> = Inject::new(mode, leaf.clone());
+                // let leaf: Vec<Boolean> = Inject::new(mode, leaf.clone());
 
                 Circuit::scope(format!("New {mode}"), || {
-                    let candidate = KaryMerklePath::<Circuit, PH, DEPTH, ARITY>::new(mode, merkle_path.clone());
+                    let candidate = KaryMerklePath::<PH, DEPTH, ARITY>::new(mode, merkle_path.clone());
                     assert_eq!(merkle_path, candidate.eject_value());
                     assert_scope!(num_constants, num_public, num_private, num_constraints);
                 });

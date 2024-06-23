@@ -22,7 +22,7 @@ use criterion::Criterion;
 
 fn bench_and(c: &mut Criterion) {
     c.bench_function("Boolean::and", move |b| {
-        let first = Boolean::<Circuit>::new(Mode::Public, true);
+        let first = Boolean::new(Mode::Public, true);
         let second = Boolean::new(Mode::Private, true);
 
         b.iter(|| {
@@ -31,7 +31,7 @@ fn bench_and(c: &mut Criterion) {
     });
 
     c.bench_function("Boolean::and_assign", move |b| {
-        let mut first = Boolean::<Circuit>::new(Mode::Public, true);
+        let mut first = Boolean::new(Mode::Public, true);
         let second = Boolean::new(Mode::Private, true);
 
         b.iter(|| {

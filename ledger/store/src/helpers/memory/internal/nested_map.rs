@@ -602,16 +602,14 @@ mod tests {
         // Initialize 'm'.
         let m = 0;
         // Initialize an address.
-        let address =
-            Address::<CurrentNetwork>::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8")
-                .unwrap();
+        let address = Address::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8").unwrap();
 
         // Sanity check.
-        let addresses: IndexMap<(usize, Address<CurrentNetwork>), ()> = [((m, address), ())].into_iter().collect();
+        let addresses: IndexMap<(usize, Address), ()> = [((m, address), ())].into_iter().collect();
         assert!(addresses.contains_key(&(m, address)));
 
         // Initialize a map.
-        let map: NestedMemoryMap<usize, Address<CurrentNetwork>, ()> = [(m, address, ())].into_iter().collect();
+        let map: NestedMemoryMap<usize, Address, ()> = [(m, address, ())].into_iter().collect();
         assert!(map.contains_key_confirmed(&m, &address).unwrap());
     }
 

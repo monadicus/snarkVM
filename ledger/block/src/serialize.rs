@@ -42,7 +42,7 @@ impl<'de, N: Network> Deserialize<'de> for Block<N> {
         match deserializer.is_human_readable() {
             true => {
                 let mut block = serde_json::Value::deserialize(deserializer)?;
-                let block_hash: N::BlockHash = DeserializeExt::take_from_value::<D>(&mut block, "block_hash")?;
+                let block_hash: BlockHash = DeserializeExt::take_from_value::<D>(&mut block, "block_hash")?;
 
                 // Recover the block.
                 let block = Self::from(

@@ -26,7 +26,7 @@ impl<N: Network> FromBytes for Block<N> {
         }
 
         // Read the block hash.
-        let block_hash: N::BlockHash = FromBytes::read_le(&mut reader)?;
+        let block_hash: BlockHash = FromBytes::read_le(&mut reader)?;
         // Read the previous block hash.
         let previous_hash = FromBytes::read_le(&mut reader)?;
         // Read the header.

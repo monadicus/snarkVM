@@ -16,7 +16,7 @@ use super::*;
 
 impl<N: Network> Transition<N> {
     /// Returns the transition root, by computing the root for a Merkle tree of the input and output IDs.
-    pub fn to_root(&self) -> Result<Field<N>> {
+    pub fn to_root(&self) -> Result<Field> {
         Ok(*self.to_tree()?.root())
     }
 
@@ -27,7 +27,7 @@ impl<N: Network> Transition<N> {
     }
 
     /// Returns the Merkle leaf for the given input or output ID in the transition.
-    pub fn to_leaf(&self, id: &Field<N>, is_input: bool) -> Result<TransitionLeaf<N>> {
+    pub fn to_leaf(&self, id: &Field, is_input: bool) -> Result<TransitionLeaf<N>> {
         // Match on the input or output ID.
         match is_input {
             true => {

@@ -23,18 +23,18 @@ use snarkvm_circuit_types::{environment::prelude::*, Boolean};
 
 /// An entry stored in program data.
 #[derive(Clone)]
-pub enum Entry<A: Aleo, Private: Visibility<A>> {
+pub enum Entry<Private: Visibility> {
     /// A constant entry.
-    Constant(Plaintext<A>),
+    Constant(Plaintext),
     /// A publicly-visible entry.
-    Public(Plaintext<A>),
+    Public(Plaintext),
     /// A private entry encrypted under the address of the record owner.
     Private(Private),
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Entry<A, Plaintext<A>> {
-    type Primitive = console::Entry<A::Network, console::Plaintext<A::Network>>;
+impl Inject for Entry<Plaintext> {
+    type Primitive = console::Entry<console::Plaintext>;
 
     /// Initializes a new plaintext entry from a primitive.
     fn new(mode: Mode, plaintext: Self::Primitive) -> Self {
@@ -47,8 +47,8 @@ impl<A: Aleo> Inject for Entry<A, Plaintext<A>> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Entry<A, Ciphertext<A>> {
-    type Primitive = console::Entry<A::Network, console::Ciphertext<A::Network>>;
+impl Inject for Entry<Ciphertext> {
+    type Primitive = console::Entry<console::Ciphertext>;
 
     /// Initializes a new ciphertext entry from a primitive.
     fn new(mode: Mode, plaintext: Self::Primitive) -> Self {
@@ -61,8 +61,8 @@ impl<A: Aleo> Inject for Entry<A, Ciphertext<A>> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Entry<A, Plaintext<A>> {
-    type Primitive = console::Entry<A::Network, console::Plaintext<A::Network>>;
+impl Eject for Entry<Plaintext> {
+    type Primitive = console::Entry<console::Plaintext>;
 
     /// Ejects the mode of the entry.
     fn eject_mode(&self) -> Mode {
@@ -84,8 +84,8 @@ impl<A: Aleo> Eject for Entry<A, Plaintext<A>> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Entry<A, Ciphertext<A>> {
-    type Primitive = console::Entry<A::Network, console::Ciphertext<A::Network>>;
+impl Eject for Entry<Ciphertext> {
+    type Primitive = console::Entry<console::Ciphertext>;
 
     /// Ejects the mode of the entry.
     fn eject_mode(&self) -> Mode {

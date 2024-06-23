@@ -12,23 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleScalar;
+
 use super::*;
 
-impl<E: Environment> FromBits for Scalar<E> {
-    type Boolean = Boolean<E>;
+impl FromBits for Scalar {
+    type Boolean = Boolean;
 
     /// Initializes a new scalar field element from a list of **little-endian** bits.
-    ///   - If `bits_le` is longer than `E::ScalarField::size_in_bits()`, the excess bits are enforced to be `0`s.
-    ///   - If `bits_le` is shorter than `E::ScalarField::size_in_bits()`, it is padded with `0`s up to scalar field size.
+    ///   - If `bits_le` is longer than `ConsoleScalar::size_in_bits()`, the excess bits are enforced to be `0`s.
+    ///   - If `bits_le` is shorter than `ConsoleScalar::size_in_bits()`, it is padded with `0`s up to scalar field size.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
         // Note: We are reconstituting the scalar field into a base field.
         // This is safe as the scalar field modulus is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(console::Scalar::<E::Network>::size_in_bits() < console::Field::<E::Network>::size_in_bits());
+        debug_assert!(console::Scalar::size_in_bits() < console::Field::size_in_bits());
 
         // Retrieve the data and scalar field size.
-        let size_in_data_bits = console::Scalar::<E::Network>::size_in_data_bits();
-        let size_in_bits = console::Scalar::<E::Network>::size_in_bits();
+        let size_in_data_bits = console::Scalar::size_in_data_bits();
+        let size_in_bits = console::Scalar::size_in_bits();
 
         // Ensure the list of booleans is within the allowed size in bits.
         let num_bits = bits_le.len();
@@ -55,7 +57,7 @@ impl<E: Environment> FromBits for Scalar<E> {
 
             // Retrieve the modulus & subtract by 1 as we'll check `bits_le` is less than or *equal* to this value.
             // (For advanced users) ScalarField::MODULUS - 1 is equivalent to -1 in the field.
-            let modulus_minus_one = -E::ScalarField::one();
+            let modulus_minus_one = -ConsoleScalar::one();
 
             // Assert `bits_le <= (ScalarField::MODULUS - 1)`, which is equivalent to `bits_le < ScalarField::MODULUS`.
             Boolean::assert_less_than_or_equal_constant(bits_le, &modulus_minus_one.to_bits_le());
@@ -104,11 +106,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let given_bits = Scalar::<Circuit>::new(mode, expected).to_bits_le();
+            let given_bits = Scalar::new(mode, expected).to_bits_le();
             let expected_size_in_bits = given_bits.len();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Scalar::<Circuit>::from_bits_le(&given_bits);
+                let candidate = Scalar::from_bits_le(&given_bits);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().unwrap().len());
                 assert_eq!(expected_size_in_bits, candidate.to_bits_le().len());
@@ -119,7 +121,7 @@ mod tests {
             let candidate = [given_bits, vec![Boolean::new(mode, false); i as usize]].concat();
 
             Circuit::scope(&format!("Excess {mode} {i}"), || {
-                let candidate = Scalar::<Circuit>::from_bits_le(&candidate);
+                let candidate = Scalar::from_bits_le(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().unwrap().len());
                 match mode.is_constant() {
@@ -145,11 +147,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let given_bits = Scalar::<Circuit>::new(mode, expected).to_bits_be();
+            let given_bits = Scalar::new(mode, expected).to_bits_be();
             let expected_size_in_bits = given_bits.len();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Scalar::<Circuit>::from_bits_be(&given_bits);
+                let candidate = Scalar::from_bits_be(&given_bits);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().unwrap().len());
                 assert_eq!(expected_size_in_bits, candidate.to_bits_be().len());
@@ -160,7 +162,7 @@ mod tests {
             let candidate = [vec![Boolean::new(mode, false); i as usize], given_bits].concat();
 
             Circuit::scope(&format!("Excess {mode} {i}"), || {
-                let candidate = Scalar::<Circuit>::from_bits_be(&candidate);
+                let candidate = Scalar::from_bits_be(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().unwrap().len());
                 match mode.is_constant() {

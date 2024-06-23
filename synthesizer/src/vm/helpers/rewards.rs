@@ -40,10 +40,10 @@ const MAX_COINBASE_REWARD: u64 = ledger_block::MAX_COINBASE_REWARD; // Coinbase 
 /// since our security model adheres to 3f+1, where f=1. As such, we tolerate Byzantine behavior
 /// up to 33% of the total stake.
 pub fn staking_rewards<N: Network>(
-    stakers: &IndexMap<Address<N>, (Address<N>, u64)>,
+    stakers: &IndexMap<Address, (Address, u64)>,
     committee: &Committee<N>,
     block_reward: u64,
-) -> IndexMap<Address<N>, (Address<N>, u64)> {
+) -> IndexMap<Address, (Address, u64)> {
     // If the list of stakers is empty, there is no stake, or the block reward is 0, return the stakers.
     if stakers.is_empty() || committee.total_stake() == 0 || block_reward == 0 {
         return stakers.clone();
@@ -138,10 +138,7 @@ pub fn staking_rewards<N: Network>(
 
 /// Returns the proving rewards for a given coinbase reward and list of prover solutions.
 /// The prover reward is defined as: `puzzle_reward * (proof_target / combined_proof_target)`.
-pub fn proving_rewards<N: Network>(
-    proof_targets: Vec<(Address<N>, u64)>,
-    puzzle_reward: u64,
-) -> IndexMap<Address<N>, u64> {
+pub fn proving_rewards<N: Network>(proof_targets: Vec<(Address, u64)>, puzzle_reward: u64) -> IndexMap<Address, u64> {
     // Compute the combined proof target. Using '.sum' here is safe because we sum u64s into a u128.
     let combined_proof_target = proof_targets.iter().map(|(_, t)| *t as u128).sum::<u128>();
 
@@ -231,7 +228,7 @@ mod tests {
         let stakers = crate::committee::test_helpers::to_stakers(committee.members(), rng);
         // Generate stakers for a non-existent committee, to ensure they are not rewarded.
         let stakers_fake = crate::committee::test_helpers::to_stakers(fake_committee.members(), rng);
-        let all_stakers: IndexMap<Address<CurrentNetwork>, (Address<CurrentNetwork>, u64)> =
+        let all_stakers: IndexMap<Address, (Address, u64)> =
             stakers.clone().into_iter().chain(stakers_fake.clone()).collect();
 
         // Start a timer.
@@ -266,12 +263,12 @@ mod tests {
         // Sample a random block reward.
         let block_reward = rng.gen_range(0..MAX_COINBASE_REWARD);
         // Create a map of validators to commissions
-        let commissions: IndexMap<Address<CurrentNetwork>, u8> =
+        let commissions: IndexMap<Address, u8> =
             committee.members().iter().map(|(address, (_, _, commission))| (*address, *commission)).collect();
         // Print the commissions from the indexmap
         println!("commissions: {:?}", commissions);
         // Create a map of validators to the sum of their commissions
-        let mut total_commissions: IndexMap<Address<CurrentNetwork>, u64> = Default::default();
+        let mut total_commissions: IndexMap<Address, u64> = Default::default();
 
         // Start a timer.
         let timer = std::time::Instant::now();

@@ -108,59 +108,43 @@ mod tests {
     #[test]
     fn test_array_type() -> Result<()> {
         // Test literal array types.
-        let array = ArrayType::<CurrentNetwork>::from_str("[field; 4u32]")?;
-        assert_eq!(array, ArrayType::<CurrentNetwork>::new(PlaintextType::from_str("field")?, vec![U32::new(4)])?);
-        assert_eq!(
-            array.to_bytes_le()?,
-            ArrayType::<CurrentNetwork>::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?
-        );
+        let array = ArrayType::from_str("[field; 4u32]")?;
+        assert_eq!(array, ArrayType::new(PlaintextType::from_str("field")?, vec![U32::new(4)])?);
+        assert_eq!(array.to_bytes_le()?, ArrayType::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?);
         assert_eq!(array.next_element_type(), &PlaintextType::Literal(LiteralType::Field));
         assert_eq!(array.length(), &U32::new(4));
         assert!(!array.is_empty());
 
         // Test struct array types.
-        let array = ArrayType::<CurrentNetwork>::from_str("[foo; 1u32]")?;
-        assert_eq!(array, ArrayType::<CurrentNetwork>::new(PlaintextType::from_str("foo")?, vec![U32::new(1)])?);
-        assert_eq!(
-            array.to_bytes_le()?,
-            ArrayType::<CurrentNetwork>::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?
-        );
+        let array = ArrayType::from_str("[foo; 1u32]")?;
+        assert_eq!(array, ArrayType::new(PlaintextType::from_str("foo")?, vec![U32::new(1)])?);
+        assert_eq!(array.to_bytes_le()?, ArrayType::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?);
         assert_eq!(array.next_element_type(), &PlaintextType::Struct(Identifier::from_str("foo")?));
         assert_eq!(array.length(), &U32::new(1));
         assert!(!array.is_empty());
 
         // Test array type with maximum length.
-        let array = ArrayType::<CurrentNetwork>::from_str("[scalar; 32u32]")?;
-        assert_eq!(array, ArrayType::<CurrentNetwork>::new(PlaintextType::from_str("scalar")?, vec![U32::new(32)])?);
-        assert_eq!(
-            array.to_bytes_le()?,
-            ArrayType::<CurrentNetwork>::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?
-        );
+        let array = ArrayType::from_str("[scalar; 32u32]")?;
+        assert_eq!(array, ArrayType::new(PlaintextType::from_str("scalar")?, vec![U32::new(32)])?);
+        assert_eq!(array.to_bytes_le()?, ArrayType::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?);
         assert_eq!(array.next_element_type(), &PlaintextType::Literal(LiteralType::Scalar));
         assert_eq!(array.length(), &U32::new(32));
         assert!(!array.is_empty());
 
         // Test multi-dimensional array types.
-        let array = ArrayType::<CurrentNetwork>::from_str("[[field; 2u32]; 3u32]")?;
+        let array = ArrayType::from_str("[[field; 2u32]; 3u32]")?;
         assert_eq!(
             array,
-            ArrayType::<CurrentNetwork>::new(
-                PlaintextType::Array(ArrayType::<CurrentNetwork>::new(PlaintextType::from_str("field")?, vec![
-                    U32::new(2)
-                ])?),
+            ArrayType::new(
+                PlaintextType::Array(ArrayType::new(PlaintextType::from_str("field")?, vec![U32::new(2)])?),
                 vec![U32::new(3)]
             )?
         );
-        assert_eq!(
-            array.to_bytes_le()?,
-            ArrayType::<CurrentNetwork>::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?
-        );
+        assert_eq!(array.to_bytes_le()?, ArrayType::from_bytes_le(&array.to_bytes_le()?)?.to_bytes_le()?);
         assert_eq!(array.to_string(), "[[field; 2u32]; 3u32]");
         assert_eq!(
             array.next_element_type(),
-            &PlaintextType::Array(ArrayType::<CurrentNetwork>::new(PlaintextType::Literal(LiteralType::Field), vec![
-                U32::new(2)
-            ])?)
+            &PlaintextType::Array(ArrayType::new(PlaintextType::Literal(LiteralType::Field), vec![U32::new(2)])?)
         );
         assert_eq!(array.length(), &U32::new(3));
         assert!(!array.is_empty());
@@ -170,16 +154,16 @@ mod tests {
 
     #[test]
     fn test_array_type_fails() {
-        let type_ = ArrayType::<CurrentNetwork>::from_str("[field; 0u32]");
+        let type_ = ArrayType::from_str("[field; 0u32]");
         assert!(type_.is_err());
 
-        let type_ = ArrayType::<CurrentNetwork>::from_str("[field; 4294967296u32]");
+        let type_ = ArrayType::from_str("[field; 4294967296u32]");
         assert!(type_.is_err());
 
-        let type_ = ArrayType::<CurrentNetwork>::from_str("[foo; -1i32]");
+        let type_ = ArrayType::from_str("[foo; -1i32]");
         assert!(type_.is_err());
 
-        let type_ = ArrayType::<CurrentNetwork>::from_str("[foo; 1u8]");
+        let type_ = ArrayType::from_str("[foo; 1u8]");
         assert!(type_.is_err());
     }
 }

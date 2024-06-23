@@ -54,7 +54,7 @@ pub trait Cast<T: Sized = Self> {
     fn cast(&self) -> T;
 }
 
-impl<A: Aleo> Literal<A> {
+impl Literal {
     /// Casts the literal to the given literal type.
     ///
     /// This method checks that the cast does not lose any bits of information,
@@ -118,17 +118,17 @@ macro_rules! impl_cast_body {
 }
 
 /// Casts a boolean literal to the given literal type.
-fn cast_boolean_to_type<A: Aleo>(input: &Boolean<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_boolean_to_type(input: &Boolean, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(boolean, cast, input, to_type)
 }
 
 /// Casts a field literal to the given literal type.
-fn cast_field_to_type<A: Aleo>(input: &Field<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_field_to_type(input: &Field, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(field, cast, input, to_type)
 }
 
 /// Casts a group literal to the given literal type.
-fn cast_group_to_type<A: Aleo>(input: &Group<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_group_to_type(input: &Group, to_type: LiteralType) -> Result<Literal> {
     match to_type {
         LiteralType::Address => Ok(Literal::Address(Address::from_group(input.clone()))),
         LiteralType::Group => Ok(Literal::Group(input.clone())),
@@ -137,12 +137,12 @@ fn cast_group_to_type<A: Aleo>(input: &Group<A>, to_type: LiteralType) -> Result
 }
 
 /// Casts an integer literal to the given literal type.
-fn cast_integer_to_type<A: Aleo, I: IntegerType>(input: &Integer<A, I>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_integer_to_type<I: IntegerType>(input: &Integer<I>, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(integer, cast, input, to_type)
 }
 
 /// Casts a scalar literal to the given literal type.
-fn cast_scalar_to_type<A: Aleo>(input: &Scalar<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_scalar_to_type(input: &Scalar, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(scalar, cast, input, to_type)
 }
 

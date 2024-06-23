@@ -15,17 +15,19 @@
 #[cfg(test)]
 use snarkvm_circuit_types::environment::assert_scope;
 
-use snarkvm_circuit_network::Aleo;
-use snarkvm_circuit_types::{environment::prelude::*, Field};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Field,
+};
 
-pub struct GraphKey<A: Aleo> {
+pub struct GraphKey {
     /// The graph key `sk_tag` := Hash(view_key || ctr).
-    sk_tag: Field<A>,
+    sk_tag: Field,
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for GraphKey<A> {
-    type Primitive = console::GraphKey<A::Network>;
+impl Inject for GraphKey {
+    type Primitive = console::GraphKey;
 
     /// Initializes an account graph key from the given mode and native graph key.
     fn new(mode: Mode, graph_key: Self::Primitive) -> Self {
@@ -36,16 +38,16 @@ impl<A: Aleo> Inject for GraphKey<A> {
     }
 }
 
-impl<A: Aleo> GraphKey<A> {
+impl GraphKey {
     /// Returns the graph key.
-    pub const fn sk_tag(&self) -> &Field<A> {
+    pub const fn sk_tag(&self) -> &Field {
         &self.sk_tag
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for GraphKey<A> {
-    type Primitive = console::GraphKey<A::Network>;
+impl Eject for GraphKey {
+    type Primitive = console::GraphKey;
 
     /// Ejects the mode of the graph key.
     fn eject_mode(&self) -> Mode {
@@ -56,7 +58,7 @@ impl<A: Aleo> Eject for GraphKey<A> {
     fn eject_value(&self) -> Self::Primitive {
         match Self::Primitive::try_from(self.sk_tag.eject_value()) {
             Ok(graph_key) => graph_key,
-            Err(error) => A::halt(format!("Failed to eject the graph key: {error}")),
+            Err(error) => Circuit::halt(format!("Failed to eject the graph key: {error}")),
         }
     }
 }
@@ -83,7 +85,7 @@ pub(crate) mod tests {
             let graph_key = console::GraphKey::try_from(&view_key)?;
 
             Circuit::scope(format!("New {mode}"), || {
-                let candidate = GraphKey::<Circuit>::new(mode, graph_key);
+                let candidate = GraphKey::new(mode, graph_key);
                 assert_eq!(mode, candidate.eject_mode());
                 assert_eq!(graph_key, candidate.eject_value());
                 // TODO (howardwu): Resolve skipping the cost count checks for the burn-in round.

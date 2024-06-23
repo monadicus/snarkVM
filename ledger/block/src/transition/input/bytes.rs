@@ -20,7 +20,7 @@ impl<N: Network> FromBytes for Input<N> {
         let variant = Variant::read_le(&mut reader)?;
         let literal = match variant {
             0 => {
-                let plaintext_hash: Field<N> = FromBytes::read_le(&mut reader)?;
+                let plaintext_hash: Field = FromBytes::read_le(&mut reader)?;
                 let plaintext_exists: bool = FromBytes::read_le(&mut reader)?;
                 let plaintext = match plaintext_exists {
                     true => Some(FromBytes::read_le(&mut reader)?),
@@ -30,7 +30,7 @@ impl<N: Network> FromBytes for Input<N> {
                 Self::Constant(plaintext_hash, plaintext)
             }
             1 => {
-                let plaintext_hash: Field<N> = FromBytes::read_le(&mut reader)?;
+                let plaintext_hash: Field = FromBytes::read_le(&mut reader)?;
                 let plaintext_exists: bool = FromBytes::read_le(&mut reader)?;
                 let plaintext = match plaintext_exists {
                     true => Some(FromBytes::read_le(&mut reader)?),
@@ -39,7 +39,7 @@ impl<N: Network> FromBytes for Input<N> {
                 Self::Public(plaintext_hash, plaintext)
             }
             2 => {
-                let ciphertext_hash: Field<N> = FromBytes::read_le(&mut reader)?;
+                let ciphertext_hash: Field = FromBytes::read_le(&mut reader)?;
                 let ciphertext_exists: bool = FromBytes::read_le(&mut reader)?;
                 let ciphertext = match ciphertext_exists {
                     true => Some(FromBytes::read_le(&mut reader)?),
@@ -49,9 +49,9 @@ impl<N: Network> FromBytes for Input<N> {
             }
             3 => {
                 // Read the serial number.
-                let serial_number: Field<N> = FromBytes::read_le(&mut reader)?;
+                let serial_number: Field = FromBytes::read_le(&mut reader)?;
                 // Read the tag.
-                let tag: Field<N> = FromBytes::read_le(&mut reader)?;
+                let tag: Field = FromBytes::read_le(&mut reader)?;
                 // Return the record.
                 Self::Record(serial_number, tag)
             }

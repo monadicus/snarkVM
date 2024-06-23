@@ -81,7 +81,7 @@ fn test_merkle_tree_bhp_remove() -> Result<()> {
                 let num_additional_leaves = core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, j);
 
                 // Check the Merkle tree.
-                check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+                check_merkle_tree::<LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
                     &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -104,7 +104,7 @@ fn test_merkle_tree_bhp_remove() -> Result<()> {
             let num_additional_leaves = core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, next_power_of_two);
 
             // Check the Merkle tree.
-            check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+            check_merkle_tree::<LH, PH, DEPTH>(
                 &leaf_hasher,
                 &path_hasher,
                 &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -142,8 +142,8 @@ fn test_merkle_tree_bhp_remove() -> Result<()> {
 #[test]
 fn test_merkle_tree_poseidon_remove() -> Result<()> {
     fn run_test<const DEPTH: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = Poseidon<CurrentEnvironment, 4>;
-        type PH = Poseidon<CurrentEnvironment, 2>;
+        type LH = Poseidon<4>;
+        type PH = Poseidon<2>;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -155,7 +155,7 @@ fn test_merkle_tree_poseidon_remove() -> Result<()> {
                 let num_additional_leaves = core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, j);
 
                 // Check the Merkle tree.
-                check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+                check_merkle_tree::<LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
                     &(0..num_leaves).map(|_| vec![Uniform::rand(rng)]).collect::<Vec<_>>(),
@@ -178,7 +178,7 @@ fn test_merkle_tree_poseidon_remove() -> Result<()> {
             let num_additional_leaves = core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, next_power_of_two);
 
             // Check the Merkle tree.
-            check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+            check_merkle_tree::<LH, PH, DEPTH>(
                 &leaf_hasher,
                 &path_hasher,
                 &(0..num_leaves).map(|_| vec![Uniform::rand(rng)]).collect::<Vec<_>>(),

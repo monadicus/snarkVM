@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for StringType<E> {
-    type Boolean = Boolean<E>;
+impl FromBits for StringType {
+    type Boolean = Boolean;
 
     /// Initializes a new string from a list of little-endian bits *with* trailing zeros (to byte-alignment).
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
@@ -38,19 +38,20 @@ impl<E: Environment> FromBits for StringType<E> {
     }
 }
 
-impl<E: Environment> StringType<E> {
+impl StringType {
     /// Checks the size of the given bits for the given mode, and returns the size (of the string) in bytes.
     /// "Load-bearing witness allocation - Please do not optimize me." - Pratyush :)
-    fn inject_size_in_bytes(mode: Mode, bits: &[Boolean<E>]) -> Field<E> {
+    fn inject_size_in_bytes(mode: Mode, bits: &[Boolean]) -> Field {
         // Ensure the bits are byte-aligned.
         let num_bits = bits.len();
         if num_bits % 8 != 0 {
-            E::halt(format!("Attempted to instantiate a {num_bits}-bit string, which is not byte-aligned"))
+            Circuit::halt(format!("Attempted to instantiate a {num_bits}-bit string, which is not byte-aligned"))
         }
 
         // Cast the number of bytes in the 'string' as a field element.
-        let num_bytes =
-            console::Field::from_u32(u32::try_from(num_bits / 8).unwrap_or_else(|error| E::halt(error.to_string())));
+        let num_bytes = console::Field::from_u32(
+            u32::try_from(num_bits / 8).unwrap_or_else(|error| Circuit::halt(error.to_string())),
+        );
 
         // Inject the number of bytes as a constant.
         let expected_size_in_bytes = Field::constant(num_bytes);
@@ -60,7 +61,7 @@ impl<E: Environment> StringType<E> {
             false => Field::new(Mode::Private, num_bytes),
         };
         // Ensure the witness matches the constant.
-        E::assert_eq(&expected_size_in_bytes, &size_in_bytes);
+        Circuit::assert_eq(&expected_size_in_bytes, &size_in_bytes);
 
         // Return the size in bytes.
         size_in_bytes
@@ -83,10 +84,10 @@ mod tests {
             let expected_num_bytes = expected.len();
             assert!(expected_num_bytes <= Circuit::MAX_STRING_BYTES as usize);
 
-            let candidate = StringType::<Circuit>::new(mode, console::StringType::new(&expected)).to_bits_le();
+            let candidate = StringType::new(mode, console::StringType::new(&expected)).to_bits_le();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = StringType::<Circuit>::from_bits_le(&candidate);
+                let candidate = StringType::from_bits_le(&candidate);
                 assert_eq!(expected, *candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });
@@ -103,10 +104,10 @@ mod tests {
             let expected_num_bytes = expected.len();
             assert!(expected_num_bytes <= Circuit::MAX_STRING_BYTES as usize);
 
-            let candidate = StringType::<Circuit>::new(mode, console::StringType::new(&expected)).to_bits_be();
+            let candidate = StringType::new(mode, console::StringType::new(&expected)).to_bits_be();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = StringType::<Circuit>::from_bits_be(&candidate);
+                let candidate = StringType::from_bits_be(&candidate);
                 assert_eq!(expected, *candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });

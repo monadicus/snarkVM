@@ -110,35 +110,35 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     /// The mapping of `state root` to `block height`.
     type ReverseStateRootMap: for<'a> Map<'a, N::StateRoot, u32>;
     /// The mapping of `block height` to `block hash`.
-    type IDMap: for<'a> Map<'a, u32, N::BlockHash>;
+    type IDMap: for<'a> Map<'a, u32, BlockHash>;
     /// The mapping of `block hash` to `block height`.
-    type ReverseIDMap: for<'a> Map<'a, N::BlockHash, u32>;
+    type ReverseIDMap: for<'a> Map<'a, BlockHash, u32>;
     /// The mapping of `block hash` to `block header`.
-    type HeaderMap: for<'a> Map<'a, N::BlockHash, Header<N>>;
+    type HeaderMap: for<'a> Map<'a, BlockHash, Header<N>>;
     /// The mapping of `block hash` to `block authority`.
-    type AuthorityMap: for<'a> Map<'a, N::BlockHash, Authority<N>>;
+    type AuthorityMap: for<'a> Map<'a, BlockHash, Authority<N>>;
     /// The mapping of `certificate ID` to (`block height`, `round height`).
-    type CertificateMap: for<'a> Map<'a, Field<N>, (u32, u64)>;
+    type CertificateMap: for<'a> Map<'a, Field, (u32, u64)>;
     /// The mapping of `block hash` to `block ratifications`.
-    type RatificationsMap: for<'a> Map<'a, N::BlockHash, Ratifications<N>>;
+    type RatificationsMap: for<'a> Map<'a, BlockHash, Ratifications<N>>;
     /// The mapping of `block hash` to `block solutions`.
-    type SolutionsMap: for<'a> Map<'a, N::BlockHash, Solutions<N>>;
+    type SolutionsMap: for<'a> Map<'a, BlockHash, Solutions<N>>;
     /// The mapping of `solution ID` to `block height`.
-    type SolutionIDsMap: for<'a> Map<'a, SolutionID<N>, u32>;
+    type SolutionIDsMap: for<'a> Map<'a, SolutionID, u32>;
     /// The mapping of `block hash` to `[aborted solution ID]`.
-    type AbortedSolutionIDsMap: for<'a> Map<'a, N::BlockHash, Vec<SolutionID<N>>>;
+    type AbortedSolutionIDsMap: for<'a> Map<'a, BlockHash, Vec<SolutionID>>;
     /// The mapping of aborted `solution ID` to `block height`.
-    type AbortedSolutionHeightsMap: for<'a> Map<'a, SolutionID<N>, u32>;
+    type AbortedSolutionHeightsMap: for<'a> Map<'a, SolutionID, u32>;
     /// The mapping of `block hash` to `[transaction ID]`.
-    type TransactionsMap: for<'a> Map<'a, N::BlockHash, Vec<N::TransactionID>>;
+    type TransactionsMap: for<'a> Map<'a, BlockHash, Vec<TransactionID>>;
     /// The mapping of `block hash` to `[aborted transaction ID]`.
-    type AbortedTransactionIDsMap: for<'a> Map<'a, N::BlockHash, Vec<N::TransactionID>>;
+    type AbortedTransactionIDsMap: for<'a> Map<'a, BlockHash, Vec<TransactionID>>;
     /// The mapping of rejected or aborted `transaction ID` to `block hash`.
-    type RejectedOrAbortedTransactionIDMap: for<'a> Map<'a, N::TransactionID, N::BlockHash>;
+    type RejectedOrAbortedTransactionIDMap: for<'a> Map<'a, TransactionID, BlockHash>;
     /// The mapping of `transaction ID` to `(block hash, confirmed tx type, finalize operations)`.
-    type ConfirmedTransactionsMap: for<'a> Map<'a, N::TransactionID, (N::BlockHash, ConfirmedTxType<N>, Vec<FinalizeOperation<N>>)>;
+    type ConfirmedTransactionsMap: for<'a> Map<'a, TransactionID, (BlockHash, ConfirmedTxType<N>, Vec<FinalizeOperation<N>>)>;
     /// The rejected deployment or execution map.
-    type RejectedDeploymentOrExecutionMap: for<'a> Map<'a, Field<N>, Rejected<N>>;
+    type RejectedDeploymentOrExecutionMap: for<'a> Map<'a, Field, Rejected<N>>;
     /// The transaction storage.
     type TransactionStorage: TransactionStorage<N, TransitionStorage = Self::TransitionStorage>;
     /// The transition storage.
@@ -462,7 +462,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Removes the block for the given `block hash`.
-    fn remove(&self, block_hash: &N::BlockHash) -> Result<()> {
+    fn remove(&self, block_hash: &BlockHash) -> Result<()> {
         // Retrieve the block height.
         let block_height = match self.get_block_height(block_hash)? {
             Some(height) => height,
@@ -591,18 +591,18 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns `true` if the given transaction ID exists.
-    fn contains_transaction_id(&self, transaction_id: &N::TransactionID) -> Result<bool> {
+    fn contains_transaction_id(&self, transaction_id: &TransactionID) -> Result<bool> {
         Ok(self.transaction_store().contains_transaction_id(transaction_id)?
             || self.contains_rejected_or_aborted_transaction_id(transaction_id)?)
     }
 
     /// Returns `true` if the given rejected transaction ID or aborted transaction ID exists.
-    fn contains_rejected_or_aborted_transaction_id(&self, transaction_id: &N::TransactionID) -> Result<bool> {
+    fn contains_rejected_or_aborted_transaction_id(&self, transaction_id: &TransactionID) -> Result<bool> {
         self.rejected_or_aborted_transaction_id_map().contains_key_confirmed(transaction_id)
     }
 
     /// Returns `true` if the given rejected deployment or execution ID.
-    fn contains_rejected_deployment_or_execution_id(&self, rejected_id: &Field<N>) -> Result<bool> {
+    fn contains_rejected_deployment_or_execution_id(&self, rejected_id: &Field) -> Result<bool> {
         self.rejected_deployment_or_execution_map().contains_key_confirmed(rejected_id)
     }
 
@@ -615,7 +615,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block hash that contains the given `transaction ID`.
-    fn find_block_hash(&self, transaction_id: &N::TransactionID) -> Result<Option<N::BlockHash>> {
+    fn find_block_hash(&self, transaction_id: &TransactionID) -> Result<Option<BlockHash>> {
         match self.confirmed_transactions_map().get_confirmed(transaction_id)? {
             Some(Cow::Borrowed((block_hash, _, _))) => Ok(Some(*block_hash)),
             Some(Cow::Owned((block_hash, _, _))) => Ok(Some(block_hash)),
@@ -628,7 +628,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block height that contains the given `solution ID`.
-    fn find_block_height_from_solution_id(&self, solution_id: &SolutionID<N>) -> Result<Option<u32>> {
+    fn find_block_height_from_solution_id(&self, solution_id: &SolutionID) -> Result<Option<u32>> {
         match self.solution_ids_map().get_confirmed(solution_id)? {
             Some(block_height) => Ok(Some(cow_to_copied!(block_height))),
             None => match self.aborted_solution_heights_map().get_confirmed(solution_id)? {
@@ -647,7 +647,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns a state path for the given `commitment`.
-    fn get_state_path_for_commitment(&self, commitment: &Field<N>, block_tree: &BlockTree<N>) -> Result<StatePath<N>> {
+    fn get_state_path_for_commitment(&self, commitment: &Field, block_tree: &BlockTree<N>) -> Result<StatePath<N>> {
         // Ensure the commitment exists.
         if !self.transition_store().contains_commitment(commitment)? {
             bail!("Commitment '{commitment}' does not exist");
@@ -732,9 +732,9 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the previous block hash of the given `block height`.
-    fn get_previous_block_hash(&self, height: u32) -> Result<Option<N::BlockHash>> {
+    fn get_previous_block_hash(&self, height: u32) -> Result<Option<BlockHash>> {
         match height.is_zero() {
-            true => Ok(Some(N::BlockHash::default())),
+            true => Ok(Some(BlockHash::default())),
             false => match self.id_map().get_confirmed(&(height - 1))? {
                 Some(block_hash) => Ok(Some(cow_to_copied!(block_hash))),
                 None => Ok(None),
@@ -743,7 +743,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block hash for the given `block height`.
-    fn get_block_hash(&self, height: u32) -> Result<Option<N::BlockHash>> {
+    fn get_block_hash(&self, height: u32) -> Result<Option<BlockHash>> {
         match self.id_map().get_confirmed(&height)? {
             Some(block_hash) => Ok(Some(cow_to_copied!(block_hash))),
             None => Ok(None),
@@ -751,7 +751,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block height for the given `block hash`.
-    fn get_block_height(&self, block_hash: &N::BlockHash) -> Result<Option<u32>> {
+    fn get_block_height(&self, block_hash: &BlockHash) -> Result<Option<u32>> {
         match self.reverse_id_map().get_confirmed(block_hash)? {
             Some(height) => Ok(Some(cow_to_copied!(height))),
             None => Ok(None),
@@ -759,7 +759,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block header for the given `block hash`.
-    fn get_block_header(&self, block_hash: &N::BlockHash) -> Result<Option<Header<N>>> {
+    fn get_block_header(&self, block_hash: &BlockHash) -> Result<Option<Header<N>>> {
         match self.header_map().get_confirmed(block_hash)? {
             Some(header) => Ok(Some(cow_to_cloned!(header))),
             None => Ok(None),
@@ -767,7 +767,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block authority for the given `block hash`.
-    fn get_block_authority(&self, block_hash: &N::BlockHash) -> Result<Option<Authority<N>>> {
+    fn get_block_authority(&self, block_hash: &BlockHash) -> Result<Option<Authority<N>>> {
         match self.authority_map().get_confirmed(block_hash)? {
             Some(authority) => Ok(Some(cow_to_cloned!(authority))),
             None => Ok(None),
@@ -775,7 +775,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the batch certificate for the given `certificate ID`.
-    fn get_batch_certificate(&self, certificate_id: &Field<N>) -> Result<Option<BatchCertificate<N>>> {
+    fn get_batch_certificate(&self, certificate_id: &Field) -> Result<Option<BatchCertificate<N>>> {
         // Retrieve the height and round for the given certificate ID.
         let (block_height, round) = match self.certificate_map().get_confirmed(certificate_id)? {
             Some(block_height_and_round) => cow_to_copied!(block_height_and_round),
@@ -810,7 +810,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block ratifications for the given `block hash`.
-    fn get_block_ratifications(&self, block_hash: &N::BlockHash) -> Result<Option<Ratifications<N>>> {
+    fn get_block_ratifications(&self, block_hash: &BlockHash) -> Result<Option<Ratifications<N>>> {
         match self.ratifications_map().get_confirmed(block_hash)? {
             Some(ratifications) => Ok(Some(cow_to_cloned!(ratifications))),
             None => Ok(None),
@@ -818,7 +818,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block solutions for the given `block hash`.
-    fn get_block_solutions(&self, block_hash: &N::BlockHash) -> Result<Solutions<N>> {
+    fn get_block_solutions(&self, block_hash: &BlockHash) -> Result<Solutions<N>> {
         match self.solutions_map().get_confirmed(block_hash)? {
             Some(solutions) => Ok(cow_to_cloned!(solutions)),
             None => bail!("Missing solutions for block ('{block_hash}')"),
@@ -826,7 +826,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the prover solution for the given solution ID.
-    fn get_solution(&self, solution_id: &SolutionID<N>) -> Result<Solution<N>> {
+    fn get_solution(&self, solution_id: &SolutionID) -> Result<Solution> {
         // Retrieve the block height for the solution ID.
         let Some(block_height) = self.find_block_height_from_solution_id(solution_id)? else {
             bail!("The block height for solution ID '{solution_id}' is missing in block storage")
@@ -849,7 +849,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block aborted solution IDs for the given `block hash`.
-    fn get_block_aborted_solution_ids(&self, block_hash: &N::BlockHash) -> Result<Option<Vec<SolutionID<N>>>> {
+    fn get_block_aborted_solution_ids(&self, block_hash: &BlockHash) -> Result<Option<Vec<SolutionID>>> {
         match self.aborted_solution_ids_map().get_confirmed(block_hash)? {
             Some(aborted_solution_ids) => Ok(Some(cow_to_cloned!(aborted_solution_ids))),
             None => Ok(None),
@@ -857,7 +857,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block transactions for the given `block hash`.
-    fn get_block_transactions(&self, block_hash: &N::BlockHash) -> Result<Option<Transactions<N>>> {
+    fn get_block_transactions(&self, block_hash: &BlockHash) -> Result<Option<Transactions<N>>> {
         // Retrieve the transaction IDs.
         let transaction_ids = match self.transactions_map().get_confirmed(block_hash)? {
             Some(transaction_ids) => transaction_ids,
@@ -871,7 +871,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block aborted transaction IDs for the given `block hash`.
-    fn get_block_aborted_transaction_ids(&self, block_hash: &N::BlockHash) -> Result<Option<Vec<N::TransactionID>>> {
+    fn get_block_aborted_transaction_ids(&self, block_hash: &BlockHash) -> Result<Option<Vec<TransactionID>>> {
         match self.aborted_transaction_ids_map().get_confirmed(block_hash)? {
             Some(aborted_transaction_ids) => Ok(Some(cow_to_cloned!(aborted_transaction_ids))),
             None => Ok(None),
@@ -879,7 +879,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the transaction for the given `transaction ID`.
-    fn get_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    fn get_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         // Check if the transaction was rejected or aborted.
         // Note: We can only retrieve accepted or rejected transactions. We cannot retrieve aborted transactions.
         match self.rejected_or_aborted_transaction_id_map().get_confirmed(transaction_id)? {
@@ -905,7 +905,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the confirmed transaction for the given `transaction ID`.
-    fn get_confirmed_transaction(&self, transaction_id: N::TransactionID) -> Result<Option<ConfirmedTransaction<N>>> {
+    fn get_confirmed_transaction(&self, transaction_id: TransactionID) -> Result<Option<ConfirmedTransaction<N>>> {
         // Retrieve the transaction.
         let transaction = match self.get_transaction(&transaction_id) {
             Ok(Some(transaction)) => transaction,
@@ -923,7 +923,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the unconfirmed transaction for the given `transaction ID`.
-    fn get_unconfirmed_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    fn get_unconfirmed_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         // Check if the transaction was rejected or aborted.
         // Note: We can only retrieve accepted or rejected transactions. We cannot retrieve aborted transactions.
         match self.rejected_or_aborted_transaction_id_map().get_confirmed(transaction_id)? {
@@ -941,7 +941,7 @@ pub trait BlockStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the block for the given `block hash`.
-    fn get_block(&self, block_hash: &N::BlockHash) -> Result<Option<Block<N>>> {
+    fn get_block(&self, block_hash: &BlockHash) -> Result<Option<Block<N>>> {
         // Retrieve the block height.
         let Some(height) = self.get_block_height(block_hash)? else { return Ok(None) };
 
@@ -1183,12 +1183,12 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
     }
 
     /// Returns the block hash that contains the given `transaction ID`.
-    pub fn find_block_hash(&self, transaction_id: &N::TransactionID) -> Result<Option<N::BlockHash>> {
+    pub fn find_block_hash(&self, transaction_id: &TransactionID) -> Result<Option<BlockHash>> {
         self.storage.find_block_hash(transaction_id)
     }
 
     /// Returns the block height that contains the given `solution ID`.
-    pub fn find_block_height_from_solution_id(&self, solution_id: &SolutionID<N>) -> Result<Option<u32>> {
+    pub fn find_block_height_from_solution_id(&self, solution_id: &SolutionID) -> Result<Option<u32>> {
         self.storage.find_block_height_from_solution_id(solution_id)
     }
 }
@@ -1210,83 +1210,77 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
     }
 
     /// Returns a state path for the given `commitment`.
-    pub fn get_state_path_for_commitment(&self, commitment: &Field<N>) -> Result<StatePath<N>> {
+    pub fn get_state_path_for_commitment(&self, commitment: &Field) -> Result<StatePath<N>> {
         self.storage.get_state_path_for_commitment(commitment, &self.tree.read())
     }
 
     /// Returns the previous block hash of the given `block height`.
-    pub fn get_previous_block_hash(&self, height: u32) -> Result<Option<N::BlockHash>> {
+    pub fn get_previous_block_hash(&self, height: u32) -> Result<Option<BlockHash>> {
         self.storage.get_previous_block_hash(height)
     }
 
     /// Returns the block hash for the given `block height`.
-    pub fn get_block_hash(&self, height: u32) -> Result<Option<N::BlockHash>> {
+    pub fn get_block_hash(&self, height: u32) -> Result<Option<BlockHash>> {
         self.storage.get_block_hash(height)
     }
 
     /// Returns the block height for the given `block hash`.
-    pub fn get_block_height(&self, block_hash: &N::BlockHash) -> Result<Option<u32>> {
+    pub fn get_block_height(&self, block_hash: &BlockHash) -> Result<Option<u32>> {
         self.storage.get_block_height(block_hash)
     }
 
     /// Returns the block header for the given `block hash`.
-    pub fn get_block_header(&self, block_hash: &N::BlockHash) -> Result<Option<Header<N>>> {
+    pub fn get_block_header(&self, block_hash: &BlockHash) -> Result<Option<Header<N>>> {
         self.storage.get_block_header(block_hash)
     }
 
     /// Returns the block authority for the given `block hash`.
-    pub fn get_block_authority(&self, block_hash: &N::BlockHash) -> Result<Option<Authority<N>>> {
+    pub fn get_block_authority(&self, block_hash: &BlockHash) -> Result<Option<Authority<N>>> {
         self.storage.get_block_authority(block_hash)
     }
 
     /// Returns the block ratifications for the given `block hash`.
-    pub fn get_block_ratifications(&self, block_hash: &N::BlockHash) -> Result<Option<Ratifications<N>>> {
+    pub fn get_block_ratifications(&self, block_hash: &BlockHash) -> Result<Option<Ratifications<N>>> {
         self.storage.get_block_ratifications(block_hash)
     }
 
     /// Returns the block solutions for the given `block hash`.
-    pub fn get_block_solutions(&self, block_hash: &N::BlockHash) -> Result<Solutions<N>> {
+    pub fn get_block_solutions(&self, block_hash: &BlockHash) -> Result<Solutions<N>> {
         self.storage.get_block_solutions(block_hash)
     }
 
     /// Returns the prover solution for the given solution ID.
-    pub fn get_solution(&self, solution_id: &SolutionID<N>) -> Result<Solution<N>> {
+    pub fn get_solution(&self, solution_id: &SolutionID) -> Result<Solution> {
         self.storage.get_solution(solution_id)
     }
 
     /// Returns the block transactions for the given `block hash`.
-    pub fn get_block_transactions(&self, block_hash: &N::BlockHash) -> Result<Option<Transactions<N>>> {
+    pub fn get_block_transactions(&self, block_hash: &BlockHash) -> Result<Option<Transactions<N>>> {
         self.storage.get_block_transactions(block_hash)
     }
 
     /// Returns the block aborted transaction IDs for the given `block hash`.
-    pub fn get_block_aborted_transaction_ids(
-        &self,
-        block_hash: &N::BlockHash,
-    ) -> Result<Option<Vec<N::TransactionID>>> {
+    pub fn get_block_aborted_transaction_ids(&self, block_hash: &BlockHash) -> Result<Option<Vec<TransactionID>>> {
         self.storage.get_block_aborted_transaction_ids(block_hash)
     }
 
     /// Returns the transaction for the given `transaction ID`.
-    pub fn get_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    pub fn get_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         self.storage.get_transaction(transaction_id)
     }
 
     /// Returns the confirmed transaction for the given `transaction ID`.
-    pub fn get_confirmed_transaction(
-        &self,
-        transaction_id: &N::TransactionID,
-    ) -> Result<Option<ConfirmedTransaction<N>>> {
+    pub fn get_confirmed_transaction(&self, transaction_id: &TransactionID) -> Result<Option<ConfirmedTransaction<N>>> {
         self.storage.get_confirmed_transaction(*transaction_id)
     }
 
     /// Returns the unconfirmed transaction for the given `transaction ID`.
-    pub fn get_unconfirmed_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    pub fn get_unconfirmed_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         self.storage.get_unconfirmed_transaction(transaction_id)
     }
 
     /// Returns the block for the given `block hash`.
-    pub fn get_block(&self, block_hash: &N::BlockHash) -> Result<Option<Block<N>>> {
+    pub fn get_block(&self, block_hash: &BlockHash) -> Result<Option<Block<N>>> {
         self.storage.get_block(block_hash)
     }
 
@@ -1296,7 +1290,7 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
     }
 
     /// Returns the batch certificate for the given `certificate ID`.
-    pub fn get_batch_certificate(&self, certificate_id: &Field<N>) -> Result<Option<BatchCertificate<N>>> {
+    pub fn get_batch_certificate(&self, certificate_id: &Field) -> Result<Option<BatchCertificate<N>>> {
         self.storage.get_batch_certificate(certificate_id)
     }
 }
@@ -1313,38 +1307,38 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
     }
 
     /// Returns `true` if the given block hash exists.
-    pub fn contains_block_hash(&self, block_hash: &N::BlockHash) -> Result<bool> {
+    pub fn contains_block_hash(&self, block_hash: &BlockHash) -> Result<bool> {
         self.storage.reverse_id_map().contains_key_confirmed(block_hash)
     }
 
     /// Returns `true` if the given transaction ID exists.
-    pub fn contains_transaction_id(&self, transaction_id: &N::TransactionID) -> Result<bool> {
+    pub fn contains_transaction_id(&self, transaction_id: &TransactionID) -> Result<bool> {
         self.storage.contains_transaction_id(transaction_id)
     }
 
     /// Returns `true` if the given rejected transaction ID or aborted transaction ID exists.
-    pub fn contains_rejected_or_aborted_transaction_id(&self, transaction_id: &N::TransactionID) -> Result<bool> {
+    pub fn contains_rejected_or_aborted_transaction_id(&self, transaction_id: &TransactionID) -> Result<bool> {
         self.storage.contains_rejected_or_aborted_transaction_id(transaction_id)
     }
 
     /// Returns `true` if the given rejected deployment or execution ID.
-    pub fn contains_rejected_deployment_or_execution_id(&self, rejected_id: &Field<N>) -> Result<bool> {
+    pub fn contains_rejected_deployment_or_execution_id(&self, rejected_id: &Field) -> Result<bool> {
         self.storage.contains_rejected_deployment_or_execution_id(rejected_id)
     }
 
     /// Returns `true` if the given certificate ID exists.
-    pub fn contains_certificate(&self, certificate_id: &Field<N>) -> Result<bool> {
+    pub fn contains_certificate(&self, certificate_id: &Field) -> Result<bool> {
         self.storage.certificate_map().contains_key_confirmed(certificate_id)
     }
 
     /// Returns `true` if the given solution ID exists.
-    pub fn contains_solution_id(&self, solution_id: &SolutionID<N>) -> Result<bool> {
+    pub fn contains_solution_id(&self, solution_id: &SolutionID) -> Result<bool> {
         Ok(self.storage.solution_ids_map().contains_key_confirmed(solution_id)?
             || self.contains_aborted_solution_id(solution_id)?)
     }
 
     /// Returns `true` if the given aborted solution ID exists.
-    fn contains_aborted_solution_id(&self, solution_id: &SolutionID<N>) -> Result<bool> {
+    fn contains_aborted_solution_id(&self, solution_id: &SolutionID) -> Result<bool> {
         self.storage.aborted_solution_heights_map().contains_key_confirmed(solution_id)
     }
 }
@@ -1361,12 +1355,12 @@ impl<N: Network, B: BlockStorage<N>> BlockStore<N, B> {
     }
 
     /// Returns an iterator over the block hashes, for all blocks in `self`.
-    pub fn hashes(&self) -> impl '_ + Iterator<Item = Cow<'_, N::BlockHash>> {
+    pub fn hashes(&self) -> impl '_ + Iterator<Item = Cow<'_, BlockHash>> {
         self.storage.reverse_id_map().keys_confirmed()
     }
 
     /// Returns an iterator over the solution IDs, for all blocks in `self`.
-    pub fn solution_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, SolutionID<N>>> {
+    pub fn solution_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, SolutionID>> {
         self.storage.solution_ids_map().keys_confirmed()
     }
 }

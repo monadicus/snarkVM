@@ -19,7 +19,7 @@ impl<N: Network> Process<N> {
     #[inline]
     pub fn authorize<A: circuit::Aleo<Network = N>, R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         program_id: impl TryInto<ProgramID<N>>,
         function_name: impl TryInto<Identifier<N>>,
         inputs: impl ExactSizeIterator<Item = impl TryInto<Value<N>>>,
@@ -34,11 +34,11 @@ impl<N: Network> Process<N> {
     #[inline]
     pub fn authorize_fee_private<A: circuit::Aleo<Network = N>, R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         credits: Record<N, Plaintext<N>>,
         base_fee_in_microcredits: u64,
         priority_fee_in_microcredits: u64,
-        deployment_or_execution_id: Field<N>,
+        deployment_or_execution_id: Field,
         rng: &mut R,
     ) -> Result<Authorization<N>> {
         let timer = timer!("Process::authorize_fee_private");
@@ -76,10 +76,10 @@ impl<N: Network> Process<N> {
     #[inline]
     pub fn authorize_fee_public<A: circuit::Aleo<Network = N>, R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         base_fee_in_microcredits: u64,
         priority_fee_in_microcredits: u64,
-        deployment_or_execution_id: Field<N>,
+        deployment_or_execution_id: Field,
         rng: &mut R,
     ) -> Result<Authorization<N>> {
         let timer = timer!("Process::authorize_fee_public");

@@ -169,7 +169,7 @@ impl<N: Network> Process<N> {
         // Determine the value of `is_root` and `parent`.
         let (is_root, parent) = match parent {
             // If there is a parent, then `is_root` is `0` and `parent` is the parent program ID.
-            Some(program_id) => (Field::<N>::zero(), *program_id),
+            Some(program_id) => (Field::zero(), *program_id),
             // If there is no parent, then `is_root` is `1` and `parent` is the root program ID.
             None => (Field::one(), *transition.program_id()),
         };

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
 #[cfg(test)]
 use snarkvm_circuit_types::environment::assert_scope;
 
@@ -22,8 +23,12 @@ mod size_in_bits;
 mod to_bits;
 mod to_field;
 
-use snarkvm_circuit_network::Aleo;
-use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, U8};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Boolean,
+    Field,
+    U8,
+};
 use snarkvm_utilities::ToBits as TB;
 
 /// An identifier is an **immutable** UTF-8 string,
@@ -36,11 +41,11 @@ use snarkvm_utilities::ToBits as TB;
 /// The identifier must not consist solely of underscores.
 /// The identifier must fit within the data capacity of a base field element.
 #[derive(Clone)]
-pub struct Identifier<A: Aleo>(Field<A>, u8); // Number of bytes in the identifier.
+pub struct Identifier(Field, u8); // Number of bytes in the identifier.
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Identifier<A> {
-    type Primitive = console::Identifier<A::Network>;
+impl Inject for Identifier {
+    type Primitive = console::Identifier;
 
     /// Initializes a new identifier from a string.
     /// Note: Identifiers are always `Mode::Constant`.
@@ -50,7 +55,7 @@ impl<A: Aleo> Inject for Identifier<A> {
 
         // Note: The string bytes themselves are **not** little-endian. Rather, they are order-preserving
         // for reconstructing the string when recovering the field element back into bytes.
-        let field = Field::from_bits_le(&Vec::<Boolean<_>>::constant(identifier.to_bits_le()));
+        let field = Field::from_bits_le(&Vec::<Boolean>::constant(identifier.to_bits_le()));
 
         // Return the identifier.
         Self(field, identifier.len() as u8)
@@ -58,8 +63,8 @@ impl<A: Aleo> Inject for Identifier<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Identifier<A> {
-    type Primitive = console::Identifier<A::Network>;
+impl Eject for Identifier {
+    type Primitive = console::Identifier;
 
     /// Ejects the mode of the identifier.
     fn eject_mode(&self) -> Mode {
@@ -71,13 +76,13 @@ impl<A: Aleo> Eject for Identifier<A> {
     fn eject_value(&self) -> Self::Primitive {
         match console::FromField::from_field(&self.0.eject_value()) {
             Ok(identifier) => identifier,
-            Err(error) => A::halt(format!("Failed to convert an identifier to a string: {error}")),
+            Err(error) => Circuit::halt(format!("Failed to convert an identifier to a string: {error}")),
         }
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Parser for Identifier<A> {
+impl Parser for Identifier {
     /// Parses a UTF-8 string into an identifier.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -89,7 +94,7 @@ impl<A: Aleo> Parser for Identifier<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> FromStr for Identifier<A> {
+impl FromStr for Identifier {
     type Err = Error;
 
     /// Parses a UTF-8 string into an identifier.
@@ -108,46 +113,46 @@ impl<A: Aleo> FromStr for Identifier<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Debug for Identifier<A> {
+impl Debug for Identifier {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Display for Identifier<A> {
+impl Display for Identifier {
     /// Prints the identifier as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", self.eject_value())
     }
 }
 
-impl<A: Aleo> Eq for Identifier<A> {}
+impl Eq for Identifier {}
 
-impl<A: Aleo> PartialEq for Identifier<A> {
+impl PartialEq for Identifier {
     /// Implements the `Eq` trait for the identifier.
     fn eq(&self, other: &Self) -> bool {
         self.0.eject_value() == other.0.eject_value()
     }
 }
 
-impl<A: Aleo> core::hash::Hash for Identifier<A> {
+impl core::hash::Hash for Identifier {
     /// Implements the `Hash` trait for the identifier.
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.0.eject_value().hash(state);
     }
 }
 
-impl<A: Aleo> From<Identifier<A>> for LinearCombination<A::BaseField> {
+impl From<Identifier> for LinearCombination<ConsoleField> {
     /// Note: Identifier is always `Mode::Constant`.
-    fn from(identifier: Identifier<A>) -> Self {
+    fn from(identifier: Identifier) -> Self {
         From::from(&identifier)
     }
 }
 
-impl<A: Aleo> From<&Identifier<A>> for LinearCombination<A::BaseField> {
+impl From<&Identifier> for LinearCombination<ConsoleField> {
     /// Note: Identifier is always `Mode::Constant`.
-    fn from(identifier: &Identifier<A>) -> Self {
+    fn from(identifier: &Identifier) -> Self {
         LinearCombination::from(&identifier.0)
     }
 }
@@ -155,34 +160,33 @@ impl<A: Aleo> From<&Identifier<A>> for LinearCombination<A::BaseField> {
 #[cfg(all(test, console))]
 pub(crate) mod tests {
     use super::*;
-    use crate::Circuit;
-    use console::{Rng, TestRng};
+    use console::{ConsoleField, Rng, TestRng};
 
     use anyhow::{bail, Result};
     use core::str::FromStr;
     use rand::distributions::Alphanumeric;
 
     /// Samples a random identifier.
-    pub(crate) fn sample_console_identifier<A: Aleo>() -> Result<console::Identifier<A::Network>> {
+    pub(crate) fn sample_console_identifier() -> Result<console::Identifier> {
         // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-        let string = sample_console_identifier_as_string::<A>()?;
+        let string = sample_console_identifier_as_string()?;
         // Return the identifier.
         console::Identifier::from_str(&string)
     }
 
     /// Samples a random identifier as a string.
-    pub(crate) fn sample_console_identifier_as_string<A: Aleo>() -> Result<String> {
+    pub(crate) fn sample_console_identifier_as_string() -> Result<String> {
         // Initialize a test RNG.
         let rng = &mut TestRng::default();
         // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
         let string = "a".to_string()
             + &rng
                 .sample_iter(&Alphanumeric)
-                .take(A::BaseField::size_in_data_bits() / (8 * 2))
+                .take(ConsoleField::size_in_data_bits() / (8 * 2))
                 .map(char::from)
                 .collect::<String>();
         // Ensure identifier fits within the data capacity of the base field.
-        let max_bytes = A::BaseField::size_in_data_bits() / 8; // Note: This intentionally rounds down.
+        let max_bytes = ConsoleField::size_in_data_bits() / 8; // Note: This intentionally rounds down.
         match string.len() <= max_bytes {
             // Return the identifier.
             true => Ok(string),
@@ -191,60 +195,59 @@ pub(crate) mod tests {
     }
 
     /// Samples a random identifier as a string.
-    pub(crate) fn sample_lowercase_console_identifier_as_string<A: Aleo>() -> Result<String> {
+    pub(crate) fn sample_lowercase_console_identifier_as_string() -> Result<String> {
         // Sample a random identifier.
-        let string = sample_console_identifier_as_string::<A>()?;
+        let string = sample_console_identifier_as_string()?;
         // Return the identifier as lowercase.
         Ok(string.to_lowercase())
     }
 
     #[test]
     fn test_identifier_parse() -> Result<()> {
-        let candidate = Identifier::<Circuit>::parse("foo_bar").unwrap();
+        let candidate = Identifier::parse("foo_bar").unwrap();
         assert_eq!("", candidate.0);
-        assert_eq!(Identifier::<Circuit>::constant("foo_bar".try_into()?).eject(), candidate.1.eject());
+        assert_eq!(Identifier::constant("foo_bar".try_into()?).eject(), candidate.1.eject());
         Ok(())
     }
 
     #[test]
     fn test_identifier_parse_fails() -> Result<()> {
         // Must be alphanumeric or underscore.
-        let identifier = Identifier::<Circuit>::parse("foo_bar~baz").unwrap();
-        assert_eq!(("~baz", Identifier::<Circuit>::from_str("foo_bar")?.eject()), (identifier.0, identifier.1.eject()));
-        let identifier = Identifier::<Circuit>::parse("foo_bar-baz").unwrap();
-        assert_eq!(("-baz", Identifier::<Circuit>::from_str("foo_bar")?.eject()), (identifier.0, identifier.1.eject()));
+        let identifier = Identifier::parse("foo_bar~baz").unwrap();
+        assert_eq!(("~baz", Identifier::from_str("foo_bar")?.eject()), (identifier.0, identifier.1.eject()));
+        let identifier = Identifier::parse("foo_bar-baz").unwrap();
+        assert_eq!(("-baz", Identifier::from_str("foo_bar")?.eject()), (identifier.0, identifier.1.eject()));
 
         // Must not be solely underscores.
-        assert!(Identifier::<Circuit>::parse("_").is_err());
-        assert!(Identifier::<Circuit>::parse("__").is_err());
-        assert!(Identifier::<Circuit>::parse("___").is_err());
-        assert!(Identifier::<Circuit>::parse("____").is_err());
+        assert!(Identifier::parse("_").is_err());
+        assert!(Identifier::parse("__").is_err());
+        assert!(Identifier::parse("___").is_err());
+        assert!(Identifier::parse("____").is_err());
 
         // Must not start with a number.
-        assert!(Identifier::<Circuit>::parse("1").is_err());
-        assert!(Identifier::<Circuit>::parse("2").is_err());
-        assert!(Identifier::<Circuit>::parse("3").is_err());
-        assert!(Identifier::<Circuit>::parse("1foo").is_err());
-        assert!(Identifier::<Circuit>::parse("12").is_err());
-        assert!(Identifier::<Circuit>::parse("111").is_err());
+        assert!(Identifier::parse("1").is_err());
+        assert!(Identifier::parse("2").is_err());
+        assert!(Identifier::parse("3").is_err());
+        assert!(Identifier::parse("1foo").is_err());
+        assert!(Identifier::parse("12").is_err());
+        assert!(Identifier::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let identifier =
-            Identifier::<Circuit>::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
+        let identifier = Identifier::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(identifier.is_err());
         Ok(())
     }
 
     #[test]
     fn test_identifier_display() -> Result<()> {
-        let identifier = Identifier::<Circuit>::from_str("foo_bar")?;
+        let identifier = Identifier::from_str("foo_bar")?;
         assert_eq!("foo_bar", format!("{identifier}"));
         Ok(())
     }
 
     #[test]
     fn test_identifier_bits() -> Result<()> {
-        let identifier = Identifier::<Circuit>::from_str("foo_bar")?;
+        let identifier = Identifier::from_str("foo_bar")?;
         assert_eq!(
             identifier.to_bits_le().eject(),
             Identifier::from_bits_le(&identifier.to_bits_le()).to_bits_le().eject()

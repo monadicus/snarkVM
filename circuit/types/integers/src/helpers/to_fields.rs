@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> ToFields for Integer<E, I> {
-    type Field = Field<E>;
+impl<I: IntegerType> ToFields for Integer<I> {
+    type Field = Field;
 
     /// Casts an integer into a list of base fields.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -34,7 +34,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random integer.
             let expected = Uniform::rand(rng);
-            let candidate = Integer::<Circuit, I>::new(mode, expected);
+            let candidate = Integer::<I>::new(mode, expected);
 
             Circuit::scope(format!("{mode} {expected} {i}"), || {
                 // Perform the operation.

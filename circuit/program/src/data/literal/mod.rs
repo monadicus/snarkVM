@@ -34,46 +34,46 @@ use console::LiteralType;
 
 /// The literal enum represents all supported circuit types in snarkVM.
 #[derive(Clone)]
-pub enum Literal<A: Aleo> {
+pub enum Literal {
     /// The Aleo address type.
-    Address(Address<A>),
+    Address(Address),
     /// The boolean type.
-    Boolean(Boolean<A>),
+    Boolean(Boolean),
     /// The field type (base field).
-    Field(Field<A>),
+    Field(Field),
     /// The group type (affine).
-    Group(Group<A>),
+    Group(Group),
     /// The 8-bit signed integer type.
-    I8(I8<A>),
+    I8(I8),
     /// The 16-bit signed integer type.
-    I16(I16<A>),
+    I16(I16),
     /// The 32-bit signed integer type.
-    I32(I32<A>),
+    I32(I32),
     /// The 64-bit signed integer type.
-    I64(I64<A>),
+    I64(I64),
     /// The 128-bit signed integer type.
-    I128(I128<A>),
+    I128(I128),
     /// The 8-bit unsigned integer type.
-    U8(U8<A>),
+    U8(U8),
     /// The 16-bit unsigned integer type.
-    U16(U16<A>),
+    U16(U16),
     /// The 32-bit unsigned integer type.
-    U32(U32<A>),
+    U32(U32),
     /// The 64-bit unsigned integer type.
-    U64(U64<A>),
+    U64(U64),
     /// The 128-bit unsigned integer type.
-    U128(U128<A>),
+    U128(U128),
     /// The scalar type (scalar field).
-    Scalar(Scalar<A>),
+    Scalar(Scalar),
     /// The signature type.
-    Signature(Box<Signature<A>>),
+    Signature(Box<Signature>),
     /// The string type.
-    String(StringType<A>),
+    String(StringType),
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Literal<A> {
-    type Primitive = console::Literal<A::Network>;
+impl Inject for Literal {
+    type Primitive = console::Literal;
 
     /// Initializes a new literal from a primitive.
     fn new(mode: Mode, value: Self::Primitive) -> Self {
@@ -100,8 +100,8 @@ impl<A: Aleo> Inject for Literal<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Literal<A> {
-    type Primitive = console::Literal<A::Network>;
+impl Eject for Literal {
+    type Primitive = console::Literal;
 
     /// Ejects the mode of the literal.
     fn eject_mode(&self) -> Mode {
@@ -151,7 +151,7 @@ impl<A: Aleo> Eject for Literal<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Parser for Literal<A> {
+impl Parser for Literal {
     /// Parses a string into a literal.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -178,7 +178,7 @@ impl<A: Aleo> Parser for Literal<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> FromStr for Literal<A> {
+impl FromStr for Literal {
     type Err = Error;
 
     /// Parses a string into a literal circuit.
@@ -197,40 +197,40 @@ impl<A: Aleo> FromStr for Literal<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Literal<A> {
+impl Literal {
     /// Returns the type name of the literal.
     pub fn type_name(&self) -> &str {
         match self {
-            Self::Address(..) => Address::<A>::type_name(),
-            Self::Boolean(..) => Boolean::<A>::type_name(),
-            Self::Field(..) => Field::<A>::type_name(),
-            Self::Group(..) => Group::<A>::type_name(),
-            Self::I8(..) => I8::<A>::type_name(),
-            Self::I16(..) => I16::<A>::type_name(),
-            Self::I32(..) => I32::<A>::type_name(),
-            Self::I64(..) => I64::<A>::type_name(),
-            Self::I128(..) => I128::<A>::type_name(),
-            Self::U8(..) => U8::<A>::type_name(),
-            Self::U16(..) => U16::<A>::type_name(),
-            Self::U32(..) => U32::<A>::type_name(),
-            Self::U64(..) => U64::<A>::type_name(),
-            Self::U128(..) => U128::<A>::type_name(),
-            Self::Scalar(..) => Scalar::<A>::type_name(),
-            Self::Signature(..) => Signature::<A>::type_name(),
-            Self::String(..) => StringType::<A>::type_name(),
+            Self::Address(..) => Address::type_name(),
+            Self::Boolean(..) => Boolean::type_name(),
+            Self::Field(..) => Field::type_name(),
+            Self::Group(..) => Group::type_name(),
+            Self::I8(..) => I8::type_name(),
+            Self::I16(..) => I16::type_name(),
+            Self::I32(..) => I32::type_name(),
+            Self::I64(..) => I64::type_name(),
+            Self::I128(..) => I128::type_name(),
+            Self::U8(..) => U8::type_name(),
+            Self::U16(..) => U16::type_name(),
+            Self::U32(..) => U32::type_name(),
+            Self::U64(..) => U64::type_name(),
+            Self::U128(..) => U128::type_name(),
+            Self::Scalar(..) => Scalar::type_name(),
+            Self::Signature(..) => Signature::type_name(),
+            Self::String(..) => StringType::type_name(),
         }
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Debug for Literal<A> {
+impl Debug for Literal {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Display for Literal<A> {
+impl Display for Literal {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             Self::Address(literal) => Display::fmt(literal, f),

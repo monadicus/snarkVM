@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Add<Self> for Group<E> {
+impl Add<Self> for Group {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -22,7 +22,7 @@ impl<E: Environment> Add<Self> for Group<E> {
     }
 }
 
-impl<E: Environment> Add<&Self> for Group<E> {
+impl Add<&Self> for Group {
     type Output = Self;
 
     fn add(self, other: &Self) -> Self::Output {
@@ -42,8 +42,8 @@ impl<E: Environment> Add<&Self> for Group<E> {
                 false => (other, &self),
             };
 
-            let a = Field::constant(console::Field::new(E::EDWARDS_A));
-            let d = Field::constant(console::Field::new(E::EDWARDS_D));
+            let a = Field::constant(console::Field::new(CONSOLE_EDWARDS_A));
+            let d = Field::constant(console::Field::new(CONSOLE_EDWARDS_D));
 
             // Compute U = (-A * x1 + y1) * (x2 + y2)
             let u1 = (&this.x * &-&a) + &this.y;
@@ -73,41 +73,41 @@ impl<E: Environment> Add<&Self> for Group<E> {
             // x3 * (v2 + 1) = v0 + v1
             let v2_plus_one = &v2 + &Field::one();
             let v0_plus_v1 = &v0 + &v1;
-            E::enforce(|| (&x3, v2_plus_one, v0_plus_v1));
+            Circuit::enforce(|| (&x3, v2_plus_one, v0_plus_v1));
 
             // Ensure y3 is well-formed.
             // y3 * (1 - v2) = u + (a * v0) - v1
             let one_minus_v2 = Field::one() - v2;
             let a_v0 = v0 * a;
             let u_plus_a_v0_minus_v1 = u + a_v0 - v1;
-            E::enforce(|| (&y3, one_minus_v2, u_plus_a_v0_minus_v1));
+            Circuit::enforce(|| (&y3, one_minus_v2, u_plus_a_v0_minus_v1));
 
             Self { x: x3, y: y3 }
         }
     }
 }
 
-impl<E: Environment> Add<&Group<E>> for &Group<E> {
-    type Output = Group<E>;
+impl Add<&Group> for &Group {
+    type Output = Group;
 
-    fn add(self, other: &Group<E>) -> Self::Output {
+    fn add(self, other: &Group) -> Self::Output {
         (*self).clone() + other
     }
 }
 
-impl<E: Environment> AddAssign<Self> for Group<E> {
+impl AddAssign<Self> for Group {
     fn add_assign(&mut self, other: Self) {
         *self += &other;
     }
 }
 
-impl<E: Environment> AddAssign<&Self> for Group<E> {
+impl AddAssign<&Self> for Group {
     fn add_assign(&mut self, other: &Self) {
         *self = self.clone() + other;
     }
 }
 
-impl<E: Environment> Metrics<dyn Add<Group<E>, Output = Group<E>>> for Group<E> {
+impl Metrics<dyn Add<Group, Output = Group>> for Group {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -119,7 +119,7 @@ impl<E: Environment> Metrics<dyn Add<Group<E>, Output = Group<E>>> for Group<E> 
     }
 }
 
-impl<E: Environment> OutputMode<dyn Add<Group<E>, Output = Group<E>>> for Group<E> {
+impl OutputMode<dyn Add<Group, Output = Group>> for Group {
     type Case = (Mode, Mode);
 
     // TODO: This implementation is incorrect. In the case where one operand is a constant and is equal to zero, then the output mode
@@ -139,12 +139,7 @@ mod tests {
 
     const ITERATIONS: u64 = 100;
 
-    fn check_add(
-        name: &str,
-        expected: &console::Group<<Circuit as Environment>::Network>,
-        a: &Group<Circuit>,
-        b: &Group<Circuit>,
-    ) {
+    fn check_add(name: &str, expected: &console::Group, a: &Group, b: &Group) {
         Circuit::scope(name, || {
             let candidate = a + b;
             assert_eq!(*expected, candidate.eject_value(), "({} + {})", a.eject_value(), b.eject_value());
@@ -153,12 +148,7 @@ mod tests {
         });
     }
 
-    fn check_add_assign(
-        name: &str,
-        expected: &console::Group<<Circuit as Environment>::Network>,
-        a: &Group<Circuit>,
-        b: &Group<Circuit>,
-    ) {
+    fn check_add_assign(name: &str, expected: &console::Group, a: &Group, b: &Group) {
         Circuit::scope(name, || {
             let mut candidate = a.clone();
             candidate += b;
@@ -175,8 +165,8 @@ mod tests {
             let first = Uniform::rand(&mut rng);
             let second = Uniform::rand(&mut rng);
 
-            let a = Group::<Circuit>::new(mode_a, first);
-            let b = Group::<Circuit>::new(mode_b, second);
+            let a = Group::new(mode_a, first);
+            let b = Group::new(mode_b, second);
 
             let expected = first + second;
 
@@ -242,14 +232,14 @@ mod tests {
         let expected = a + b;
 
         // Constant
-        let first = Group::<Circuit>::new(Mode::Constant, a);
-        let second = Group::<Circuit>::new(Mode::Constant, b);
+        let first = Group::new(Mode::Constant, a);
+        let second = Group::new(Mode::Constant, b);
         let candidate_a = first + second;
         assert_eq!(expected, candidate_a.eject_value());
 
         // Private
-        let first = Group::<Circuit>::new(Mode::Private, a);
-        let second = Group::<Circuit>::new(Mode::Private, b);
+        let first = Group::new(Mode::Private, a);
+        let second = Group::new(Mode::Private, b);
         let candidate_b = first + second;
         assert_eq!(expected, candidate_b.eject_value());
     }

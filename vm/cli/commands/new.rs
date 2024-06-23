@@ -29,7 +29,7 @@ impl New {
         path.push(&self.name);
 
         // Create the program ID from the name.
-        let id = ProgramID::<CurrentNetwork>::from_str(&format!("{}.aleo", self.name))?;
+        let id = ProgramID::from_str(&format!("{}.aleo", self.name))?;
 
         // Create the package.
         Package::create(&path, &id)?;

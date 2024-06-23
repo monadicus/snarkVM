@@ -105,18 +105,16 @@ impl ToBytes for ArrayType {
 mod tests {
     use super::*;
 
-    type CurrentNetwork = snarkvm_console_network::MainnetV0;
-
     #[test]
     fn test_array_maximum_depth() {
         // Construct the array type.
         let array_type = {
             let mut string = "[u8; 1u32]".to_string();
-            for i in 1..CurrentNetwork::MAX_DATA_DEPTH {
+            for i in 1..AleoNetwork::MAX_DATA_DEPTH {
                 string = format!("[{}; {}u32]", string, i + 1);
             }
-            let array_type = ArrayType::<CurrentNetwork>::from_str(&string).unwrap();
-            assert_eq!(array_type.length(), &U32::new(u32::try_from(CurrentNetwork::MAX_DATA_DEPTH).unwrap()));
+            let array_type = ArrayType::from_str(&string).unwrap();
+            assert_eq!(array_type.length(), &U32::new(u32::try_from(AleoNetwork::MAX_DATA_DEPTH).unwrap()));
             assert_eq!(array_type.base_element_type(), &PlaintextType::Literal(LiteralType::U8));
             array_type
         };
@@ -124,8 +122,8 @@ mod tests {
         // Serialize and deserialize the array type.
         let mut bytes = Vec::new();
         array_type.write_le(&mut bytes).unwrap();
-        let array_type = ArrayType::<CurrentNetwork>::read_le(&bytes[..]).unwrap();
-        assert_eq!(array_type.length(), &U32::new(u32::try_from(CurrentNetwork::MAX_DATA_DEPTH).unwrap()));
+        let array_type = ArrayType::read_le(&bytes[..]).unwrap();
+        assert_eq!(array_type.length(), &U32::new(u32::try_from(AleoNetwork::MAX_DATA_DEPTH).unwrap()));
         assert_eq!(array_type.base_element_type(), &PlaintextType::Literal(LiteralType::U8))
     }
 }

@@ -67,7 +67,7 @@ fn write_metadata(filename: &str, metadata: &Value) -> Result<()> {
 
 /// Returns the assignment for verifying the state path.
 #[allow(clippy::type_complexity)]
-pub fn sample_assignment<N: Network, A: Aleo<Network = N>>() -> Result<(Assignment<N::Field>, StatePath<N>, Field<N>)> {
+pub fn sample_assignment<N: Network, A: Aleo<Network = N>>() -> Result<(Assignment<N::Field>, StatePath<N>, Field)> {
     // Initialize the consensus store.
     let store = ConsensusStore::<N, ConsensusMemory<N>>::open(None)?;
     // Initialize a new VM.
@@ -119,7 +119,7 @@ pub fn inclusion<N: Network, A: Aleo<Network = N>>() -> Result<()> {
     let proof = proving_key.prove(inclusion_function_name, &assignment, &mut thread_rng())?;
     assert!(verifying_key.verify(
         inclusion_function_name,
-        &[N::Field::one(), **state_path.global_state_root(), *Field::<N>::zero(), *serial_number],
+        &[N::Field::one(), **state_path.global_state_root(), *Field::zero(), *serial_number],
         &proof
     ));
 

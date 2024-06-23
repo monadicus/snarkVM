@@ -40,7 +40,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     /// Verifies the list of transactions in the VM. On failure, returns an error.
     pub fn check_transactions<R: CryptoRng + Rng>(
         &self,
-        transactions: &[(&Transaction<N>, Option<Field<N>>)],
+        transactions: &[(&Transaction<N>, Option<Field>)],
         rng: &mut R,
     ) -> Result<()> {
         // Separate the transactions into deploys and executions.
@@ -69,7 +69,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     pub fn check_transaction<R: CryptoRng + Rng>(
         &self,
         transaction: &Transaction<N>,
-        rejected_id: Option<Field<N>>,
+        rejected_id: Option<Field>,
         rng: &mut R,
     ) -> Result<()> {
         let timer = timer!("VM::check_transaction");
@@ -197,7 +197,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
 
     /// Verifies the `fee` in the given transaction. On failure, returns an error.
     #[inline]
-    pub fn check_fee(&self, transaction: &Transaction<N>, rejected_id: Option<Field<N>>) -> Result<()> {
+    pub fn check_fee(&self, transaction: &Transaction<N>, rejected_id: Option<Field>) -> Result<()> {
         match transaction {
             Transaction::Deploy(id, _, deployment, fee) => {
                 // Ensure the rejected ID is not present.
@@ -327,7 +327,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     /// Note: This is an internal check only. To ensure all components of the fee are checked,
     /// use `VM::check_fee` instead.
     #[inline]
-    fn check_fee_internal(&self, fee: &Fee<N>, deployment_or_execution_id: Field<N>) -> Result<()> {
+    fn check_fee_internal(&self, fee: &Fee<N>, deployment_or_execution_id: Field) -> Result<()> {
         let timer = timer!("VM::check_fee");
 
         // Ensure the fee does not exceed the limit.
@@ -594,11 +594,7 @@ mod tests {
         let records = deployment_block.records().collect::<indexmap::IndexMap<_, _>>();
 
         // Prepare the inputs.
-        let inputs = [
-            Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str("10u64").unwrap(),
-        ]
-        .into_iter();
+        let inputs = [Value::from_str(&address.to_string()).unwrap(), Value::from_str("10u64").unwrap()].into_iter();
 
         // Prepare the fee.
         let credits = Some(records.values().next().unwrap().decrypt(&caller_view_key).unwrap());

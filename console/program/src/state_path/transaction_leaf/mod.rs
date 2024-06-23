@@ -71,11 +71,8 @@ impl TransactionLeaf {
 #[cfg(test)]
 mod test_helpers {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
 
-    type CurrentNetwork = MainnetV0;
-
-    pub(super) fn sample_leaf(rng: &mut TestRng) -> TransactionLeaf<CurrentNetwork> {
+    pub(super) fn sample_leaf(rng: &mut TestRng) -> TransactionLeaf {
         // Construct a new leaf.
         TransactionLeaf::from(rng.gen(), rng.gen(), Uniform::rand(rng))
     }

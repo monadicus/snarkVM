@@ -16,7 +16,7 @@ use super::*;
 
 impl<N: Network> Committee<N> {
     /// Returns the committee ID.
-    pub fn to_id(&self) -> Result<Field<N>> {
+    pub fn to_id(&self) -> Result<Field> {
         Self::compute_committee_id(self.starting_round, &self.members, self.total_stake)
     }
 }
@@ -25,9 +25,9 @@ impl<N: Network> Committee<N> {
     /// Returns the commmitee ID.
     pub fn compute_committee_id(
         starting_round: u64,
-        members: &IndexMap<Address<N>, (u64, bool, u8)>,
+        members: &IndexMap<Address, (u64, bool, u8)>,
         total_stake: u64,
-    ) -> Result<Field<N>> {
+    ) -> Result<Field> {
         let mut preimage = Vec::new();
         // Insert the starting_round.
         starting_round.write_le(&mut preimage)?;

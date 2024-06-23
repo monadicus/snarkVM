@@ -14,9 +14,6 @@
 
 use super::*;
 use snarkvm_console_algorithms::{Keccak256, Poseidon, Sha3_256, BHP1024, BHP512};
-use snarkvm_console_types::prelude::Console;
-
-type CurrentEnvironment = Console;
 
 const ITERATIONS: u128 = 10;
 
@@ -262,8 +259,8 @@ fn check_merkle_tree_depth_3_arity_3_padded<LH: LeafHash<Hash = PH::Hash>, PH: P
 #[test]
 fn test_kary_merkle_tree_bhp() -> Result<()> {
     fn run_test<const DEPTH: u8, const ARITY: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = BHP1024<CurrentEnvironment>;
-        type PH = BHP512<CurrentEnvironment>;
+        type LH = BHP1024;
+        type PH = BHP512;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -279,9 +276,7 @@ fn test_kary_merkle_tree_bhp() -> Result<()> {
             check_kary_merkle_tree::<LH, PH, DEPTH, ARITY>(
                 &leaf_hasher,
                 &path_hasher,
-                &(0..num_leaves)
-                    .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                    .collect::<Vec<Vec<bool>>>(),
+                &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
             )?;
         }
         Ok(())
@@ -308,8 +303,8 @@ fn test_kary_merkle_tree_bhp() -> Result<()> {
 #[test]
 fn test_kary_merkle_tree_poseidon() -> Result<()> {
     fn run_test<const DEPTH: u8, const ARITY: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = Poseidon<CurrentEnvironment, 4>;
-        type PH = Poseidon<CurrentEnvironment, 2>;
+        type LH = Poseidon<4>;
+        type PH = Poseidon<2>;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -369,9 +364,7 @@ fn test_kary_merkle_tree_keccak() -> Result<()> {
             check_kary_merkle_tree::<LH, PH, DEPTH, ARITY>(
                 &leaf_hasher,
                 &path_hasher,
-                &(0..num_leaves)
-                    .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                    .collect::<Vec<Vec<bool>>>(),
+                &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
             )?;
         }
         Ok(())
@@ -415,9 +408,7 @@ fn test_kary_merkle_tree_sha3() -> Result<()> {
             check_kary_merkle_tree::<LH, PH, DEPTH, ARITY>(
                 &leaf_hasher,
                 &path_hasher,
-                &(0..num_leaves)
-                    .map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le())
-                    .collect::<Vec<Vec<bool>>>(),
+                &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
             )?;
         }
         Ok(())
@@ -443,8 +434,8 @@ fn test_kary_merkle_tree_sha3() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_2_arity_3_bhp() -> Result<()> {
-    type LH = BHP1024<CurrentEnvironment>;
-    type PH = BHP512<CurrentEnvironment>;
+    type LH = BHP1024;
+    type PH = BHP512;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -455,14 +446,14 @@ fn test_merkle_tree_depth_2_arity_3_bhp() -> Result<()> {
     check_merkle_tree_depth_2_arity_3::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
-        &(0..9).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..9).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
     )
 }
 
 #[test]
 fn test_merkle_tree_depth_2_arity_3_poseidon() -> Result<()> {
-    type LH = Poseidon<CurrentEnvironment, 4>;
-    type PH = Poseidon<CurrentEnvironment, 3>;
+    type LH = Poseidon<4>;
+    type PH = Poseidon<3>;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -491,7 +482,7 @@ fn test_merkle_tree_depth_2_arity_3_keccak() -> Result<()> {
     check_merkle_tree_depth_2_arity_3::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
-        &(0..9).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..9).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
     )
 }
 
@@ -509,14 +500,14 @@ fn test_merkle_tree_depth_2_arity_3_sha3() -> Result<()> {
     check_merkle_tree_depth_2_arity_3::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
-        &(0..9).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..9).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
     )
 }
 
 #[test]
 fn test_merkle_tree_depth_3_arity_3_padded_bhp() -> Result<()> {
-    type LH = BHP1024<CurrentEnvironment>;
-    type PH = BHP512<CurrentEnvironment>;
+    type LH = BHP1024;
+    type PH = BHP512;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -527,15 +518,15 @@ fn test_merkle_tree_depth_3_arity_3_padded_bhp() -> Result<()> {
     check_merkle_tree_depth_3_arity_3_padded::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
-        &(0..9).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
-        &(0..1).map(|_| Field::<CurrentEnvironment>::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..9).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+        &(0..1).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
     )
 }
 
 #[test]
 fn test_merkle_tree_depth_3_arity_3_poseidon() -> Result<()> {
-    type LH = Poseidon<CurrentEnvironment, 4>;
-    type PH = Poseidon<CurrentEnvironment, 3>;
+    type LH = Poseidon<4>;
+    type PH = Poseidon<3>;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -592,15 +583,15 @@ fn test_merkle_tree_depth_3_arity_3_sha3() -> Result<()> {
 #[test]
 fn test_kary_merkle_tree_size_is_within_bounds() -> Result<()> {
     fn run_test<const DEPTH: u8, const ARITY: u8>(num_leaves: u128, rng: &mut TestRng) -> Result<()> {
-        type LH = BHP1024<CurrentEnvironment>;
-        type PH = BHP512<CurrentEnvironment>;
+        type LH = BHP1024;
+        type PH = BHP512;
 
         println!("Testing a depth {DEPTH} arity {ARITY} tree with {num_leaves} leaves");
         // Check the Merkle tree.
         check_kary_merkle_tree::<LH, PH, DEPTH, ARITY>(
             &LH::setup("AleoMerkleTreeTest0")?,
             &PH::setup("AleoMerkleTreeTest1")?,
-            &(0..num_leaves).map(|_| Field::<CurrentEnvironment>::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
+            &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
         )
     }
 

@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::{ConsoleField, ConsoleScalar};
+
 use super::*;
 
-impl<E: Environment> FromField for Scalar<E> {
-    type Field = Field<E>;
+impl FromField for Scalar {
+    type Field = Field;
 
     /// Casts a scalar from a base field element.
     ///
@@ -28,7 +30,7 @@ impl<E: Environment> FromField for Scalar<E> {
         // Note: We are reconstituting the integer from the base field.
         // This is safe as the number of bits in the integer is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(E::ScalarField::size_in_bits() < E::BaseField::size_in_bits());
+        debug_assert!(ConsoleScalar::size_in_bits() < ConsoleField::size_in_bits());
 
         // Do not truncate the field bits, which provides the following features:
         //   1. If the field element is larger than the scalar field modulus, then the operation will fail.
@@ -50,11 +52,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random scalar.
             let expected = Uniform::rand(rng);
-            let candidate = Scalar::<Circuit>::new(mode, expected).to_field();
+            let candidate = Scalar::new(mode, expected).to_field();
 
             Circuit::scope(format!("{mode} {expected} {i}"), || {
                 // Perform the operation.
-                let candidate = Scalar::<Circuit>::from_field(candidate);
+                let candidate = Scalar::from_field(candidate);
                 assert_eq!(expected, candidate.eject_value());
                 match mode {
                     Mode::Constant => assert_scope!(253, 0, 0, 0),
@@ -64,11 +66,9 @@ mod tests {
             Circuit::reset();
 
             // Sample a random field.
-            let expected = Field::<Circuit>::new(mode, Uniform::rand(rng));
+            let expected = Field::new(mode, Uniform::rand(rng));
             // Filter for field elements that exceed the scalar field modulus.
-            if expected.eject_value()
-                > console::ToField::to_field(&-console::Scalar::<<Circuit as Environment>::Network>::one()).unwrap()
-            {
+            if expected.eject_value() > console::ToField::to_field(&-console::Scalar::one()).unwrap() {
                 // Perform the operation.
                 let result = std::panic::catch_unwind(|| {
                     Scalar::from_field(expected); // This should fail.

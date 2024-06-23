@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for SolutionID<N> {
+impl Serialize for SolutionID {
     /// Serializes the solution ID to a string or buffer.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for SolutionID<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for SolutionID<N> {
+impl<'de> Deserialize<'de> for SolutionID {
     /// Deserializes the solution ID from a string or buffer.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -46,7 +46,7 @@ mod tests {
         let mut rng = TestRng::default();
 
         // Sample a new solution ID.
-        let expected = SolutionID::<CurrentNetwork>::from(rng.gen::<u64>());
+        let expected = SolutionID::from(rng.gen::<u64>());
 
         // Serialize
         let expected_string = &expected.to_string();
@@ -65,7 +65,7 @@ mod tests {
         let mut rng = TestRng::default();
 
         // Sample a new solution ID.
-        let expected = SolutionID::<CurrentNetwork>::from(rng.gen::<u64>());
+        let expected = SolutionID::from(rng.gen::<u64>());
 
         // Serialize
         let expected_bytes = expected.to_bytes_le()?;

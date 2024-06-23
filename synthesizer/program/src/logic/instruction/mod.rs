@@ -64,7 +64,7 @@ use console::{
 };
 
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub enum Instruction<N: Network> {
+pub enum Instruction {
     /// Compute the absolute value of `first`, checking for overflow, and storing the outcome in `destination`.
     Abs(Abs<N>),
     /// Compute the absolute value of `first`, wrapping around at the boundary of the type, and storing the outcome in `destination`.
@@ -352,7 +352,7 @@ macro_rules! instruction {
 /// ```
 macro_rules! derive_from_operation {
     ($_object:expr, |$_reader:ident| $_operation:block, { $( $variant:ident, )+ }) => {
-        $(impl<N: Network> From<$variant<N>> for Instruction<N> {
+        $(impl From<$variant<N>> for Instruction<N> {
             #[inline]
             fn from(operation: $variant<N>) -> Self {
                 Self::$variant(operation)
@@ -372,7 +372,7 @@ macro_rules! opcodes {
     ($_object:expr, |$_reader:ident| $_operation:block, { $( $variant:ident, )+ }) => { [$( $variant::<N>::opcode() ),+] }
 }
 
-impl<N: Network> InstructionTrait<N> for Instruction<N> {
+impl InstructionTrait for Instruction<N> {
     /// Returns the destination registers of the instruction.
     #[inline]
     fn destinations(&self) -> Vec<Register<N>> {
@@ -387,7 +387,7 @@ impl<N: Network> InstructionTrait<N> for Instruction<N> {
     }
 }
 
-impl<N: Network> Instruction<N> {
+impl Instruction<N> {
     /// The list of all instruction opcodes.
     pub const OPCODES: &'static [Opcode] = &instruction!(opcodes, Instruction, |None| {});
 
@@ -444,14 +444,14 @@ impl<N: Network> Instruction<N> {
     }
 }
 
-impl<N: Network> Debug for Instruction<N> {
+impl Debug for Instruction<N> {
     /// Prints the instruction as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Instruction<N> {
+impl Display for Instruction<N> {
     /// Prints the instruction as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         instruction!(self, |instruction| write!(f, "{instruction};"))

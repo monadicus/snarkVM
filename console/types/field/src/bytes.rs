@@ -33,9 +33,6 @@ impl ToBytes for Field {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -45,12 +42,12 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new field.
-            let expected = Field::<CurrentEnvironment>::new(Uniform::rand(&mut rng));
+            let expected = Field::new(Uniform::rand(&mut rng));
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, Field::read_le(&expected_bytes[..])?);
-            assert!(Field::<CurrentEnvironment>::read_le(&expected_bytes[1..]).is_err());
+            assert!(Field::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

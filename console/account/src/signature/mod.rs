@@ -114,14 +114,11 @@ impl Signature {
 #[cfg(test)]
 mod test_helpers {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     /// Samples a random signature.
-    pub(super) fn sample_signature(num_fields: u64, rng: &mut TestRng) -> Signature<CurrentNetwork> {
+    pub(super) fn sample_signature(num_fields: u64, rng: &mut TestRng) -> Signature {
         // Sample an address and a private key.
-        let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let private_key = PrivateKey::new(rng).unwrap();
         let address = Address::try_from(&private_key).unwrap();
 
         // Generate a signature.

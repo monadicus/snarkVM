@@ -94,10 +94,7 @@ fn get_mapping_value<N: Network, F: FinalizeStorage<N>>(
 }
 
 /// Get the current `account` mapping balance.
-fn account_balance<N: Network, F: FinalizeStorage<N>>(
-    store: &FinalizeStore<N, F>,
-    address: &Address<N>,
-) -> Result<u64> {
+fn account_balance<N: Network, F: FinalizeStorage<N>>(store: &FinalizeStore<N, F>, address: &Address) -> Result<u64> {
     // Retrieve the balance from the finalize store.
     match get_mapping_value(store, "credits.aleo", "account", Literal::Address(*address))? {
         Some(Value::Plaintext(Plaintext::Literal(Literal::U64(balance), _))) => Ok(*balance),
@@ -109,7 +106,7 @@ fn account_balance<N: Network, F: FinalizeStorage<N>>(
 /// Returns the `committee_state` as a tuple of `(microcredits, is_open, commission)`.
 fn committee_state<N: Network, F: FinalizeStorage<N>>(
     store: &FinalizeStore<N, F>,
-    address: &Address<N>,
+    address: &Address,
 ) -> Result<Option<(u64, bool, u8)>> {
     // Retrieve the committee state from the finalize store.
     let committee_state = match get_mapping_value(store, "credits.aleo", "committee", Literal::Address(*address))? {
@@ -144,7 +141,7 @@ fn committee_state<N: Network, F: FinalizeStorage<N>>(
 /// Returns the `delegated_state` as the number of microcredits delegated to the validator.
 fn delegated_state<N: Network, F: FinalizeStorage<N>>(
     store: &FinalizeStore<N, F>,
-    address: &Address<N>,
+    address: &Address,
 ) -> Result<Option<u64>> {
     // Retrieve the delegated state from the finalize store.
     let state = match get_mapping_value(store, "credits.aleo", "delegated", Literal::Address(*address))? {
@@ -160,8 +157,8 @@ fn delegated_state<N: Network, F: FinalizeStorage<N>>(
 /// Returns the `bond_state` as a tuple of `(validator address, microcredits)`.
 fn bond_state<N: Network, F: FinalizeStorage<N>>(
     store: &FinalizeStore<N, F>,
-    address: &Address<N>,
-) -> Result<Option<(Address<N>, u64)>> {
+    address: &Address,
+) -> Result<Option<(Address, u64)>> {
     // Retrieve the bond state from the finalize store.
     let state = match get_mapping_value(store, "credits.aleo", "bonded", Literal::Address(*address))? {
         Some(Value::Plaintext(Plaintext::Struct(state, _))) => state,
@@ -188,7 +185,7 @@ fn bond_state<N: Network, F: FinalizeStorage<N>>(
 /// Returns the `unbond_state` as a tuple of `(microcredits, unbond_height)`.
 fn unbond_state<N: Network, F: FinalizeStorage<N>>(
     store: &FinalizeStore<N, F>,
-    address: &Address<N>,
+    address: &Address,
 ) -> Result<Option<(u64, u32)>> {
     // Retrieve the unbond state from the finalize store.
     let state = match get_mapping_value(store, "credits.aleo", "unbonding", Literal::Address(*address))? {
@@ -215,8 +212,8 @@ fn unbond_state<N: Network, F: FinalizeStorage<N>>(
 /// Get the current withdrawal address from the `withdraw` mapping for the given staker address.
 fn withdraw_state<N: Network, F: FinalizeStorage<N>>(
     store: &FinalizeStore<N, F>,
-    address: &Address<N>,
-) -> Result<Option<Address<N>>> {
+    address: &Address,
+) -> Result<Option<Address>> {
     // Retrieve the withdraw state from the finalize store.
     let withdrawal_address = match get_mapping_value(store, "credits.aleo", "withdraw", Literal::Address(*address))? {
         Some(Value::Plaintext(Plaintext::Literal(Literal::Address(withdrawal_address), _))) => withdrawal_address,
@@ -230,7 +227,7 @@ fn withdraw_state<N: Network, F: FinalizeStorage<N>>(
 /// Initialize an account with a given balance
 fn initialize_account<N: Network, F: FinalizeStorage<N>>(
     finalize_store: &FinalizeStore<N, F>,
-    address: &Address<N>,
+    address: &Address,
     balance: u64,
 ) -> Result<()> {
     // Initialize the store for 'credits.aleo'.
@@ -264,10 +261,7 @@ fn initialize_stakers<N: Network, F: FinalizeStorage<N>>(
     num_validators: u32,
     num_delegators: u32,
     rng: &mut TestRng,
-) -> Result<(
-    IndexMap<PrivateKey<N>, (Address<N>, u64, PrivateKey<N>, Address<N>)>,
-    IndexMap<PrivateKey<N>, (Address<N>, u64)>,
-)> {
+) -> Result<(IndexMap<PrivateKey, (Address, u64, PrivateKey, Address)>, IndexMap<PrivateKey, (Address, u64)>)> {
     // Initialize the store for 'credits.aleo'.
     let program = Program::<N>::credits()?;
     for mapping in program.mappings().values() {
@@ -351,7 +345,7 @@ fn bond_validator<F: FinalizeStorage<CurrentNetwork>>(
     process: &Process<CurrentNetwork>,
     finalize_store: &FinalizeStore<CurrentNetwork, F>,
     caller_private_key: &PrivateKey<CurrentNetwork>,
-    withdrawal_address: &Address<CurrentNetwork>,
+    withdrawal_address: &Address,
     amount: u64,
     commission: u8,
     rng: &mut TestRng,
@@ -372,8 +366,8 @@ fn bond_public<F: FinalizeStorage<CurrentNetwork>>(
     process: &Process<CurrentNetwork>,
     finalize_store: &FinalizeStore<CurrentNetwork, F>,
     caller_private_key: &PrivateKey<CurrentNetwork>,
-    validator_address: &Address<CurrentNetwork>,
-    withdrawal_address: &Address<CurrentNetwork>,
+    validator_address: &Address,
+    withdrawal_address: &Address,
     amount: u64,
     rng: &mut TestRng,
 ) -> Result<()> {
@@ -393,7 +387,7 @@ fn unbond_public<F: FinalizeStorage<CurrentNetwork>>(
     process: &Process<CurrentNetwork>,
     finalize_store: &FinalizeStore<CurrentNetwork, F>,
     caller_private_key: &PrivateKey<CurrentNetwork>,
-    address: &Address<CurrentNetwork>,
+    address: &Address,
     amount: u64,
     block_height: u32,
     rng: &mut TestRng,
@@ -433,7 +427,7 @@ fn claim_unbond_public<F: FinalizeStorage<CurrentNetwork>>(
     process: &Process<CurrentNetwork>,
     finalize_store: &FinalizeStore<CurrentNetwork, F>,
     caller_private_key: &PrivateKey<CurrentNetwork>,
-    address: &Address<CurrentNetwork>,
+    address: &Address,
     block_height: u32,
     rng: &mut TestRng,
 ) -> Result<()> {
@@ -2833,7 +2827,7 @@ mod sanity_checks {
 
     fn get_assignment<N: Network, A: circuit::Aleo<Network = N>>(
         stack: &Stack<N>,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         function_name: Identifier<N>,
         inputs: &[Value<N>],
         rng: &mut TestRng,
@@ -2882,7 +2876,7 @@ mod sanity_checks {
         // Declare the inputs.
         let r0 = Value::from_str(&format!(
             "{{ owner: {caller}.private, microcredits: 1_500_000_000_000_000_u64.private, _nonce: {}.public }}",
-            console::types::Group::<CurrentNetwork>::zero()
+            console::types::Group::zero()
         ))
         .unwrap();
         let r1 = Value::<CurrentNetwork>::from_str(&format!("{caller}")).unwrap();
@@ -2971,12 +2965,12 @@ mod sanity_checks {
         // Declare the inputs.
         let r0 = Value::from_str(&format!(
             "{{ owner: {caller}.private, microcredits: 1_500_000_000_000_000_u64.private, _nonce: {}.public }}",
-            console::types::Group::<CurrentNetwork>::zero()
+            console::types::Group::zero()
         ))
         .unwrap();
         let r1 = Value::<CurrentNetwork>::from_str("1_000_000_000_000_000_u64").unwrap();
         let r2 = Value::<CurrentNetwork>::from_str("500_000_000_000_000_u64").unwrap();
-        let r3 = Value::<CurrentNetwork>::from_str(&Field::<CurrentNetwork>::rand(rng).to_string()).unwrap();
+        let r3 = Value::<CurrentNetwork>::from_str(&Field::rand(rng).to_string()).unwrap();
 
         // Compute the assignment.
         let assignment = get_assignment::<_, CurrentAleo>(stack, &private_key, function_name, &[r0, r1, r2, r3], rng);
@@ -3004,7 +2998,7 @@ mod sanity_checks {
         // Declare the inputs.
         let r0 = Value::<CurrentNetwork>::from_str("1_000_000_000_000_000_u64").unwrap();
         let r1 = Value::<CurrentNetwork>::from_str("500_000_000_000_000_u64").unwrap();
-        let r2 = Value::<CurrentNetwork>::from_str(&Field::<CurrentNetwork>::rand(rng).to_string()).unwrap();
+        let r2 = Value::<CurrentNetwork>::from_str(&Field::rand(rng).to_string()).unwrap();
 
         // Compute the assignment.
         let assignment = get_assignment::<_, CurrentAleo>(stack, &private_key, function_name, &[r0, r1, r2], rng);

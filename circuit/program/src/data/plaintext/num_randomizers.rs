@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<A: Aleo> Plaintext<A> {
+impl Plaintext {
     /// Returns the number of field elements to encode `self`.
     pub(crate) fn num_randomizers(&self) -> u16 {
         self.size_in_fields()

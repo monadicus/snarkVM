@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_BITS: u8> Hash for Pedersen<E, NUM_BITS> {
-    type Input = Boolean<E>;
-    type Output = Field<E>;
+impl<const NUM_BITS: u8> Hash for Pedersen<NUM_BITS> {
+    type Input = Boolean;
+    type Output = Field;
 
     /// Returns the Pedersen hash of the given input as a field element.
     fn hash(&self, input: &[Self::Input]) -> Self::Output {
@@ -25,25 +25,21 @@ impl<E: Environment, const NUM_BITS: u8> Hash for Pedersen<E, NUM_BITS> {
     }
 }
 
-impl<E: Environment, const NUM_BITS: u8> Metrics<dyn Hash<Input = Boolean<E>, Output = Field<E>>>
-    for Pedersen<E, NUM_BITS>
-{
+impl<const NUM_BITS: u8> Metrics<dyn Hash<Input = Boolean, Output = Field>> for Pedersen<NUM_BITS> {
     type Case = Vec<Mode>;
 
     #[inline]
     fn count(case: &Self::Case) -> Count {
-        count!(Pedersen<E, NUM_BITS>, HashUncompressed<Input = Boolean<E>, Output = Group<E>>, case)
+        count!(Pedersen<NUM_BITS>, HashUncompressed<Input = Boolean, Output = Group>, case)
     }
 }
 
-impl<E: Environment, const NUM_BITS: u8> OutputMode<dyn Hash<Input = Boolean<E>, Output = Field<E>>>
-    for Pedersen<E, NUM_BITS>
-{
+impl<const NUM_BITS: u8> OutputMode<dyn Hash<Input = Boolean, Output = Field>> for Pedersen<NUM_BITS> {
     type Case = Vec<Mode>;
 
     #[inline]
     fn output_mode(parameter: &Self::Case) -> Mode {
-        output_mode!(Pedersen<E, NUM_BITS>, HashUncompressed<Input = Boolean<E>, Output = Group<E>>, parameter)
+        output_mode!(Pedersen<NUM_BITS>, HashUncompressed<Input = Boolean, Output = Group>, parameter)
     }
 }
 
@@ -61,8 +57,8 @@ mod tests {
         use console::Hash as H;
 
         // Initialize the Pedersen hash.
-        let native = console::Pedersen::<<Circuit as Environment>::Network, NUM_BITS>::setup(MESSAGE);
-        let circuit = Pedersen::<Circuit, NUM_BITS>::constant(native.clone());
+        let native = console::Pedersen::<NUM_BITS>::setup(MESSAGE);
+        let circuit = Pedersen::<NUM_BITS>::constant(native.clone());
 
         for i in 0..ITERATIONS {
             // Sample a random input.
@@ -70,7 +66,7 @@ mod tests {
             // Compute the expected hash.
             let expected = native.hash(&input).expect("Failed to hash native input");
             // Prepare the circuit input.
-            let circuit_input: Vec<Boolean<_>> = Inject::new(mode, input);
+            let circuit_input: Vec<Boolean> = Inject::new(mode, input);
 
             Circuit::scope(format!("Pedersen {mode} {i}"), || {
                 // Perform the hash operation.
@@ -80,13 +76,13 @@ mod tests {
                 // Check constraint counts and output mode.
                 let modes = circuit_input.iter().map(|b| b.eject_mode()).collect::<Vec<_>>();
                 assert_count!(
-                    Pedersen<Circuit, NUM_BITS>,
-                    HashUncompressed<Input = Boolean<Circuit>, Output = Group<Circuit>>,
+                    Pedersen<NUM_BITS>,
+                    HashUncompressed<Input = Boolean, Output = Group>,
                     &modes
                 );
                 assert_output_mode!(
-                    Pedersen<Circuit, NUM_BITS>,
-                    HashUncompressed<Input = Boolean<Circuit>, Output = Group<Circuit>>,
+                    Pedersen<NUM_BITS>,
+                    HashUncompressed<Input = Boolean, Output = Group>,
                     &modes,
                     candidate
                 );

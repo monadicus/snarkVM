@@ -16,7 +16,7 @@ use super::*;
 
 pub static SOLUTION_ID_PREFIX: &str = "solution";
 
-impl<N: Network> FromStr for SolutionID<N> {
+impl FromStr for SolutionID {
     type Err = Error;
 
     /// Reads in the solution ID string.
@@ -35,13 +35,13 @@ impl<N: Network> FromStr for SolutionID<N> {
     }
 }
 
-impl<N: Network> Debug for SolutionID<N> {
+impl Debug for SolutionID {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for SolutionID<N> {
+impl Display for SolutionID {
     /// Writes the solution ID as a bech32m string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // Convert the solution ID to bytes.
@@ -66,14 +66,14 @@ mod tests {
     #[test]
     fn test_string() -> Result<()> {
         // Ensure type and empty value fails.
-        assert!(SolutionID::<CurrentNetwork>::from_str(&format!("{SOLUTION_ID_PREFIX}1")).is_err());
-        assert!(SolutionID::<CurrentNetwork>::from_str("").is_err());
+        assert!(SolutionID::from_str(&format!("{SOLUTION_ID_PREFIX}1")).is_err());
+        assert!(SolutionID::from_str("").is_err());
 
         let mut rng = TestRng::default();
 
         for _ in 0..ITERATIONS {
             // Sample a new solution ID.
-            let expected = SolutionID::<CurrentNetwork>::from(rng.gen::<u64>());
+            let expected = SolutionID::from(rng.gen::<u64>());
 
             // Check the string representation.
             let candidate = format!("{expected}");
@@ -89,13 +89,13 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new solution ID.
-            let expected = SolutionID::<CurrentNetwork>::from(rng.gen::<u64>());
+            let expected = SolutionID::from(rng.gen::<u64>());
 
             let candidate = expected.to_string();
             assert_eq!(format!("{expected}"), candidate);
             assert_eq!(SOLUTION_ID_PREFIX, candidate.split('1').next().unwrap());
 
-            let candidate_recovered = SolutionID::<CurrentNetwork>::from_str(&candidate.to_string())?;
+            let candidate_recovered = SolutionID::from_str(&candidate.to_string())?;
             assert_eq!(expected, candidate_recovered);
         }
         Ok(())

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Add<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Add<Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -22,15 +22,15 @@ impl<E: Environment, I: IntegerType> Add<Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Add<Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Add<Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn add(self, other: Integer<E, I>) -> Self::Output {
+    fn add(self, other: Integer<I>) -> Self::Output {
         self + &other
     }
 }
 
-impl<E: Environment, I: IntegerType> Add<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Add<&Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn add(self, other: &Self) -> Self::Output {
@@ -38,40 +38,40 @@ impl<E: Environment, I: IntegerType> Add<&Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Add<&Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Add<&Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn add(self, other: &Integer<E, I>) -> Self::Output {
+    fn add(self, other: &Integer<I>) -> Self::Output {
         let mut output = self.clone();
         output += other;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType> AddAssign<Integer<E, I>> for Integer<E, I> {
-    fn add_assign(&mut self, other: Integer<E, I>) {
+impl<I: IntegerType> AddAssign<Integer<I>> for Integer<I> {
+    fn add_assign(&mut self, other: Integer<I>) {
         *self += &other;
     }
 }
 
-impl<E: Environment, I: IntegerType> AddAssign<&Integer<E, I>> for Integer<E, I> {
-    fn add_assign(&mut self, other: &Integer<E, I>) {
+impl<I: IntegerType> AddAssign<&Integer<I>> for Integer<I> {
+    fn add_assign(&mut self, other: &Integer<I>) {
         // Stores the sum of `self` and `other` in `self`.
         *self = self.add_checked(other);
     }
 }
 
-impl<E: Environment, I: IntegerType> AddChecked<Self> for Integer<E, I> {
+impl<I: IntegerType> AddChecked<Self> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn add_checked(&self, other: &Integer<E, I>) -> Self::Output {
+    fn add_checked(&self, other: &Integer<I>) -> Self::Output {
         // Determine the variable mode.
         if self.is_constant() && other.is_constant() {
             // Compute the sum and return the new constant.
             match self.eject_value().checked_add(&other.eject_value()) {
                 Some(value) => Integer::constant(console::Integer::new(value)),
-                None => E::halt("Integer overflow on addition of two constants"),
+                None => Circuit::halt("Integer overflow on addition of two constants"),
             }
         } else if I::is_signed() {
             // Instead of adding the bits of `self` and `other` directly, the integers are
@@ -82,8 +82,8 @@ impl<E: Environment, I: IntegerType> AddChecked<Self> for Integer<E, I> {
             // Extract the integer bits from the field element, ignoring the carry bit as it is not relevant for signed addition.
             let sum = match sum.to_lower_bits_le(I::BITS as usize + 1).split_last() {
                 Some((_, bits_le)) => Integer::from_bits_le(bits_le),
-                // Note: `E::halt` should never be invoked as `I::BITS as usize + 1` is greater than zero.
-                None => E::halt("Malformed sum detected during integer addition"),
+                // Note: `Circuit::halt` should never be invoked as `I::BITS as usize + 1` is greater than zero.
+                None => Circuit::halt("Malformed sum detected during integer addition"),
             };
 
             // For signed addition, overflow and underflow conditions are:
@@ -93,40 +93,40 @@ impl<E: Environment, I: IntegerType> AddChecked<Self> for Integer<E, I> {
             //   - Note: the result of an overflow and underflow must be negative and positive, respectively.
             let is_same_sign = self.msb().is_equal(other.msb());
             let is_overflow = is_same_sign & sum.msb().is_not_equal(self.msb());
-            E::assert_eq(is_overflow, E::zero());
+            Circuit::assert_eq(is_overflow, Circuit::zero());
 
             sum
         } else {
             // Instead of adding the bits of `self` and `other` directly, witness the integer sum.
-            let sum: Integer<E, I> = witness!(|self, other| self.add_wrapped(&other));
+            let sum: Integer<I> = witness!(|self, other| self.add_wrapped(&other));
 
             // Check that the computed sum is equal to the witnessed sum, in the base field.
             let computed_sum = self.to_field() + other.to_field();
             let witnessed_sum = sum.to_field();
-            E::assert_eq(computed_sum, witnessed_sum);
+            Circuit::assert_eq(computed_sum, witnessed_sum);
 
             sum
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Add<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Add<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
-        <Self as Metrics<dyn AddChecked<Integer<E, I>, Output = Integer<E, I>>>>::count(case)
+        <Self as Metrics<dyn AddChecked<Integer<I>, Output = Integer<I>>>>::count(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Add<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Add<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
-        <Self as OutputMode<dyn AddChecked<Integer<E, I>, Output = Integer<E, I>>>>::output_mode(case)
+        <Self as OutputMode<dyn AddChecked<Integer<I>, Output = Integer<I>>>>::output_mode(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn AddChecked<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn AddChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -145,9 +145,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn AddChecked<Integer<E, I>, Outpu
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn AddChecked<Integer<E, I>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType> OutputMode<dyn AddChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -172,12 +170,12 @@ mod tests {
 
     fn check_add<I: IntegerType + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
+        let a = Integer::<I>::new(mode_a, first);
         let b = Integer::new(mode_b, second);
         match first.checked_add(&second) {
             Some(expected) => Circuit::scope(name, || {
@@ -227,8 +225,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Add: ({first} + {second})");
                 check_add::<I>(&name, first, second, mode_a, mode_b);

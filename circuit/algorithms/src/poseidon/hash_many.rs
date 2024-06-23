@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const RATE: usize> HashMany for Poseidon<E, RATE> {
-    type Input = Field<E>;
-    type Output = Field<E>;
+impl<const RATE: usize> HashMany for Poseidon<RATE> {
+    type Input = Field;
+    type Output = Field;
 
     #[inline]
     fn hash_many(&self, input: &[Self::Input], num_outputs: u16) -> Vec<Self::Output> {
@@ -38,10 +38,10 @@ impl<E: Environment, const RATE: usize> HashMany for Poseidon<E, RATE> {
 }
 
 #[allow(clippy::needless_borrow)]
-impl<E: Environment, const RATE: usize> Poseidon<E, RATE> {
+impl<const RATE: usize> Poseidon<RATE> {
     /// Absorbs the input elements into state.
     #[inline]
-    fn absorb(&self, state: &mut [Field<E>], mode: &mut DuplexSpongeMode, input: &[Field<E>]) {
+    fn absorb(&self, state: &mut [Field], mode: &mut DuplexSpongeMode, input: &[Field]) {
         if !input.is_empty() {
             // Determine the absorb index.
             let (mut absorb_index, should_permute) = match *mode {
@@ -87,7 +87,7 @@ impl<E: Environment, const RATE: usize> Poseidon<E, RATE> {
 
     /// Squeeze the specified number of state elements into the output.
     #[inline]
-    fn squeeze(&self, state: &mut [Field<E>], mode: &mut DuplexSpongeMode, num_outputs: u16) -> Vec<Field<E>> {
+    fn squeeze(&self, state: &mut [Field], mode: &mut DuplexSpongeMode, num_outputs: u16) -> Vec<Field> {
         let mut output = vec![Field::zero(); num_outputs as usize];
         if num_outputs != 0 {
             self.squeeze_internal(state, mode, &mut output);
@@ -97,7 +97,7 @@ impl<E: Environment, const RATE: usize> Poseidon<E, RATE> {
 
     /// Squeeze the state elements into the output.
     #[inline]
-    fn squeeze_internal(&self, state: &mut [Field<E>], mode: &mut DuplexSpongeMode, output: &mut [Field<E>]) {
+    fn squeeze_internal(&self, state: &mut [Field], mode: &mut DuplexSpongeMode, output: &mut [Field]) {
         // Determine the squeeze index.
         let (mut squeeze_index, should_permute) = match *mode {
             DuplexSpongeMode::Absorbing { .. } => (0, true),
@@ -141,7 +141,7 @@ impl<E: Environment, const RATE: usize> Poseidon<E, RATE> {
 
     /// Apply the additive round keys in-place.
     #[inline]
-    fn apply_ark(&self, state: &mut [Field<E>], round: usize) {
+    fn apply_ark(&self, state: &mut [Field], round: usize) {
         for (i, element) in state.iter_mut().enumerate() {
             *element += &self.ark[round][i];
         }
@@ -149,7 +149,7 @@ impl<E: Environment, const RATE: usize> Poseidon<E, RATE> {
 
     /// Apply the S-Box based on whether it is a full round or partial round.
     #[inline]
-    fn apply_s_box(&self, state: &mut [Field<E>], is_full_round: bool) {
+    fn apply_s_box(&self, state: &mut [Field], is_full_round: bool) {
         if is_full_round {
             // Full rounds apply the S Box (x^alpha) to every element of state
             for element in state.iter_mut() {
@@ -163,7 +163,7 @@ impl<E: Environment, const RATE: usize> Poseidon<E, RATE> {
 
     /// Apply the Maximally Distance Separating (MDS) matrix in-place.
     #[inline]
-    fn apply_mds(&self, state: &mut [Field<E>]) {
+    fn apply_mds(&self, state: &mut [Field]) {
         let mut new_state = Vec::with_capacity(state.len());
         for i in 0..state.len() {
             let mut accumulator = Field::zero();
@@ -177,7 +177,7 @@ impl<E: Environment, const RATE: usize> Poseidon<E, RATE> {
 
     /// Apply the permutation for all rounds in-place.
     #[inline]
-    fn permute(&self, state: &mut [Field<E>]) {
+    fn permute(&self, state: &mut [Field]) {
         // Determine the partial rounds range bound.
         let full_rounds_over_2 = self.full_rounds / 2;
         let partial_round_range = full_rounds_over_2..(full_rounds_over_2 + self.partial_rounds);
@@ -215,15 +215,13 @@ mod tests {
     ) -> Result<()> {
         use console::HashMany as H;
 
-        let native = console::Poseidon::<<Circuit as Environment>::Network, { RATE as usize }>::setup(DOMAIN)?;
-        let poseidon = Poseidon::<Circuit, { RATE as usize }>::constant(native.clone());
+        let native = console::Poseidon::<{ RATE as usize }>::setup(DOMAIN)?;
+        let poseidon = Poseidon::<{ RATE as usize }>::constant(native.clone());
 
         for i in 0..ITERATIONS {
             // Prepare the preimage.
-            let native_input = (0..num_inputs)
-                .map(|_| console::Field::<<Circuit as Environment>::Network>::rand(rng))
-                .collect::<Vec<_>>();
-            let input = native_input.iter().map(|v| Field::<Circuit>::new(mode, *v)).collect::<Vec<_>>();
+            let native_input = (0..num_inputs).map(|_| console::Field::rand(rng)).collect::<Vec<_>>();
+            let input = native_input.iter().map(|v| Field::new(mode, *v)).collect::<Vec<_>>();
 
             // Compute the native hash.
             let expected = native.hash_many(&native_input, num_outputs);

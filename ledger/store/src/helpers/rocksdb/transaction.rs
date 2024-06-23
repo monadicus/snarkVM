@@ -45,7 +45,7 @@ use synthesizer_snark::{Certificate, Proof, VerifyingKey};
 #[derive(Clone)]
 pub struct TransactionDB<N: Network> {
     /// The mapping of `transaction ID` to `transaction type`.
-    id_map: DataMap<N::TransactionID, TransactionType>,
+    id_map: DataMap<TransactionID, TransactionType>,
     /// The deployment store.
     deployment_store: DeploymentStore<N, DeploymentDB<N>>,
     /// The execution store.
@@ -56,7 +56,7 @@ pub struct TransactionDB<N: Network> {
 
 #[rustfmt::skip]
 impl<N: Network> TransactionStorage<N> for TransactionDB<N> {
-    type IDMap = DataMap<N::TransactionID, TransactionType>;
+    type IDMap = DataMap<TransactionID, TransactionType>;
     type DeploymentStorage = DeploymentDB<N>;
     type ExecutionStorage = ExecutionDB<N>;
     type FeeStorage = FeeDB<N>;
@@ -100,11 +100,11 @@ impl<N: Network> TransactionStorage<N> for TransactionDB<N> {
 #[allow(clippy::type_complexity)]
 pub struct DeploymentDB<N: Network> {
     /// The ID map.
-    id_map: DataMap<N::TransactionID, ProgramID<N>>,
+    id_map: DataMap<TransactionID, ProgramID<N>>,
     /// The edition map.
     edition_map: DataMap<ProgramID<N>, u16>,
     /// The reverse ID map.
-    reverse_id_map: DataMap<(ProgramID<N>, u16), N::TransactionID>,
+    reverse_id_map: DataMap<(ProgramID<N>, u16), TransactionID>,
     /// The program owner map.
     owner_map: DataMap<(ProgramID<N>, u16), ProgramOwner<N>>,
     /// The program map.
@@ -119,9 +119,9 @@ pub struct DeploymentDB<N: Network> {
 
 #[rustfmt::skip]
 impl<N: Network> DeploymentStorage<N> for DeploymentDB<N> {
-    type IDMap = DataMap<N::TransactionID, ProgramID<N>>;
+    type IDMap = DataMap<TransactionID, ProgramID<N>>;
     type EditionMap = DataMap<ProgramID<N>, u16>;
-    type ReverseIDMap = DataMap<(ProgramID<N>, u16), N::TransactionID>;
+    type ReverseIDMap = DataMap<(ProgramID<N>, u16), TransactionID>;
     type OwnerMap = DataMap<(ProgramID<N>, u16), ProgramOwner<N>>;
     type ProgramMap = DataMap<(ProgramID<N>, u16), Program<N>>;
     type VerifyingKeyMap = DataMap<(ProgramID<N>, Identifier<N>, u16), VerifyingKey<N>>;
@@ -190,20 +190,20 @@ impl<N: Network> DeploymentStorage<N> for DeploymentDB<N> {
 #[allow(clippy::type_complexity)]
 pub struct ExecutionDB<N: Network> {
     /// The ID map.
-    id_map: DataMap<N::TransactionID, (Vec<N::TransitionID>, bool)>,
+    id_map: DataMap<TransactionID, (Vec<N::TransitionID>, bool)>,
     /// The reverse ID map.
-    reverse_id_map: DataMap<N::TransitionID, N::TransactionID>,
+    reverse_id_map: DataMap<N::TransitionID, TransactionID>,
     /// The inclusion map.
-    inclusion_map: DataMap<N::TransactionID, (N::StateRoot, Option<Proof<N>>)>,
+    inclusion_map: DataMap<TransactionID, (N::StateRoot, Option<Proof<N>>)>,
     /// The fee store.
     fee_store: FeeStore<N, FeeDB<N>>,
 }
 
 #[rustfmt::skip]
 impl<N: Network> ExecutionStorage<N> for ExecutionDB<N> {
-    type IDMap = DataMap<N::TransactionID, (Vec<N::TransitionID>, bool)>;
-    type ReverseIDMap = DataMap<N::TransitionID, N::TransactionID>;
-    type InclusionMap = DataMap<N::TransactionID, (N::StateRoot, Option<Proof<N>>)>;
+    type IDMap = DataMap<TransactionID, (Vec<N::TransitionID>, bool)>;
+    type ReverseIDMap = DataMap<N::TransitionID, TransactionID>;
+    type InclusionMap = DataMap<TransactionID, (N::StateRoot, Option<Proof<N>>)>;
     type FeeStorage = FeeDB<N>;
 
     /// Initializes the execution storage.
@@ -244,17 +244,17 @@ impl<N: Network> ExecutionStorage<N> for ExecutionDB<N> {
 #[allow(clippy::type_complexity)]
 pub struct FeeDB<N: Network> {
     /// The fee map.
-    fee_map: DataMap<N::TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>,
+    fee_map: DataMap<TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>,
     /// The reverse fee map.
-    reverse_fee_map: DataMap<N::TransitionID, N::TransactionID>,
+    reverse_fee_map: DataMap<N::TransitionID, TransactionID>,
     /// The transition store.
     transition_store: TransitionStore<N, TransitionDB<N>>,
 }
 
 #[rustfmt::skip]
 impl<N: Network> FeeStorage<N> for FeeDB<N> {
-    type FeeMap = DataMap<N::TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>;
-    type ReverseFeeMap = DataMap<N::TransitionID, N::TransactionID>;
+    type FeeMap = DataMap<TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>;
+    type ReverseFeeMap = DataMap<N::TransitionID, TransactionID>;
     type TransitionStorage = TransitionDB<N>;
 
     /// Initializes the fee storage.

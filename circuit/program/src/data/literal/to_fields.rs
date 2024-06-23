@@ -14,17 +14,17 @@
 
 use super::*;
 
-impl<A: Aleo> ToFields for Literal<A> {
-    type Field = Field<A>;
+impl ToFields for Literal {
+    type Field = Field;
 
     /// Returns the literal as a list of base field elements.
-    fn to_fields(&self) -> Vec<Field<A>> {
+    fn to_fields(&self) -> Vec<Field> {
         (&self).to_fields()
     }
 }
 
-impl<A: Aleo> ToFields for &Literal<A> {
-    type Field = Field<A>;
+impl ToFields for &Literal {
+    type Field = Field;
 
     /// Returns the literal as a list of base field elements.
     fn to_fields(&self) -> Vec<Self::Field> {

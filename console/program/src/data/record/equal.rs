@@ -64,8 +64,8 @@ mod tests {
 
     type CurrentNetwork = MainnetV0;
 
-    fn sample_record() -> Record<CurrentNetwork, Plaintext<CurrentNetwork>> {
-        Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::from_str(
+    fn sample_record() -> Record<Plaintext> {
+        Record::<Plaintext>::from_str(
             r"{
     owner: aleo14tlamssdmg3d0p5zmljma573jghe2q9n6wz29qf36re2glcedcpqfg4add.private,
     a: true.private,
@@ -82,8 +82,8 @@ mod tests {
         .unwrap()
     }
 
-    fn sample_mismatched_record() -> Record<CurrentNetwork, Plaintext<CurrentNetwork>> {
-        Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::from_str(
+    fn sample_mismatched_record() -> Record<Plaintext> {
+        Record::<Plaintext>::from_str(
             r"{
     owner: aleo14tlamssdmg3d0p5zmljma573jghe2q9n6wz29qf36re2glcedcpqfg4add.private,
     a: true.public,

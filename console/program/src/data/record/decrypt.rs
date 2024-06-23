@@ -136,17 +136,17 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a view key and address.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let view_key = ViewKey::try_from(&private_key)?;
             let address = Address::try_from(&private_key)?;
 
             // Public owner.
             let owner = Owner::Public(address);
-            check_encrypt_and_decrypt::<CurrentNetwork>(view_key, owner, &mut rng)?;
+            check_encrypt_and_decrypt(view_key, owner, &mut rng)?;
 
             // Private owner.
             let owner = Owner::Private(Plaintext::from(Literal::Address(address)));
-            check_encrypt_and_decrypt::<CurrentNetwork>(view_key, owner, &mut rng)?;
+            check_encrypt_and_decrypt(view_key, owner, &mut rng)?;
         }
         Ok(())
     }

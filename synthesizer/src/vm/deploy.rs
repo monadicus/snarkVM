@@ -23,7 +23,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     /// The `priority_fee_in_microcredits` is an additional fee **on top** of the deployment fee.
     pub fn deploy<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         program: &Program<N>,
         fee_record: Option<Record<N, Plaintext<N>>>,
         priority_fee_in_microcredits: u64,

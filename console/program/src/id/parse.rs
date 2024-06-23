@@ -67,26 +67,26 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<()> {
-        let id = ProgramID::<CurrentNetwork>::parse("bar.aleo").unwrap().1;
-        assert_eq!(id.name(), &Identifier::<CurrentNetwork>::from_str("bar")?);
-        assert_eq!(id.network(), &Identifier::<CurrentNetwork>::from_str("aleo")?);
+        let id = ProgramID::parse("bar.aleo").unwrap().1;
+        assert_eq!(id.name(), &Identifier::from_str("bar")?);
+        assert_eq!(id.network(), &Identifier::from_str("aleo")?);
 
-        assert!(ProgramID::<CurrentNetwork>::parse("foo").is_err());
+        assert!(ProgramID::parse("foo").is_err());
 
         Ok(())
     }
 
     #[test]
     fn test_display() -> Result<()> {
-        let id = ProgramID::<CurrentNetwork>::from_str("bar.aleo")?;
+        let id = ProgramID::from_str("bar.aleo")?;
         assert_eq!("bar.aleo", id.to_string());
 
-        assert!(ProgramID::<CurrentNetwork>::from_str("foo").is_err());
-        assert!(ProgramID::<CurrentNetwork>::from_str("Bar.aleo").is_err());
-        assert!(ProgramID::<CurrentNetwork>::from_str("foO.aleo").is_err());
-        assert!(ProgramID::<CurrentNetwork>::from_str("0foo.aleo").is_err());
-        assert!(ProgramID::<CurrentNetwork>::from_str("0_foo.aleo").is_err());
-        assert!(ProgramID::<CurrentNetwork>::from_str("_foo.aleo").is_err());
+        assert!(ProgramID::from_str("foo").is_err());
+        assert!(ProgramID::from_str("Bar.aleo").is_err());
+        assert!(ProgramID::from_str("foO.aleo").is_err());
+        assert!(ProgramID::from_str("0foo.aleo").is_err());
+        assert!(ProgramID::from_str("0_foo.aleo").is_err());
+        assert!(ProgramID::from_str("_foo.aleo").is_err());
 
         Ok(())
     }

@@ -15,8 +15,8 @@
 use super::*;
 
 #[cfg(console)]
-impl<A: Aleo> Equal<Self> for ComputeKey<A> {
-    type Output = Boolean<A>;
+impl Equal<Self> for ComputeKey {
+    type Output = Boolean;
 
     ///
     /// Returns `true` if `self` and `other` are equal.
@@ -44,7 +44,7 @@ impl<A: Aleo> Equal<Self> for ComputeKey<A> {
     }
 }
 
-impl<A: Aleo> Metrics<dyn Equal<ComputeKey<A>, Output = Boolean<A>>> for ComputeKey<A> {
+impl Metrics<dyn Equal<ComputeKey, Output = Boolean>> for ComputeKey {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -55,7 +55,7 @@ impl<A: Aleo> Metrics<dyn Equal<ComputeKey<A>, Output = Boolean<A>>> for Compute
     }
 }
 
-impl<A: Aleo> OutputMode<dyn Equal<ComputeKey<A>, Output = Boolean<A>>> for ComputeKey<A> {
+impl OutputMode<dyn Equal<ComputeKey, Output = Boolean>> for ComputeKey {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -88,14 +88,10 @@ mod tests {
     ) {
         for i in 0..ITERATIONS {
             // Sample two random compute keys.
-            let a = ComputeKey::<CurrentAleo>::new(
-                mode_a,
-                console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap(),
-            );
-            let b = ComputeKey::<CurrentAleo>::new(
-                mode_b,
-                console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap(),
-            );
+            let a =
+                ComputeKey::new(mode_a, console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap());
+            let b =
+                ComputeKey::new(mode_b, console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap());
 
             CurrentAleo::scope(&format!("{mode_a} {mode_a} {i}"), || {
                 let equals = a.is_equal(&a);
@@ -121,14 +117,10 @@ mod tests {
     ) {
         for i in 0..ITERATIONS {
             // Sample two random compute keys.
-            let a = ComputeKey::<CurrentAleo>::new(
-                mode_a,
-                console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap(),
-            );
-            let b = ComputeKey::<CurrentAleo>::new(
-                mode_b,
-                console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap(),
-            );
+            let a =
+                ComputeKey::new(mode_a, console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap());
+            let b =
+                ComputeKey::new(mode_b, console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap());
 
             CurrentAleo::scope(&format!("{mode_a} {mode_a} {i}"), || {
                 let equals = a.is_not_equal(&a);

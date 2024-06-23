@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+
 use super::*;
 
-impl<A: Aleo> ToBits for Ciphertext<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for Ciphertext {
+    type Boolean = Boolean;
 
     /// Returns this ciphertext as a list of **little-endian** bits.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
         let initial_len = vec.len();
         self.0.write_bits_le(vec);
-        assert_eq!(self.0.len() * A::BaseField::size_in_bits(), vec.len() - initial_len);
+        assert_eq!(self.0.len() * ConsoleField::size_in_bits(), vec.len() - initial_len);
     }
 
     /// Returns this ciphertext as a list of **big-endian** bits.
     fn write_bits_be(&self, vec: &mut Vec<Self::Boolean>) {
         let initial_len = vec.len();
         self.0.write_bits_be(vec);
-        assert_eq!(self.0.len() * A::BaseField::size_in_bits(), vec.len() - initial_len);
+        assert_eq!(self.0.len() * ConsoleField::size_in_bits(), vec.len() - initial_len);
     }
 }

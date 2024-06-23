@@ -71,9 +71,6 @@ impl FromBits for Signature {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: usize = 100;
 
@@ -85,17 +82,17 @@ mod tests {
             let expected = test_helpers::sample_signature(i as u64, rng);
 
             let given_bits = expected.to_bits_le();
-            assert_eq!(Signature::<CurrentNetwork>::size_in_bits(), given_bits.len());
+            assert_eq!(Signature::size_in_bits(), given_bits.len());
 
-            let candidate = Signature::<CurrentNetwork>::from_bits_le(&given_bits)?;
+            let candidate = Signature::from_bits_le(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [given_bits, vec![false; i]].concat();
 
-            let candidate = Signature::<CurrentNetwork>::from_bits_le(&candidate)?;
+            let candidate = Signature::from_bits_le(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Signature::<CurrentNetwork>::size_in_bits(), candidate.to_bits_le().len());
+            assert_eq!(Signature::size_in_bits(), candidate.to_bits_le().len());
         }
         Ok(())
     }
@@ -108,17 +105,17 @@ mod tests {
             let expected = test_helpers::sample_signature(i as u64, rng);
 
             let given_bits = expected.to_bits_be();
-            assert_eq!(Signature::<CurrentNetwork>::size_in_bits(), given_bits.len());
+            assert_eq!(Signature::size_in_bits(), given_bits.len());
 
-            let candidate = Signature::<CurrentNetwork>::from_bits_be(&given_bits)?;
+            let candidate = Signature::from_bits_be(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [given_bits, vec![false; i]].concat();
 
-            let candidate = Signature::<CurrentNetwork>::from_bits_be(&candidate)?;
+            let candidate = Signature::from_bits_be(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Signature::<CurrentNetwork>::size_in_bits(), candidate.to_bits_be().len());
+            assert_eq!(Signature::size_in_bits(), candidate.to_bits_be().len());
         }
         Ok(())
     }

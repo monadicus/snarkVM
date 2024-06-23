@@ -74,7 +74,7 @@ mod tests {
         let process = Process::<CurrentNetwork>::load().unwrap();
 
         // Sample a private key.
-        let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let private_key = PrivateKey::new(rng).unwrap();
         let owner = Address::try_from(private_key).unwrap();
 
         // Sample a base fee in microcredits.
@@ -86,7 +86,7 @@ mod tests {
 
         // Sample a credits record.
         let fee_in_microcredits = base_fee_in_microcredits.saturating_add(priority_fee_in_microcredits);
-        let credits = Record::<CurrentNetwork, Plaintext<_>>::from_str(&format!(
+        let credits = Record::<Plaintext<_>>::from_str(&format!(
             "{{ owner: {owner}.private, microcredits: {fee_in_microcredits}u64.private, _nonce: 0group.public }}"
         ))
         .unwrap();

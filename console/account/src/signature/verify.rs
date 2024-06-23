@@ -80,7 +80,6 @@ impl Signature {
 #[cfg(feature = "private_key")]
 mod tests {
     use super::*;
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 100;
 

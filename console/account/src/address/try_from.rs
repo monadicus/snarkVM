@@ -77,9 +77,6 @@ impl TryFrom<&ViewKey> for Address {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1_000;
 
@@ -89,15 +86,15 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new address.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let expected = Address::try_from(private_key)?;
 
             // Check the address derived from the compute key.
-            let compute_key = ComputeKey::<CurrentNetwork>::try_from(private_key)?;
+            let compute_key = ComputeKey::try_from(private_key)?;
             assert_eq!(expected, Address::try_from(compute_key)?);
 
             // Check the address derived from the view key.
-            let view_key = ViewKey::<CurrentNetwork>::try_from(private_key)?;
+            let view_key = ViewKey::try_from(private_key)?;
             assert_eq!(expected, Address::try_from(view_key)?);
         }
         Ok(())

@@ -34,7 +34,7 @@ type CurrentNetwork = console::network::MainnetV0;
 #[derive(Debug, Clone)]
 pub struct Validator {
     pub private_key: PrivateKey<CurrentNetwork>,
-    pub address: Address<CurrentNetwork>,
+    pub address: Address,
     pub stake: u64,
     pub is_open: bool,
     pub commission: u8,

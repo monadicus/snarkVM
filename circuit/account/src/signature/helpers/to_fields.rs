@@ -15,8 +15,8 @@
 use super::*;
 
 #[cfg(console)]
-impl<A: Aleo> ToFields for Signature<A> {
-    type Field = Field<A>;
+impl ToFields for Signature {
+    type Field = Field;
 
     /// Casts a compute key into a list of base fields.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -50,7 +50,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random signature.
             let expected = crate::helpers::generate_signature(i, rng);
-            let candidate = Signature::<CurrentAleo>::new(mode, expected);
+            let candidate = Signature::new(mode, expected);
 
             CurrentAleo::scope(format!("{mode} {expected} {i}"), || {
                 // Perform the operation.

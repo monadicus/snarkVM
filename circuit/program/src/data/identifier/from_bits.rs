@@ -12,33 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+
 use super::*;
 
-impl<A: Aleo> FromBits for Identifier<A> {
-    type Boolean = Boolean<A>;
+impl FromBits for Identifier {
+    type Boolean = Boolean;
 
     /// Initializes a new identifier from a list of little-endian bits.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
         // Ensure the number of bits does not exceed the size in bits of the field.
         // This check is not sufficient to ensure the identifier is of valid size,
         // the final step checks the byte-aligned field element is within the data capacity.
-        debug_assert!(bits_le.len() <= A::BaseField::size_in_bits(), "Identifier exceeds the maximum bits allowed");
+        debug_assert!(bits_le.len() <= ConsoleField::size_in_bits(), "Identifier exceeds the maximum bits allowed");
 
         // Recover the field element from the bits.
         let field = Field::from_bits_le(bits_le);
 
         // Eject the bits in **little-endian** form, and determine the number of bytes.
-        let num_bytes = match console::Identifier::<A::Network>::from_bits_le(&bits_le.eject_value()) {
+        let num_bytes = match console::Identifier::from_bits_le(&bits_le.eject_value()) {
             Ok(console_identifier) => console_identifier.size_in_bits() / 8,
-            Err(error) => A::halt(format!("Failed to recover an identifier from bits: {error}")),
+            Err(error) => Circuit::halt(format!("Failed to recover an identifier from bits: {error}")),
         };
 
         // Ensure identifier fits within the data capacity of the base field.
-        let max_bytes = A::BaseField::size_in_data_bits() / 8; // Note: This intentionally rounds down.
+        let max_bytes = ConsoleField::size_in_data_bits() / 8; // Note: This intentionally rounds down.
         match num_bytes as usize <= max_bytes {
             // Return the identifier.
             true => Self(field, num_bytes),
-            false => A::halt("Identifier exceeds the maximum capacity allowed"),
+            false => Circuit::halt("Identifier exceeds the maximum capacity allowed"),
         }
     }
 
@@ -65,7 +67,7 @@ mod tests {
             let circuit_bits: Vec<_> = Inject::constant(console_identifier.to_bits_le());
 
             Circuit::scope("Identifier FromBits", || {
-                let candidate = Identifier::<Circuit>::from_bits_le(&circuit_bits);
+                let candidate = Identifier::from_bits_le(&circuit_bits);
                 assert_eq!(Mode::Constant, candidate.eject_mode());
                 assert_eq!(console_identifier, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
@@ -83,7 +85,7 @@ mod tests {
             let circuit_bits: Vec<_> = Inject::constant(console_identifier.to_bits_be());
 
             Circuit::scope("Identifier FromBits", || {
-                let candidate = Identifier::<Circuit>::from_bits_be(&circuit_bits);
+                let candidate = Identifier::from_bits_be(&circuit_bits);
                 assert_eq!(Mode::Constant, candidate.eject_mode());
                 assert_eq!(console_identifier, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);

@@ -14,23 +14,23 @@
 
 use super::*;
 
-impl<E: Environment> From<Group<E>> for Address<E> {
+impl From<Group> for Address {
     /// Initializes an address from an affine group element.
-    fn from(value: Group<E>) -> Self {
+    fn from(value: Group) -> Self {
         Self::from_group(value)
     }
 }
 
-impl<E: Environment> From<&Group<E>> for Address<E> {
+impl From<&Group> for Address {
     /// Initializes an address from an affine group element.
-    fn from(value: &Group<E>) -> Self {
+    fn from(value: &Group) -> Self {
         Self::from_group(value.clone())
     }
 }
 
-impl<E: Environment> FromGroup for Address<E> {
-    type Group = Group<E>;
-    type Scalar = Scalar<E>;
+impl FromGroup for Address {
+    type Group = Group;
+    type Scalar = Scalar;
 
     /// Initializes an address from an affine group element.
     fn from_group(group: Self::Group) -> Self {
@@ -43,11 +43,7 @@ mod tests {
     use super::*;
     use snarkvm_circuit_environment::Circuit;
 
-    fn check_from_group(
-        name: &str,
-        expected: console::Address<<Circuit as Environment>::Network>,
-        candidate: &Group<Circuit>,
-    ) {
+    fn check_from_group(name: &str, expected: console::Address, candidate: &Group) {
         Circuit::scope(name, || {
             // Perform the operation.
             let candidate = Address::from_group(candidate.clone());
@@ -59,21 +55,21 @@ mod tests {
     #[test]
     fn test_from_group_constant() {
         let expected = console::Address::rand(&mut TestRng::default());
-        let candidate = Group::<Circuit>::new(Mode::Constant, *expected);
+        let candidate = Group::new(Mode::Constant, *expected);
         check_from_group("Constant", expected, &candidate);
     }
 
     #[test]
     fn test_from_group_public() {
         let expected = console::Address::rand(&mut TestRng::default());
-        let candidate = Group::<Circuit>::new(Mode::Public, *expected);
+        let candidate = Group::new(Mode::Public, *expected);
         check_from_group("Public", expected, &candidate);
     }
 
     #[test]
     fn test_from_group_private() {
         let expected = console::Address::rand(&mut TestRng::default());
-        let candidate = Group::<Circuit>::new(Mode::Private, *expected);
+        let candidate = Group::new(Mode::Private, *expected);
         check_from_group("Private", expected, &candidate);
     }
 }

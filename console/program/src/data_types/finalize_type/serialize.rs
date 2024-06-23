@@ -104,14 +104,14 @@ mod tests {
     #[test]
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
-            check_serde_json(FinalizeType::<CurrentNetwork>::from_str(case).unwrap());
+            check_serde_json(FinalizeType::from_str(case).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for case in TEST_CASES.iter() {
-            check_bincode(FinalizeType::<CurrentNetwork>::from_str(case).unwrap());
+            check_bincode(FinalizeType::from_str(case).unwrap());
         }
     }
 }

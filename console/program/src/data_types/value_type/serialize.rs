@@ -105,23 +105,23 @@ mod tests {
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
             for mode in &["constant", "public", "private"] {
-                check_serde_json(ValueType::<CurrentNetwork>::from_str(&format!("{case}.{mode}")).unwrap());
+                check_serde_json(ValueType::from_str(&format!("{case}.{mode}")).unwrap());
             }
         }
-        check_serde_json(ValueType::<CurrentNetwork>::from_str("token.record").unwrap());
-        check_serde_json(ValueType::<CurrentNetwork>::from_str("hello_world.record").unwrap());
-        check_serde_json(ValueType::<CurrentNetwork>::from_str("hello_world.aleo/new.record").unwrap());
+        check_serde_json(ValueType::from_str("token.record").unwrap());
+        check_serde_json(ValueType::from_str("hello_world.record").unwrap());
+        check_serde_json(ValueType::from_str("hello_world.aleo/new.record").unwrap());
     }
 
     #[test]
     fn test_bincode() {
         for case in TEST_CASES.iter() {
             for mode in &["constant", "public", "private"] {
-                check_bincode(ValueType::<CurrentNetwork>::from_str(&format!("{case}.{mode}")).unwrap());
+                check_bincode(ValueType::from_str(&format!("{case}.{mode}")).unwrap());
             }
         }
-        check_bincode(ValueType::<CurrentNetwork>::from_str("token.record").unwrap());
-        check_bincode(ValueType::<CurrentNetwork>::from_str("hello_world.record").unwrap());
-        check_bincode(ValueType::<CurrentNetwork>::from_str("hello_world.aleo/new.record").unwrap());
+        check_bincode(ValueType::from_str("token.record").unwrap());
+        check_bincode(ValueType::from_str("hello_world.record").unwrap());
+        check_bincode(ValueType::from_str("hello_world.aleo/new.record").unwrap());
     }
 }

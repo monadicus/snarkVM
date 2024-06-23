@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::{ConsoleField, ConsoleScalar};
+
 use super::*;
 
-impl<E: Environment> Scalar<E> {
+impl Scalar {
     /// Casts a scalar from a base field, with lossy truncation.
     ///
     /// This method is commonly-used by hash-to-scalar algorithms,
     /// where the hash output does not need to preserve the full base field.
-    pub fn from_field_lossy(field: &Field<E>) -> Self {
+    pub fn from_field_lossy(field: &Field) -> Self {
         // Note: We are reconstituting the integer from the base field.
         // This is safe as the number of bits in the integer is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(E::ScalarField::size_in_bits() < E::BaseField::size_in_bits());
+        debug_assert!(ConsoleScalar::size_in_bits() < ConsoleField::size_in_bits());
 
         // Truncate the output to the size in data bits (1 bit less than the MODULUS) of the scalar.
         // Slicing here is safe as the base field is larger than the scalar field.
-        Scalar::from_bits_le(&field.to_bits_le()[..E::ScalarField::size_in_data_bits()])
+        Scalar::from_bits_le(&field.to_bits_le()[..ConsoleScalar::size_in_data_bits()])
     }
 }
 
@@ -41,14 +43,14 @@ mod tests {
     fn check_from_field_lossy(mode: Mode, rng: &mut TestRng) {
         for i in 0..ITERATIONS {
             // Sample a random scalar.
-            let size_in_data_bits = console::Scalar::<<Circuit as Environment>::Network>::size_in_data_bits();
-            let prepare = console::Scalar::<<Circuit as Environment>::Network>::rand(rng);
+            let size_in_data_bits = console::Scalar::size_in_data_bits();
+            let prepare = console::Scalar::rand(rng);
             let expected = console::Scalar::from_bits_le(&prepare.to_bits_le()[..size_in_data_bits]).unwrap();
-            let candidate = Scalar::<Circuit>::new(mode, expected).to_field();
+            let candidate = Scalar::new(mode, expected).to_field();
 
             Circuit::scope(format!("{mode} {expected} {i}"), || {
                 // Perform the operation.
-                let candidate = Scalar::<Circuit>::from_field_lossy(&candidate);
+                let candidate = Scalar::from_field_lossy(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 match mode {
                     Mode::Constant => assert_scope!(253, 0, 0, 0),
@@ -58,7 +60,7 @@ mod tests {
             Circuit::reset();
 
             // Sample a random field element.
-            let expected = Field::<Circuit>::new(mode, Uniform::rand(rng));
+            let expected = Field::new(mode, Uniform::rand(rng));
             // Perform the operation.
             Scalar::from_field_lossy(&expected); // This should not fail.
 

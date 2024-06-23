@@ -35,21 +35,28 @@ mod to_fields;
 use crate::{Access, Ciphertext, Identifier, Plaintext, ProgramID, Visibility};
 use snarkvm_circuit_account::{PrivateKey, ViewKey};
 use snarkvm_circuit_network::Aleo;
-use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, Group, Scalar, U32};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Boolean,
+    Field,
+    Group,
+    Scalar,
+    U32,
+};
 
 #[derive(Clone)]
-pub struct Record<A: Aleo, Private: Visibility<A>> {
+pub struct Record<Private: Visibility> {
     /// The owner of the program record.
-    owner: Owner<A, Private>,
+    owner: Owner<Private>,
     /// The program data.
-    data: IndexMap<Identifier<A>, Entry<A, Private>>,
+    data: IndexMap<Identifier, Entry<Private>>,
     /// The nonce of the program record.
-    nonce: Group<A>,
+    nonce: Group,
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Record<A, Plaintext<A>> {
-    type Primitive = console::Record<A::Network, console::Plaintext<A::Network>>;
+impl Inject for Record<Plaintext> {
+    type Primitive = console::Record<console::Plaintext>;
 
     /// Initializes a plaintext record from a primitive.
     fn new(_: Mode, record: Self::Primitive) -> Self {
@@ -62,8 +69,8 @@ impl<A: Aleo> Inject for Record<A, Plaintext<A>> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Record<A, Ciphertext<A>> {
-    type Primitive = console::Record<A::Network, console::Ciphertext<A::Network>>;
+impl Inject for Record<Ciphertext> {
+    type Primitive = console::Record<console::Ciphertext>;
 
     /// Initializes a ciphertext record from a primitive.
     fn new(_: Mode, record: Self::Primitive) -> Self {
@@ -76,18 +83,18 @@ impl<A: Aleo> Inject for Record<A, Ciphertext<A>> {
 }
 
 #[cfg(console)]
-impl<A: Aleo, Private: Visibility<A>> Record<A, Private> {
+impl<Private: Visibility> Record<Private> {
     /// Initializes a new record plaintext.
     pub fn from_plaintext(
-        owner: Owner<A, Plaintext<A>>,
-        data: IndexMap<Identifier<A>, Entry<A, Plaintext<A>>>,
-        nonce: Group<A>,
-    ) -> Result<Record<A, Plaintext<A>>> {
+        owner: Owner<Plaintext>,
+        data: IndexMap<Identifier, Entry<Plaintext>>,
+        nonce: Group,
+    ) -> Result<Record<Plaintext>> {
         // Ensure the members has no duplicate names.
         ensure!(!has_duplicates(data.iter().map(|(name, ..)| name)), "A duplicate entry name was found in a record");
         // Ensure the number of entries is within the maximum limit.
         ensure!(
-            data.len() <= <A::Network as console::Network>::MAX_DATA_ENTRIES,
+            data.len() <= console::AleoNetwork::MAX_DATA_ENTRIES,
             "Found a record that exceeds size ({})",
             data.len()
         );
@@ -97,15 +104,15 @@ impl<A: Aleo, Private: Visibility<A>> Record<A, Private> {
 
     /// Initializes a new record ciphertext.
     pub fn from_ciphertext(
-        owner: Owner<A, Ciphertext<A>>,
-        data: IndexMap<Identifier<A>, Entry<A, Ciphertext<A>>>,
-        nonce: Group<A>,
-    ) -> Result<Record<A, Ciphertext<A>>> {
+        owner: Owner<Ciphertext>,
+        data: IndexMap<Identifier, Entry<Ciphertext>>,
+        nonce: Group,
+    ) -> Result<Record<Ciphertext>> {
         // Ensure the members has no duplicate names.
         ensure!(!has_duplicates(data.iter().map(|(name, ..)| name)), "A duplicate entry name was found in a record");
         // Ensure the number of entries is within the maximum limit.
         ensure!(
-            data.len() <= <A::Network as console::Network>::MAX_DATA_ENTRIES,
+            data.len() <= console::AleoNetwork::MAX_DATA_ENTRIES,
             "Found a record that exceeds size ({})",
             data.len()
         );
@@ -114,37 +121,37 @@ impl<A: Aleo, Private: Visibility<A>> Record<A, Private> {
     }
 }
 
-impl<A: Aleo, Private: Visibility<A>> Record<A, Private> {
+impl<Private: Visibility> Record<Private> {
     /// Returns the owner of the program record.
-    pub const fn owner(&self) -> &Owner<A, Private> {
+    pub const fn owner(&self) -> &Owner<Private> {
         &self.owner
     }
 
     /// Returns the program data.
-    pub const fn data(&self) -> &IndexMap<Identifier<A>, Entry<A, Private>> {
+    pub const fn data(&self) -> &IndexMap<Identifier, Entry<Private>> {
         &self.data
     }
 
     /// Returns the nonce of the program record.
-    pub const fn nonce(&self) -> &Group<A> {
+    pub const fn nonce(&self) -> &Group {
         &self.nonce
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Record<A, Plaintext<A>> {
-    type Primitive = console::Record<A::Network, console::Plaintext<A::Network>>;
+impl Eject for Record<Plaintext> {
+    type Primitive = console::Record<console::Plaintext>;
 
     /// Ejects the mode of the record.
     fn eject_mode(&self) -> Mode {
         let owner = match &self.owner {
             Owner::Public(owner) => match owner.eject_mode() == Mode::Public {
                 true => Mode::Public,
-                false => A::halt("Record::<Plaintext>::eject_mode: 'owner' is not public."),
+                false => Circuit::halt("Record::<Plaintext>::eject_mode: 'owner' is not public."),
             },
             Owner::Private(plaintext) => match plaintext.eject_mode() == Mode::Private {
                 true => Mode::Private,
-                false => A::halt("Record::<Plaintext>::eject_mode: 'owner' is not private."),
+                false => Circuit::halt("Record::<Plaintext>::eject_mode: 'owner' is not private."),
             },
         };
 
@@ -167,25 +174,25 @@ impl<A: Aleo> Eject for Record<A, Plaintext<A>> {
             self.nonce.eject_value(),
         ) {
             Ok(record) => record,
-            Err(error) => A::halt(format!("Record::<Plaintext>::eject_value: {error}")),
+            Err(error) => Circuit::halt(format!("Record::<Plaintext>::eject_value: {error}")),
         }
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Record<A, Ciphertext<A>> {
-    type Primitive = console::Record<A::Network, console::Ciphertext<A::Network>>;
+impl Eject for Record<Ciphertext> {
+    type Primitive = console::Record<console::Ciphertext>;
 
     /// Ejects the mode of the record.
     fn eject_mode(&self) -> Mode {
         let owner = match &self.owner {
             Owner::Public(owner) => match owner.eject_mode() == Mode::Public {
                 true => Mode::Public,
-                false => A::halt("Record::<Ciphertext>::eject_mode: 'owner' is not public."),
+                false => Circuit::halt("Record::<Ciphertext>::eject_mode: 'owner' is not public."),
             },
             Owner::Private(plaintext) => match plaintext.eject_mode() == Mode::Private {
                 true => Mode::Private,
-                false => A::halt("Record::<Ciphertext>::eject_mode: 'owner' is not private."),
+                false => Circuit::halt("Record::<Ciphertext>::eject_mode: 'owner' is not private."),
             },
         };
 
@@ -208,13 +215,13 @@ impl<A: Aleo> Eject for Record<A, Ciphertext<A>> {
             self.nonce.eject_value(),
         ) {
             Ok(record) => record,
-            Err(error) => A::halt(format!("Record::<Ciphertext>::eject_value: {error}")),
+            Err(error) => Circuit::halt(format!("Record::<Ciphertext>::eject_value: {error}")),
         }
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo, Private: Visibility<A>> TypeName for Record<A, Private> {
+impl<Private: Visibility> TypeName for Record<Private> {
     fn type_name() -> &'static str {
         "record"
     }

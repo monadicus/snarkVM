@@ -56,9 +56,6 @@ impl ToBytes for StringType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_Console::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -68,7 +65,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new string.
-            let expected = StringType::<CurrentEnvironment>::rand(&mut rng);
+            let expected = StringType::rand(&mut rng);
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;

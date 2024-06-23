@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for BatchHeader<N> {
+impl FromBytes for BatchHeader {
     /// Reads the batch header from the buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the version.
@@ -63,10 +63,10 @@ impl<N: Network> FromBytes for BatchHeader<N> {
 
         // Read the previous certificate ID bytes.
         let mut previous_certificate_id_bytes =
-            vec![0u8; num_previous_certificate_ids as usize * Field::<N>::size_in_bytes()];
+            vec![0u8; num_previous_certificate_ids as usize * Field::size_in_bytes()];
         reader.read_exact(&mut previous_certificate_id_bytes)?;
         // Read the previous certificate IDs.
-        let previous_certificate_ids = cfg_chunks!(previous_certificate_id_bytes, Field::<N>::size_in_bytes())
+        let previous_certificate_ids = cfg_chunks!(previous_certificate_id_bytes, Field::size_in_bytes())
             .map(Field::read_le)
             .collect::<Result<IndexSet<_>, _>>()?;
 
@@ -86,7 +86,7 @@ impl<N: Network> FromBytes for BatchHeader<N> {
     }
 }
 
-impl<N: Network> ToBytes for BatchHeader<N> {
+impl ToBytes for BatchHeader {
     /// Writes the batch header to the buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the version.

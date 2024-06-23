@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Zero for Group<E> {
-    type Boolean = Boolean<E>;
+impl Zero for Group {
+    type Boolean = Boolean;
 
     fn zero() -> Self {
         Group { x: Field::zero(), y: Field::one() }
@@ -40,7 +40,7 @@ mod tests {
 
         Circuit::scope("Zero", || {
             assert_scope!(0, 0, 0, 0);
-            let candidate = Group::<Circuit>::zero().eject_value();
+            let candidate = Group::zero().eject_value();
             assert_eq!(zero, candidate.to_x_coordinate());
             assert_eq!(one, candidate.to_y_coordinate());
             assert_scope!(0, 0, 0, 0);
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn test_is_zero() {
-        let candidate = Group::<Circuit>::zero();
+        let candidate = Group::zero();
         // Should equal 0.
         assert!(candidate.is_zero().eject_value());
     }

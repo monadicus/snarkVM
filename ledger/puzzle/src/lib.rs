@@ -32,6 +32,7 @@ use console::{
     account::Address,
     algorithms::Sha3_256,
     collections::kary_merkle_tree::KaryMerkleTree,
+    network::BlockHash,
     prelude::{
         anyhow,
         bail,
@@ -76,10 +77,10 @@ pub trait PuzzleTrait<N: Network>: Send + Sync {
         Self: Sized;
 
     /// Returns the leaves for the puzzle, given the epoch hash and seeded RNG.
-    fn to_leaves(&self, epoch_hash: N::BlockHash, rng: &mut ChaChaRng) -> Result<Vec<Vec<bool>>>;
+    fn to_leaves(&self, epoch_hash: BlockHash, rng: &mut ChaChaRng) -> Result<Vec<Vec<bool>>>;
 
     /// Returns the batches of leaves for the puzzle, given the epoch hash and seeded RNGs.
-    fn to_all_leaves(&self, epoch_hash: N::BlockHash, rngs: Vec<ChaChaRng>) -> Result<Vec<Vec<Vec<bool>>>>;
+    fn to_all_leaves(&self, epoch_hash: BlockHash, rngs: Vec<ChaChaRng>) -> Result<Vec<Vec<Vec<bool>>>>;
 }
 
 #[derive(Clone)]
@@ -87,7 +88,7 @@ pub struct Puzzle<N: Network> {
     /// The core puzzle.
     inner: Arc<dyn PuzzleTrait<N>>,
     /// The LRU cache of solution IDs to proof targets.
-    proof_target_cache: Arc<RwLock<LruCache<SolutionID<N>, u64>>>,
+    proof_target_cache: Arc<RwLock<LruCache<SolutionID, u64>>>,
 }
 
 impl<N: Network> Puzzle<N> {
@@ -100,7 +101,7 @@ impl<N: Network> Puzzle<N> {
     }
 
     /// Returns the Merkle leaves for the puzzle, given the solution.
-    pub fn get_leaves(&self, solution: &PartialSolution<N>) -> Result<Vec<Vec<bool>>> {
+    pub fn get_leaves(&self, solution: &PartialSolution) -> Result<Vec<Vec<bool>>> {
         // Initialize a seeded random number generator.
         let mut rng = ChaChaRng::seed_from_u64(*solution.id());
         // Output the leaves.
@@ -121,7 +122,7 @@ impl<N: Network> Puzzle<N> {
     }
 
     /// Returns the proof target given the solution.
-    pub fn get_proof_target(&self, solution: &Solution<N>) -> Result<u64> {
+    pub fn get_proof_target(&self, solution: &Solution) -> Result<u64> {
         // Calculate the proof target.
         let proof_target = self.get_proof_target_unchecked(solution)?;
         // Ensure the proof target matches the expected proof target.
@@ -133,13 +134,13 @@ impl<N: Network> Puzzle<N> {
     /// Returns the proof target given the solution.
     ///
     /// Note: This method does **not** check the proof target against the expected proof target.
-    pub fn get_proof_target_unchecked(&self, solution: &Solution<N>) -> Result<u64> {
+    pub fn get_proof_target_unchecked(&self, solution: &Solution) -> Result<u64> {
         // Calculate the proof target.
         self.get_proof_target_from_partial_solution(solution.partial_solution())
     }
 
     /// Returns the proof target given the partial solution.
-    pub fn get_proof_target_from_partial_solution(&self, partial_solution: &PartialSolution<N>) -> Result<u64> {
+    pub fn get_proof_target_from_partial_solution(&self, partial_solution: &PartialSolution) -> Result<u64> {
         // If the proof target is in the cache, then return it.
         if let Some(proof_target) = self.proof_target_cache.write().get(&partial_solution.id()) {
             return Ok(*proof_target);
@@ -224,11 +225,11 @@ impl<N: Network> Puzzle<N> {
     /// Returns a solution to the puzzle.
     pub fn prove(
         &self,
-        epoch_hash: N::BlockHash,
-        address: Address<N>,
+        epoch_hash: BlockHash,
+        address: Address,
         counter: u64,
         minimum_proof_target: Option<u64>,
-    ) -> Result<Solution<N>> {
+    ) -> Result<Solution> {
         // Construct the partial solution.
         let partial_solution = PartialSolution::new(epoch_hash, address, counter)?;
         // Compute the proof target.
@@ -247,8 +248,8 @@ impl<N: Network> Puzzle<N> {
     /// Returns `Ok(())` if the solution is valid.
     pub fn check_solution(
         &self,
-        solution: &Solution<N>,
-        expected_epoch_hash: N::BlockHash,
+        solution: &Solution,
+        expected_epoch_hash: BlockHash,
         expected_proof_target: u64,
     ) -> Result<()> {
         // Ensure the epoch hash matches.
@@ -270,7 +271,7 @@ impl<N: Network> Puzzle<N> {
     pub fn check_solutions(
         &self,
         solutions: &PuzzleSolutions<N>,
-        expected_epoch_hash: N::BlockHash,
+        expected_epoch_hash: BlockHash,
         expected_proof_target: u64,
     ) -> Result<()> {
         let timer = timer!("Puzzle::verify");
@@ -317,7 +318,7 @@ impl<N: Network> Puzzle<N> {
         // Retrieve the Merkle tree root.
         let root = merkle_tree.root();
         // Truncate to a u64.
-        match *U64::<N>::from_bits_be(&root[0..64])? {
+        match *U64::from_bits_be(&root[0..64])? {
             0 => Ok(u64::MAX),
             value => Ok(u64::MAX / value),
         }
@@ -352,17 +353,17 @@ mod tests {
         }
 
         /// Returns the leaves for the puzzle, given the epoch hash and seeded RNG.
-        fn to_leaves(&self, epoch_hash: N::BlockHash, rng: &mut ChaChaRng) -> Result<Vec<Vec<bool>>> {
+        fn to_leaves(&self, epoch_hash: BlockHash, rng: &mut ChaChaRng) -> Result<Vec<Vec<bool>>> {
             // Sample a random number of leaves.
             let num_leaves = self.num_leaves(epoch_hash)?;
             // Sample random field elements for each of the leaves, and convert them to bits.
-            let leaves = (0..num_leaves).map(|_| Field::<N>::rand(rng).to_bits_le()).collect::<Vec<_>>();
+            let leaves = (0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<_>>();
             // Return the leaves.
             Ok(leaves)
         }
 
         /// Returns the batches of leaves for the puzzle, given the epoch hash and seeded RNGs.
-        fn to_all_leaves(&self, epoch_hash: N::BlockHash, rngs: Vec<ChaChaRng>) -> Result<Vec<Vec<Vec<bool>>>> {
+        fn to_all_leaves(&self, epoch_hash: BlockHash, rngs: Vec<ChaChaRng>) -> Result<Vec<Vec<Vec<bool>>>> {
             // Sample a random number of leaves.
             let num_leaves = self.num_leaves(epoch_hash)?;
             // Initialize the list of leaves.
@@ -370,7 +371,7 @@ mod tests {
             // Construct the epoch inputs.
             for mut rng in rngs {
                 // Sample random field elements for each of the leaves, and convert them to bits.
-                leaves.push((0..num_leaves).map(|_| Field::<N>::rand(&mut rng).to_bits_le()).collect::<Vec<_>>());
+                leaves.push((0..num_leaves).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<_>>());
             }
             // Return the leaves.
             Ok(leaves)
@@ -379,7 +380,7 @@ mod tests {
 
     impl<N: Network> SimplePuzzle<N> {
         /// Returns the number of leaves given the epoch hash.
-        pub fn num_leaves(&self, epoch_hash: N::BlockHash) -> Result<usize> {
+        pub fn num_leaves(&self, epoch_hash: BlockHash) -> Result<usize> {
             const MIN_NUMBER_OF_LEAVES: usize = 100;
             const MAX_NUMBER_OF_LEAVES: usize = 200;
 
@@ -434,7 +435,7 @@ mod tests {
         let epoch_hash = rng.gen();
 
         for _ in 0..ITERATIONS {
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng).unwrap();
+            let private_key = PrivateKey::new(&mut rng).unwrap();
             let address = Address::try_from(private_key).unwrap();
             let counter = u64::rand(&mut rng);
 
@@ -468,7 +469,7 @@ mod tests {
         let epoch_hash = rng.gen();
 
         // Generate inputs.
-        let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng).unwrap();
+        let private_key = PrivateKey::new(&mut rng).unwrap();
         let address = Address::try_from(private_key).unwrap();
 
         // Generate a solution.
@@ -490,7 +491,7 @@ mod tests {
         let epoch_hash = rng.gen();
 
         // Generate inputs.
-        let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng).unwrap();
+        let private_key = PrivateKey::new(&mut rng).unwrap();
         let address = Address::try_from(private_key).unwrap();
 
         // Generate a solution.
@@ -648,7 +649,7 @@ mod tests {
     #[ignore]
     #[test]
     fn test_profiler() -> Result<()> {
-        fn sample_address_and_counter(rng: &mut (impl CryptoRng + RngCore)) -> (Address<CurrentNetwork>, u64) {
+        fn sample_address_and_counter(rng: &mut (impl CryptoRng + RngCore)) -> (Address, u64) {
             let private_key = PrivateKey::new(rng).unwrap();
             let address = Address::try_from(private_key).unwrap();
             let counter = rng.next_u64();

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Neg for Field<E> {
+impl Neg for Field {
     type Output = Self;
 
     /// Performs the unary `-` operation.
@@ -23,8 +23,8 @@ impl<E: Environment> Neg for Field<E> {
     }
 }
 
-impl<E: Environment> Neg for &Field<E> {
-    type Output = Field<E>;
+impl Neg for &Field {
+    type Output = Field;
 
     /// Performs the unary `-` operation.
     fn neg(self) -> Self::Output {
@@ -32,7 +32,7 @@ impl<E: Environment> Neg for &Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn Neg<Output = Field<E>>> for Field<E> {
+impl Metrics<dyn Neg<Output = Field>> for Field {
     type Case = Mode;
 
     fn count(_case: &Self::Case) -> Count {
@@ -40,7 +40,7 @@ impl<E: Environment> Metrics<dyn Neg<Output = Field<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn Neg<Output = Field<E>>> for Field<E> {
+impl OutputMode<dyn Neg<Output = Field>> for Field {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -59,10 +59,10 @@ mod tests {
     const ITERATIONS: u64 = 1_000;
 
     fn check_neg(name: &str, mode: Mode, rng: &mut TestRng) {
-        let check_neg = |given: console::Field<<Circuit as Environment>::Network>| {
+        let check_neg = |given: console::Field| {
             // Compute it's negation.
             let expected = given.neg();
-            let candidate = Field::<Circuit>::new(mode, given);
+            let candidate = Field::new(mode, given);
 
             // Check negation.
             Circuit::scope(name, || {
@@ -79,9 +79,9 @@ mod tests {
             check_neg(given)
         }
         // Check zero case.
-        check_neg(console::Field::<<Circuit as Environment>::Network>::zero());
+        check_neg(console::Field::zero());
         // Check one case.
-        check_neg(console::Field::<<Circuit as Environment>::Network>::one());
+        check_neg(console::Field::one());
     }
 
     #[test]
@@ -95,19 +95,19 @@ mod tests {
 
     #[test]
     fn test_zero() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
 
-        let candidate = Field::<Circuit>::zero();
+        let candidate = Field::zero();
         assert_eq!(zero, candidate.eject_value());
         assert_eq!(zero, (-&candidate).eject_value());
         assert_eq!(zero, (-(-candidate)).eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero);
+        let candidate = Field::new(Mode::Public, zero);
         assert_eq!(zero, candidate.eject_value());
         assert_eq!(zero, (-&candidate).eject_value());
         assert_eq!(zero, (-(-candidate)).eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Private, zero);
         assert_eq!(zero, candidate.eject_value());
         assert_eq!(zero, (-&candidate).eject_value());
         assert_eq!(zero, (-(-candidate)).eject_value());
@@ -115,19 +115,19 @@ mod tests {
 
     #[test]
     fn test_one() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
 
-        let candidate = Field::<Circuit>::one();
+        let candidate = Field::one();
         assert_eq!(one, candidate.eject_value());
         assert_eq!(-one, (-&candidate).eject_value());
         assert_eq!(one, (-(-candidate)).eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one);
+        let candidate = Field::new(Mode::Public, one);
         assert_eq!(one, candidate.eject_value());
         assert_eq!(-one, (-&candidate).eject_value());
         assert_eq!(one, (-(-candidate)).eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, one);
+        let candidate = Field::new(Mode::Private, one);
         assert_eq!(one, candidate.eject_value());
         assert_eq!(-one, (-&candidate).eject_value());
         assert_eq!(one, (-(-candidate)).eject_value());

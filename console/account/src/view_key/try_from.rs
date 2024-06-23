@@ -63,7 +63,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new compute key and view key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let compute_key = ComputeKey::try_from(private_key)?;
             let view_key = ViewKey::try_from(private_key)?;
 

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for PartialSolution<N> {
+impl FromStr for PartialSolution {
     type Err = Error;
 
     /// Initializes the partial solution from a JSON-string.
@@ -23,14 +23,14 @@ impl<N: Network> FromStr for PartialSolution<N> {
     }
 }
 
-impl<N: Network> Debug for PartialSolution<N> {
+impl Debug for PartialSolution {
     /// Prints the partial solution as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for PartialSolution<N> {
+impl Display for PartialSolution {
     /// Displays the partial solution as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", serde_json::to_string(self).map_err::<fmt::Error, _>(ser::Error::custom)?)
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_string() -> Result<()> {
         let mut rng = TestRng::default();
-        let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+        let private_key = PrivateKey::new(&mut rng)?;
         let address = Address::try_from(private_key)?;
 
         // Sample a new partial solution.

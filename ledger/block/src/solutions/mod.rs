@@ -25,7 +25,7 @@ use ledger_puzzle::{PuzzleSolutions, SolutionID};
 #[derive(Clone, Eq, PartialEq)]
 pub struct Solutions<N: Network> {
     /// The prover solutions for the puzzle.
-    solutions: Option<PuzzleSolutions<N>>,
+    solutions: Option<PuzzleSolutions>,
 }
 
 impl<N: Network> Solutions<N> {
@@ -35,9 +35,9 @@ impl<N: Network> Solutions<N> {
         * Committee::<N>::MAX_COMMITTEE_SIZE as usize;
 }
 
-impl<N: Network> From<Option<PuzzleSolutions<N>>> for Solutions<N> {
+impl<N: Network> From<Option<PuzzleSolutions>> for Solutions<N> {
     /// Initializes a new instance of the solutions.
-    fn from(solutions: Option<PuzzleSolutions<N>>) -> Self {
+    fn from(solutions: Option<PuzzleSolutions>) -> Self {
         // Return the solutions.
         Self { solutions }
     }
@@ -45,7 +45,7 @@ impl<N: Network> From<Option<PuzzleSolutions<N>>> for Solutions<N> {
 
 impl<N: Network> Solutions<N> {
     /// Initializes a new instance of the solutions.
-    pub fn new(solutions: PuzzleSolutions<N>) -> Result<Self> {
+    pub fn new(solutions: PuzzleSolutions) -> Result<Self> {
         // Return the solutions.
         Ok(Self { solutions: Some(solutions) })
     }
@@ -66,16 +66,16 @@ impl<N: Network> Solutions<N> {
 
 impl<N: Network> Solutions<N> {
     /// Returns an iterator over the solution IDs.
-    pub fn solution_ids<'a>(&'a self) -> Box<dyn Iterator<Item = &'a SolutionID<N>> + 'a> {
+    pub fn solution_ids<'a>(&'a self) -> Box<dyn Iterator<Item = &'a SolutionID> + 'a> {
         match &self.solutions {
             Some(solutions) => Box::new(solutions.keys()),
-            None => Box::new(std::iter::empty::<&SolutionID<N>>()),
+            None => Box::new(std::iter::empty::<&SolutionID>()),
         }
     }
 }
 
 impl<N: Network> Deref for Solutions<N> {
-    type Target = Option<PuzzleSolutions<N>>;
+    type Target = Option<PuzzleSolutions>;
 
     /// Returns the solutions.
     fn deref(&self) -> &Self::Target {

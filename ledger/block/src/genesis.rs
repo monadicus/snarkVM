@@ -21,7 +21,7 @@ impl<N: Network> Block<N> {
     /// Returns `true` if the block is a genesis block.
     pub fn is_genesis(&self) -> bool {
         // Ensure the previous block hash is zero.
-        self.previous_hash == N::BlockHash::default()
+        self.previous_hash == BlockHash::default()
             // Ensure the header is a genesis block header.
             && self.header.is_genesis()
             // Ensure the genesis authority is a beacon.

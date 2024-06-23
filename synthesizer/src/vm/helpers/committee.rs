@@ -41,7 +41,7 @@ pub fn committee_and_delegated_maps_into_committee<N: Network>(
     let commission_identifier: Identifier<N> = Identifier::from_str("commission")?;
 
     // Extract the committee members.
-    let committee_members: IndexMap<Address<N>, (u64, bool, u8)> = committee_map
+    let committee_members: IndexMap<Address, (u64, bool, u8)> = committee_map
         .iter()
         .map(|(key, value)| {
             // Extract the address from the key.
@@ -101,7 +101,7 @@ pub fn committee_and_delegated_maps_into_committee<N: Network>(
 /// Returns the stakers given the bonded map from finalize storage.
 pub fn bonded_map_into_stakers<N: Network>(
     bonded_map: Vec<(Plaintext<N>, Value<N>)>,
-) -> Result<IndexMap<Address<N>, (Address<N>, u64)>> {
+) -> Result<IndexMap<Address, (Address, u64)>> {
     // Prepare the identifiers.
     let validator_identifier = Identifier::from_str("validator")?;
     let microcredits_identifier = Identifier::from_str("microcredits")?;
@@ -140,7 +140,7 @@ pub fn bonded_map_into_stakers<N: Network>(
 /// Checks that the given committee from committee storage matches the given stakers.
 pub fn ensure_stakers_matches<N: Network>(
     committee: &Committee<N>,
-    stakers: &IndexMap<Address<N>, (Address<N>, u64)>,
+    stakers: &IndexMap<Address, (Address, u64)>,
 ) -> Result<()> {
     // Construct the validator map.
     let validator_map: IndexMap<_, _> = cfg_reduce!(
@@ -192,7 +192,7 @@ pub fn ensure_stakers_matches<N: Network>(
 pub fn to_next_committee<N: Network>(
     current_committee: &Committee<N>,
     next_round: u64,
-    next_delegated: &IndexMap<Address<N>, u64>,
+    next_delegated: &IndexMap<Address, u64>,
 ) -> Result<Committee<N>> {
     // Return the next committee.
     Committee::new(
@@ -209,11 +209,9 @@ pub fn to_next_committee<N: Network>(
     )
 }
 
-pub fn to_next_delegated<N: Network>(
-    next_stakers: &IndexMap<Address<N>, (Address<N>, u64)>,
-) -> IndexMap<Address<N>, u64> {
+pub fn to_next_delegated<N: Network>(next_stakers: &IndexMap<Address, (Address, u64)>) -> IndexMap<Address, u64> {
     // Construct the delegated map.
-    let delegated_map: IndexMap<Address<N>, u64> = cfg_reduce!(
+    let delegated_map: IndexMap<Address, u64> = cfg_reduce!(
         cfg_into_iter!(next_stakers).map(|(_, (delegatee, microcredits))| indexmap! {*delegatee => *microcredits}),
         || IndexMap::new(),
         |mut acc, e| {
@@ -231,8 +229,8 @@ pub fn to_next_delegated<N: Network>(
 /// Returns the committee map, bonded map, and delegated map, given the committee and stakers.
 pub fn to_next_committee_bonded_delegated_map<N: Network>(
     next_committee: &Committee<N>,
-    next_stakers: &IndexMap<Address<N>, (Address<N>, u64)>,
-    next_delegated: &IndexMap<Address<N>, u64>,
+    next_stakers: &IndexMap<Address, (Address, u64)>,
+    next_delegated: &IndexMap<Address, u64>,
 ) -> (Vec<(Plaintext<N>, Value<N>)>, Vec<(Plaintext<N>, Value<N>)>, Vec<(Plaintext<N>, Value<N>)>) {
     // Prepare the identifiers.
     let validator_identifier = Identifier::from_str("validator").expect("Failed to parse 'validator'");
@@ -287,7 +285,7 @@ pub fn to_next_committee_bonded_delegated_map<N: Network>(
 
 /// Returns the withdraw map, given the withdrawal addresses.
 pub fn to_next_withdraw_map<N: Network>(
-    withdrawal_addresses: &IndexMap<Address<N>, Address<N>>,
+    withdrawal_addresses: &IndexMap<Address, Address>,
 ) -> Vec<(Plaintext<N>, Value<N>)> {
     cfg_iter!(withdrawal_addresses)
         .map(|(staker, withdraw_address)| {
@@ -310,9 +308,9 @@ pub(crate) mod test_helpers {
     /// Returns the stakers, given the map of `(validator, (microcredits, is_open, commission))` entries.
     /// This method simulates the existence of delegators for the members.
     pub(crate) fn to_stakers<N: Network, R: Rng + CryptoRng>(
-        members: &IndexMap<Address<N>, (u64, bool, u8)>,
+        members: &IndexMap<Address, (u64, bool, u8)>,
         rng: &mut R,
-    ) -> IndexMap<Address<N>, (Address<N>, u64)> {
+    ) -> IndexMap<Address, (Address, u64)> {
         members
             .into_iter()
             .flat_map(|(validator, (microcredits, _, _))| {
@@ -351,18 +349,16 @@ pub(crate) mod test_helpers {
 
     /// Returns the validator delegation totals, given the map of `(validator, (microcredits, is_open, commission))` entries.
     /// This method simulates the existence of delegators for the members.
-    pub(crate) fn to_delegations<N: Network>(
-        members: &IndexMap<Address<N>, (u64, bool, u8)>,
-    ) -> IndexMap<Address<N>, u64> {
+    pub(crate) fn to_delegations<N: Network>(members: &IndexMap<Address, (u64, bool, u8)>) -> IndexMap<Address, u64> {
         members.into_iter().map(|(validator, (microcredits, _, _))| (*validator, *microcredits)).collect()
     }
 
     /// Returns the withdrawal addresses, given the stakers.
     /// This method simulates the existence of unique withdrawal addresses for the stakers.
     pub(crate) fn to_withdraw_addresses<N: Network, R: Rng + CryptoRng>(
-        stakers: &IndexMap<Address<N>, (Address<N>, u64)>,
+        stakers: &IndexMap<Address, (Address, u64)>,
         rng: &mut R,
-    ) -> IndexMap<Address<N>, Address<N>> {
+    ) -> IndexMap<Address, Address> {
         stakers
             .into_iter()
             .map(|(staker, _)| {
@@ -385,7 +381,7 @@ mod tests {
     use std::str::FromStr;
 
     /// Returns the committee map, given the map of `(validator, (microcredits, is_open, commission))` entries.
-    fn to_committee_map<N: Network>(members: &IndexMap<Address<N>, (u64, bool, u8)>) -> Vec<(Plaintext<N>, Value<N>)> {
+    fn to_committee_map<N: Network>(members: &IndexMap<Address, (u64, bool, u8)>) -> Vec<(Plaintext<N>, Value<N>)> {
         members
             .par_iter()
             .map(|(validator, (_, is_open, commission))| {
@@ -400,7 +396,7 @@ mod tests {
     }
 
     /// Returns the delegated map, given the map of `(validator, (microcredits, is_open, commission))` entries.
-    fn to_delegated_map<N: Network>(members: &IndexMap<Address<N>, (u64, bool, u8)>) -> Vec<(Plaintext<N>, Value<N>)> {
+    fn to_delegated_map<N: Network>(members: &IndexMap<Address, (u64, bool, u8)>) -> Vec<(Plaintext<N>, Value<N>)> {
         members
             .par_iter()
             .map(|(validator, (microcredits, _, _))| {
@@ -413,7 +409,7 @@ mod tests {
     }
 
     /// Returns the bonded map, given the staker, validator and microcredits.
-    fn to_bonded_map<N: Network>(stakers: &IndexMap<Address<N>, (Address<N>, u64)>) -> Vec<(Plaintext<N>, Value<N>)> {
+    fn to_bonded_map<N: Network>(stakers: &IndexMap<Address, (Address, u64)>) -> Vec<(Plaintext<N>, Value<N>)> {
         // Prepare the identifiers.
         let validator_identifier = Identifier::from_str("validator").expect("Failed to parse 'validator'");
         let microcredits_identifier = Identifier::from_str("microcredits").expect("Failed to parse 'microcredits'");
@@ -438,7 +434,7 @@ mod tests {
     /// Returns the withdrawal addresses given the withdraw map from finalize storage.
     pub fn withdraw_map_to_withdrawal_addresses<N: Network>(
         withdraw_map: Vec<(Plaintext<N>, Value<N>)>,
-    ) -> Result<IndexMap<Address<N>, Address<N>>> {
+    ) -> Result<IndexMap<Address, Address>> {
         // Convert the given key and value into a staker entry.
         let convert = |key, value| {
             // Extract the staker from the key.

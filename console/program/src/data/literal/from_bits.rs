@@ -148,7 +148,7 @@ mod tests {
             check_serialization(Literal::sample(LiteralType::Signature, rng))?;
             // String
             // Sample a random string. Take 1/4th to ensure we fit for all code points.
-            let string = rng.next_string(CurrentNetwork::MAX_STRING_BYTES / 4, false);
+            let string = rng.next_string(Console::MAX_STRING_BYTES / 4, false);
             check_serialization(Literal::String(StringType::new(&string)))?;
         }
         Ok(())

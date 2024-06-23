@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> FromBytes
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> FromBytes
     for FunctionCore<N, Instruction, Command>
 {
     /// Reads the function from a buffer.
@@ -72,7 +72,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fro
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> ToBytes
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> ToBytes
     for FunctionCore<N, Instruction, Command>
 {
     /// Writes the function to a buffer.

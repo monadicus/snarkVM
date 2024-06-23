@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+
 use super::*;
 
-impl<A: Aleo> FromBits for Ciphertext<A> {
-    type Boolean = Boolean<A>;
+impl FromBits for Ciphertext {
+    type Boolean = Boolean;
 
     /// Returns this ciphertext as a list of **little-endian** bits.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
-        Self(bits_le.chunks(A::BaseField::size_in_bits()).map(Field::from_bits_le).collect())
+        Self(bits_le.chunks(ConsoleField::size_in_bits()).map(Field::from_bits_le).collect())
     }
 
     /// Returns this ciphertext as a list of **big-endian** bits.
     fn from_bits_be(bits_be: &[Self::Boolean]) -> Self {
-        Self(bits_be.chunks(A::BaseField::size_in_bits()).map(Field::from_bits_be).collect())
+        Self(bits_be.chunks(ConsoleField::size_in_bits()).map(Field::from_bits_be).collect())
     }
 }

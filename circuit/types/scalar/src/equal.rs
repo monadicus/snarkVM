@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal<Self> for Scalar<E> {
-    type Output = Boolean<E>;
+impl Equal<Self> for Scalar {
+    type Output = Boolean;
 
     ///
     /// Returns `true` if `self` and `other` are equal.
@@ -40,8 +40,8 @@ mod tests {
     fn check_is_equal(
         name: &str,
         expected: bool,
-        a: Scalar<Circuit>,
-        b: Scalar<Circuit>,
+        a: Scalar,
+        b: Scalar,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -64,14 +64,14 @@ mod tests {
 
         // a == a
         let expected = true;
-        let a = Scalar::<Circuit>::new(Mode::Constant, first);
-        let b = Scalar::<Circuit>::new(Mode::Constant, first);
+        let a = Scalar::new(Mode::Constant, first);
+        let b = Scalar::new(Mode::Constant, first);
         check_is_equal("a == a", expected, a, b, 1, 0, 0, 0);
 
         // a != b
         let expected = false;
-        let a = Scalar::<Circuit>::new(Mode::Constant, first);
-        let b = Scalar::<Circuit>::new(Mode::Constant, second);
+        let a = Scalar::new(Mode::Constant, first);
+        let b = Scalar::new(Mode::Constant, second);
         check_is_equal("a != b", expected, a, b, 1, 0, 0, 0);
     }
 
@@ -84,14 +84,14 @@ mod tests {
 
         // a == a
         let expected = true;
-        let a = Scalar::<Circuit>::new(Mode::Constant, first);
-        let b = Scalar::<Circuit>::new(Mode::Public, first);
+        let a = Scalar::new(Mode::Constant, first);
+        let b = Scalar::new(Mode::Public, first);
         check_is_equal("a == a", expected, a, b, 0, 0, 2, 2);
 
         // a != b
         let expected = false;
-        let a = Scalar::<Circuit>::new(Mode::Constant, first);
-        let b = Scalar::<Circuit>::new(Mode::Public, second);
+        let a = Scalar::new(Mode::Constant, first);
+        let b = Scalar::new(Mode::Public, second);
         check_is_equal("a != b", expected, a, b, 0, 0, 2, 2);
     }
 
@@ -104,14 +104,14 @@ mod tests {
 
         // a == a
         let expected = true;
-        let a = Scalar::<Circuit>::new(Mode::Public, first);
-        let b = Scalar::<Circuit>::new(Mode::Constant, first);
+        let a = Scalar::new(Mode::Public, first);
+        let b = Scalar::new(Mode::Constant, first);
         check_is_equal("a == a", expected, a, b, 0, 0, 2, 2);
 
         // a != b
         let expected = false;
-        let a = Scalar::<Circuit>::new(Mode::Public, first);
-        let b = Scalar::<Circuit>::new(Mode::Constant, second);
+        let a = Scalar::new(Mode::Public, first);
+        let b = Scalar::new(Mode::Constant, second);
         check_is_equal("a != b", expected, a, b, 0, 0, 2, 2);
     }
 
@@ -124,14 +124,14 @@ mod tests {
 
         // a == a
         let expected = true;
-        let a = Scalar::<Circuit>::new(Mode::Public, first);
-        let b = Scalar::<Circuit>::new(Mode::Public, first);
+        let a = Scalar::new(Mode::Public, first);
+        let b = Scalar::new(Mode::Public, first);
         check_is_equal("a == a", expected, a, b, 0, 0, 2, 2);
 
         // a != b
         let expected = false;
-        let a = Scalar::<Circuit>::new(Mode::Public, first);
-        let b = Scalar::<Circuit>::new(Mode::Public, second);
+        let a = Scalar::new(Mode::Public, first);
+        let b = Scalar::new(Mode::Public, second);
         check_is_equal("a != b", expected, a, b, 0, 0, 2, 2);
     }
 
@@ -144,14 +144,14 @@ mod tests {
 
         // a == a
         let expected = true;
-        let a = Scalar::<Circuit>::new(Mode::Public, first);
-        let b = Scalar::<Circuit>::new(Mode::Private, first);
+        let a = Scalar::new(Mode::Public, first);
+        let b = Scalar::new(Mode::Private, first);
         check_is_equal("a == a", expected, a, b, 0, 0, 2, 2);
 
         // a != b
         let expected = false;
-        let a = Scalar::<Circuit>::new(Mode::Public, first);
-        let b = Scalar::<Circuit>::new(Mode::Private, second);
+        let a = Scalar::new(Mode::Public, first);
+        let b = Scalar::new(Mode::Private, second);
         check_is_equal("a != b", expected, a, b, 0, 0, 2, 2);
     }
 
@@ -164,14 +164,14 @@ mod tests {
 
         // a == a
         let expected = true;
-        let a = Scalar::<Circuit>::new(Mode::Private, first);
-        let b = Scalar::<Circuit>::new(Mode::Private, first);
+        let a = Scalar::new(Mode::Private, first);
+        let b = Scalar::new(Mode::Private, first);
         check_is_equal("a == a", expected, a, b, 0, 0, 2, 2);
 
         // a != b
         let expected = false;
-        let a = Scalar::<Circuit>::new(Mode::Private, first);
-        let b = Scalar::<Circuit>::new(Mode::Private, second);
+        let a = Scalar::new(Mode::Private, first);
+        let b = Scalar::new(Mode::Private, second);
         check_is_equal("a != b", expected, a, b, 0, 0, 2, 2);
     }
 }

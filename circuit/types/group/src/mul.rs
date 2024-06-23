@@ -14,159 +14,159 @@
 
 use super::*;
 
-impl<E: Environment> Mul<Scalar<E>> for Group<E> {
-    type Output = Group<E>;
+impl Mul<Scalar> for Group {
+    type Output = Group;
 
-    fn mul(self, other: Scalar<E>) -> Self::Output {
+    fn mul(self, other: Scalar) -> Self::Output {
         self * &other
     }
 }
 
-impl<E: Environment> Mul<Scalar<E>> for &Group<E> {
-    type Output = Group<E>;
+impl Mul<Scalar> for &Group {
+    type Output = Group;
 
-    fn mul(self, other: Scalar<E>) -> Self::Output {
+    fn mul(self, other: Scalar) -> Self::Output {
         self * &other
     }
 }
 
-impl<E: Environment> Mul<&Scalar<E>> for Group<E> {
-    type Output = Group<E>;
+impl Mul<&Scalar> for Group {
+    type Output = Group;
 
-    fn mul(self, other: &Scalar<E>) -> Self::Output {
+    fn mul(self, other: &Scalar) -> Self::Output {
         let mut output = self;
         output *= other;
         output
     }
 }
 
-impl<E: Environment> Mul<&Scalar<E>> for &Group<E> {
-    type Output = Group<E>;
+impl Mul<&Scalar> for &Group {
+    type Output = Group;
 
-    fn mul(self, other: &Scalar<E>) -> Self::Output {
+    fn mul(self, other: &Scalar) -> Self::Output {
         (*self).clone() * other
     }
 }
 
-impl<E: Environment> Mul<Group<E>> for Scalar<E> {
-    type Output = Group<E>;
+impl Mul<Group> for Scalar {
+    type Output = Group;
 
-    fn mul(self, other: Group<E>) -> Self::Output {
+    fn mul(self, other: Group) -> Self::Output {
         other * &self
     }
 }
 
-impl<E: Environment> Mul<Group<E>> for &Scalar<E> {
-    type Output = Group<E>;
+impl Mul<Group> for &Scalar {
+    type Output = Group;
 
-    fn mul(self, other: Group<E>) -> Self::Output {
+    fn mul(self, other: Group) -> Self::Output {
         &other * self
     }
 }
 
-impl<E: Environment> Mul<&Group<E>> for Scalar<E> {
-    type Output = Group<E>;
+impl Mul<&Group> for Scalar {
+    type Output = Group;
 
-    fn mul(self, other: &Group<E>) -> Self::Output {
+    fn mul(self, other: &Group) -> Self::Output {
         other * &self
     }
 }
 
-impl<E: Environment> Mul<&Group<E>> for &Scalar<E> {
-    type Output = Group<E>;
+impl Mul<&Group> for &Scalar {
+    type Output = Group;
 
-    fn mul(self, other: &Group<E>) -> Self::Output {
+    fn mul(self, other: &Group) -> Self::Output {
         other * self
     }
 }
 
-impl<E: Environment> MulAssign<Scalar<E>> for Group<E> {
-    fn mul_assign(&mut self, other: Scalar<E>) {
+impl MulAssign<Scalar> for Group {
+    fn mul_assign(&mut self, other: Scalar) {
         *self *= &other;
     }
 }
 
-impl<E: Environment> MulAssign<&Scalar<E>> for Group<E> {
-    fn mul_assign(&mut self, other: &Scalar<E>) {
+impl MulAssign<&Scalar> for Group {
+    fn mul_assign(&mut self, other: &Scalar) {
         *self *= other.to_bits_be().as_slice();
     }
 }
 
-impl<E: Environment, const N: usize> Mul<[Boolean<E>; N]> for Group<E> {
-    type Output = Group<E>;
+impl<const N: usize> Mul<[Boolean; N]> for Group {
+    type Output = Group;
 
-    fn mul(self, other: [Boolean<E>; N]) -> Self::Output {
+    fn mul(self, other: [Boolean; N]) -> Self::Output {
         self * &other[..]
     }
 }
 
-impl<E: Environment, const N: usize> Mul<[Boolean<E>; N]> for &Group<E> {
-    type Output = Group<E>;
+impl<const N: usize> Mul<[Boolean; N]> for &Group {
+    type Output = Group;
 
-    fn mul(self, other: [Boolean<E>; N]) -> Self::Output {
+    fn mul(self, other: [Boolean; N]) -> Self::Output {
         self * &other[..]
     }
 }
 
-impl<E: Environment> Mul<&[Boolean<E>]> for Group<E> {
-    type Output = Group<E>;
+impl Mul<&[Boolean]> for Group {
+    type Output = Group;
 
-    fn mul(self, other: &[Boolean<E>]) -> Self::Output {
+    fn mul(self, other: &[Boolean]) -> Self::Output {
         let mut output = self;
         output *= other;
         output
     }
 }
 
-impl<E: Environment> Mul<&[Boolean<E>]> for &Group<E> {
-    type Output = Group<E>;
+impl Mul<&[Boolean]> for &Group {
+    type Output = Group;
 
-    fn mul(self, other: &[Boolean<E>]) -> Self::Output {
+    fn mul(self, other: &[Boolean]) -> Self::Output {
         (*self).clone() * other
     }
 }
 
-impl<E: Environment, const N: usize> Mul<Group<E>> for [Boolean<E>; N] {
-    type Output = Group<E>;
+impl<const N: usize> Mul<Group> for [Boolean; N] {
+    type Output = Group;
 
-    fn mul(self, other: Group<E>) -> Self::Output {
+    fn mul(self, other: Group) -> Self::Output {
         other * &self[..]
     }
 }
 
-impl<E: Environment> Mul<Group<E>> for &[Boolean<E>] {
-    type Output = Group<E>;
+impl Mul<Group> for &[Boolean] {
+    type Output = Group;
 
-    fn mul(self, other: Group<E>) -> Self::Output {
+    fn mul(self, other: Group) -> Self::Output {
         &other * self
     }
 }
 
-impl<E: Environment, const N: usize> Mul<&Group<E>> for [Boolean<E>; N] {
-    type Output = Group<E>;
+impl<const N: usize> Mul<&Group> for [Boolean; N] {
+    type Output = Group;
 
-    fn mul(self, other: &Group<E>) -> Self::Output {
+    fn mul(self, other: &Group) -> Self::Output {
         other * &self[..]
     }
 }
 
-impl<E: Environment> Mul<&Group<E>> for &[Boolean<E>] {
-    type Output = Group<E>;
+impl Mul<&Group> for &[Boolean] {
+    type Output = Group;
 
-    fn mul(self, other: &Group<E>) -> Self::Output {
+    fn mul(self, other: &Group) -> Self::Output {
         other * self
     }
 }
 
-impl<E: Environment, const N: usize> MulAssign<[Boolean<E>; N]> for Group<E> {
-    fn mul_assign(&mut self, other: [Boolean<E>; N]) {
+impl<const N: usize> MulAssign<[Boolean; N]> for Group {
+    fn mul_assign(&mut self, other: [Boolean; N]) {
         *self *= &other[..];
     }
 }
 
-impl<E: Environment> MulAssign<&[Boolean<E>]> for Group<E> {
+impl MulAssign<&[Boolean]> for Group {
     #[allow(clippy::suspicious_op_assign_impl)]
-    fn mul_assign(&mut self, other: &[Boolean<E>]) {
+    fn mul_assign(&mut self, other: &[Boolean]) {
         let base = self.clone();
 
         let mut output = Group::zero();
@@ -187,9 +187,9 @@ mod tests {
 
     fn check_mul(
         name: &str,
-        expected: &console::Group<<Circuit as Environment>::Network>,
-        a: &Group<Circuit>,
-        b: &Scalar<Circuit>,
+        expected: &console::Group,
+        a: &Group,
+        b: &Scalar,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -205,9 +205,9 @@ mod tests {
 
     fn check_mul_assign(
         name: &str,
-        expected: &console::Group<<Circuit as Environment>::Network>,
-        a: &Group<Circuit>,
-        b: &Scalar<Circuit>,
+        expected: &console::Group,
+        a: &Group,
+        b: &Scalar,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -233,15 +233,15 @@ mod tests {
 
         for i in 0..ITERATIONS {
             let base = Uniform::rand(&mut rng);
-            let scalar: console::Scalar<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let scalar: console::Scalar = Uniform::rand(&mut rng);
 
             let num_nonzero_bits = (*scalar).to_bigint().to_biguint().bits();
             let num_constant =
                 (3 /* DOUBLE private */ + 4/* public ADD private */ + 0/* TERNARY */) * (num_nonzero_bits - 1) + 251; // Typically around 760.
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Constant, base);
-            let b = Scalar::<Circuit>::new(Mode::Constant, scalar);
+            let a = Group::new(Mode::Constant, base);
+            let b = Scalar::new(Mode::Constant, scalar);
 
             let name = format!("Mul: a * b {i}");
             check_mul(&name, &expected, &a, &b, num_constant, 0, 0, 0);
@@ -259,8 +259,8 @@ mod tests {
             let scalar = Uniform::rand(&mut rng);
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Constant, base);
-            let b = Scalar::<Circuit>::new(Mode::Public, scalar);
+            let a = Group::new(Mode::Constant, base);
+            let b = Scalar::new(Mode::Public, scalar);
 
             let name = format!("Mul: a * b {}", i);
             check_mul(&name, &expected, &a, &b, 750, 0, 3001, 3003);
@@ -278,8 +278,8 @@ mod tests {
             let scalar = Uniform::rand(&mut rng);
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Constant, base);
-            let b = Scalar::<Circuit>::new(Mode::Private, scalar);
+            let a = Group::new(Mode::Constant, base);
+            let b = Scalar::new(Mode::Private, scalar);
 
             let name = format!("Mul: a * b {}", i);
             check_mul(&name, &expected, &a, &b, 750, 0, 3001, 3003);
@@ -297,7 +297,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             let base = Uniform::rand(&mut rng);
-            let scalar: console::Scalar<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let scalar: console::Scalar = Uniform::rand(&mut rng);
 
             let num_nonzero_bits = (*scalar).to_bigint().to_biguint().bits();
             let num_constant =
@@ -308,8 +308,8 @@ mod tests {
                 (5 /* DOUBLE private */ + 6/* public ADD private */ + 0/* TERNARY */) * (num_nonzero_bits - 1); // Typically around 2700.
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Public, base);
-            let b = Scalar::<Circuit>::new(Mode::Constant, scalar);
+            let a = Group::new(Mode::Public, base);
+            let b = Scalar::new(Mode::Constant, scalar);
 
             let name = format!("Mul: a * b {i}");
             check_mul(&name, &expected, &a, &b, num_constant, 0, num_private, num_constraints);
@@ -327,7 +327,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             let base = Uniform::rand(&mut rng);
-            let scalar: console::Scalar<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let scalar: console::Scalar = Uniform::rand(&mut rng);
 
             let num_nonzero_bits = (*scalar).to_bigint().to_biguint().bits();
             let num_constant =
@@ -338,8 +338,8 @@ mod tests {
                 (5 /* DOUBLE private */ + 6/* private ADD private */ + 0/* TERNARY */) * (num_nonzero_bits - 1); // Typically around 2700.
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Private, base);
-            let b = Scalar::<Circuit>::new(Mode::Constant, scalar);
+            let a = Group::new(Mode::Private, base);
+            let b = Scalar::new(Mode::Constant, scalar);
 
             let name = format!("Mul: a * b {i}");
             check_mul(&name, &expected, &a, &b, num_constant, 0, num_private, num_constraints);
@@ -357,8 +357,8 @@ mod tests {
             let scalar = Uniform::rand(&mut rng);
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Public, base);
-            let b = Scalar::<Circuit>::new(Mode::Public, scalar);
+            let a = Group::new(Mode::Public, base);
+            let b = Scalar::new(Mode::Public, scalar);
 
             let name = format!("Mul: a * b {}", i);
             check_mul(&name, &expected, &a, &b, 750, 0, 3753, 3755);
@@ -376,8 +376,8 @@ mod tests {
             let scalar = Uniform::rand(&mut rng);
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Public, base);
-            let b = Scalar::<Circuit>::new(Mode::Private, scalar);
+            let a = Group::new(Mode::Public, base);
+            let b = Scalar::new(Mode::Private, scalar);
 
             let name = format!("Mul: a * b {}", i);
             check_mul(&name, &expected, &a, &b, 750, 0, 3753, 3755);
@@ -395,8 +395,8 @@ mod tests {
             let scalar = Uniform::rand(&mut rng);
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Private, base);
-            let b = Scalar::<Circuit>::new(Mode::Public, scalar);
+            let a = Group::new(Mode::Private, base);
+            let b = Scalar::new(Mode::Public, scalar);
 
             let name = format!("Mul: a * b {}", i);
             check_mul(&name, &expected, &a, &b, 750, 0, 3753, 3755);
@@ -414,8 +414,8 @@ mod tests {
             let scalar = Uniform::rand(&mut rng);
 
             let expected = base * scalar;
-            let a = Group::<Circuit>::new(Mode::Private, base);
-            let b = Scalar::<Circuit>::new(Mode::Private, scalar);
+            let a = Group::new(Mode::Private, base);
+            let b = Scalar::new(Mode::Private, scalar);
 
             let name = format!("Mul: a * b {}", i);
             check_mul(&name, &expected, &a, &b, 750, 0, 3753, 3755);
@@ -434,14 +434,14 @@ mod tests {
         let expected = a * b;
 
         // Constant
-        let base = Group::<Circuit>::new(Mode::Constant, a);
-        let scalar = Scalar::<Circuit>::new(Mode::Constant, b);
+        let base = Group::new(Mode::Constant, a);
+        let scalar = Scalar::new(Mode::Constant, b);
         let candidate_a = base * scalar;
         assert_eq!(expected, candidate_a.eject_value());
 
         // Private
-        let base = Group::<Circuit>::new(Mode::Private, a);
-        let scalar = Scalar::<Circuit>::new(Mode::Private, b);
+        let base = Group::new(Mode::Private, a);
+        let scalar = Scalar::new(Mode::Private, b);
         let candidate_b = base * scalar;
         assert_eq!(expected, candidate_b.eject_value());
     }

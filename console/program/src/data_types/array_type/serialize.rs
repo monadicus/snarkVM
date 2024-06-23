@@ -37,7 +37,6 @@ impl<'de> Deserialize<'de> for ArrayType {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
 
     /// Add test cases here to be checked for serialization.
     pub(crate) const TEST_CASES: &[&str] = &[
@@ -100,14 +99,14 @@ pub(crate) mod tests {
     #[test]
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
-            check_serde_json(ArrayType::<MainnetV0>::from_str(case).unwrap());
+            check_serde_json(ArrayType::from_str(case).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for case in TEST_CASES.iter() {
-            check_bincode(ArrayType::<MainnetV0>::from_str(case).unwrap());
+            check_bincode(ArrayType::from_str(case).unwrap());
         }
     }
 }

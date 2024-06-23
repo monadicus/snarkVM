@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> FromField for Integer<E, I> {
-    type Field = Field<E>;
+impl<I: IntegerType> FromField for Integer<I> {
+    type Field = Field;
 
     /// Casts an integer from a base field.
     ///
@@ -26,7 +26,7 @@ impl<E: Environment, I: IntegerType> FromField for Integer<E, I> {
         // Note: We are reconstituting the integer from the base field.
         // This is safe as the number of bits in the integer is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(I::BITS < E::BaseField::size_in_bits() as u64);
+        debug_assert!(I::BITS < ConsoleField::size_in_bits() as u64);
 
         // Extract the integer bits from the field element, **without** a carry bit.
         let bits_le = field.to_lower_bits_le(I::BITS as usize);
@@ -47,7 +47,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random integer.
             let expected = Uniform::rand(rng);
-            let candidate = Integer::<Circuit, I>::new(mode, expected).to_field();
+            let candidate = Integer::<I>::new(mode, expected).to_field();
 
             Circuit::scope(format!("{mode} {expected} {i}"), || {
                 // Perform the operation.
@@ -61,26 +61,26 @@ mod tests {
             Circuit::reset();
 
             // Sample a random field.
-            let expected = Field::<Circuit>::new(mode, Uniform::rand(rng));
+            let expected = Field::new(mode, Uniform::rand(rng));
             // Determine the integer domain.
             let integer_max = match I::type_name() {
-                "u8" | "i8" => console::Field::<<Circuit as Environment>::Network>::from_u8(u8::MAX),
-                "u16" | "i16" => console::Field::<<Circuit as Environment>::Network>::from_u16(u16::MAX),
-                "u32" | "i32" => console::Field::<<Circuit as Environment>::Network>::from_u32(u32::MAX),
-                "u64" | "i64" => console::Field::<<Circuit as Environment>::Network>::from_u64(u64::MAX),
-                "u128" | "i128" => console::Field::<<Circuit as Environment>::Network>::from_u128(u128::MAX),
+                "u8" | "i8" => console::Field::from_u8(u8::MAX),
+                "u16" | "i16" => console::Field::from_u16(u16::MAX),
+                "u32" | "i32" => console::Field::from_u32(u32::MAX),
+                "u64" | "i64" => console::Field::from_u64(u64::MAX),
+                "u128" | "i128" => console::Field::from_u128(u128::MAX),
                 _ => panic!("Unsupported integer type."),
             };
             // Filter for field elements that exceed the integer domain.
             if expected.eject_value() > integer_max {
                 // Perform the operation.
                 let result = std::panic::catch_unwind(|| {
-                    Integer::<_, I>::from_field(expected); // This should fail.
+                    Integer::<I>::from_field(expected); // This should fail.
                 });
                 assert!(result.is_err() || !Circuit::is_satisfied());
             } else {
                 // Perform the operation.
-                Integer::<_, I>::from_field(expected); // This should not fail.
+                Integer::<I>::from_field(expected); // This should not fail.
             }
         }
     }

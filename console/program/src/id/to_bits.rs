@@ -56,15 +56,15 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_name_string = sample_lowercase_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_name_string = sample_lowercase_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_name_field = Field::<CurrentNetwork>::from_bits_le(&expected_name_string.to_bits_le())?;
-            let expected_network_field = Field::<CurrentNetwork>::from_bits_le(&"aleo".to_string().to_bits_le())?;
+            let expected_name_field = Field::from_bits_le(&expected_name_string.to_bits_le())?;
+            let expected_network_field = Field::from_bits_le(&"aleo".to_string().to_bits_le())?;
             // Compute the expected bits.
             let mut expected_bits = expected_name_field.to_bits_le()[..expected_name_string.len() * 8].to_vec();
             expected_bits.extend(&expected_network_field.to_bits_le()[..4 * 8]);
 
-            let candidate = ProgramID::<CurrentNetwork>::from_str(&format!("{expected_name_string}.aleo"))?;
+            let candidate = ProgramID::from_str(&format!("{expected_name_string}.aleo"))?;
             assert_eq!(
                 expected_name_field.to_bits_le()[..expected_name_string.len() * 8],
                 candidate.name().to_bits_le()
@@ -81,10 +81,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_name_string = sample_lowercase_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_name_string = sample_lowercase_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_name_field = Field::<CurrentNetwork>::from_bits_le(&expected_name_string.to_bits_le())?;
-            let expected_network_field = Field::<CurrentNetwork>::from_bits_le(&"aleo".to_string().to_bits_le())?;
+            let expected_name_field = Field::from_bits_le(&expected_name_string.to_bits_le())?;
+            let expected_network_field = Field::from_bits_le(&"aleo".to_string().to_bits_le())?;
             // Compute the expected bits.
             let mut expected_bits = expected_name_field.to_bits_le()[..expected_name_string.len() * 8]
                 .iter()
@@ -93,7 +93,7 @@ mod tests {
                 .collect::<Vec<_>>();
             expected_bits.extend(expected_network_field.to_bits_le()[..4 * 8].iter().rev().copied());
 
-            let candidate = ProgramID::<CurrentNetwork>::from_str(&format!("{expected_name_string}.aleo"))?;
+            let candidate = ProgramID::from_str(&format!("{expected_name_string}.aleo"))?;
             assert_eq!(
                 expected_name_field.to_bits_le()[..expected_name_string.len() * 8]
                     .iter()

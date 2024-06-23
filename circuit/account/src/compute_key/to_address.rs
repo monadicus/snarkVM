@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> ComputeKey<A> {
+impl ComputeKey {
     /// Returns the account address for this account compute key.
-    pub fn to_address(&self) -> Address<A> {
+    pub fn to_address(&self) -> Address {
         // Compute pk_prf := G^sk_prf.
-        let pk_prf = A::g_scalar_multiply(&self.sk_prf);
+        let pk_prf = AleoV0::g_scalar_multiply(&self.sk_prf);
         // Compute the address := pk_sig + pr_sig + pk_prf.
         Address::from_group(&self.pk_sig + &self.pr_sig + pk_prf)
     }
@@ -45,7 +47,7 @@ mod tests {
             let (_private_key, compute_key, _view_key, address) = generate_account()?;
 
             // Initialize the compute key.
-            let candidate = ComputeKey::<Circuit>::new(mode, compute_key);
+            let candidate = ComputeKey::new(mode, compute_key);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_address();

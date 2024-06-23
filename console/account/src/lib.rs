@@ -49,9 +49,7 @@ pub use view_key::*;
 #[cfg(test)]
 mod tests {
     use crate::{Address, ComputeKey, PrivateKey, Signature, ViewKey};
-    use snarkvm_console_network::{prelude::*, MainnetV0};
-
-    type CurrentNetwork = MainnetV0;
+    use snarkvm_console_network::prelude::*;
 
     const ALEO_PRIVATE_KEY: &str = "APrivateKey1zkp8cC4jgHEBnbtu3xxs1Ndja2EMizcvTRDq5Nikdkukg1p";
     const ALEO_VIEW_KEY: &str = "AViewKey1n1n3ZbnVEtXVe3La2xWkUvY3EY7XaCG6RZJJ3tbvrrrD";
@@ -61,9 +59,9 @@ mod tests {
 
     #[test]
     fn test_account_derivation() {
-        let private_key = PrivateKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).unwrap();
-        let view_key = ViewKey::<CurrentNetwork>::try_from(&private_key).unwrap();
-        let address = Address::<CurrentNetwork>::try_from(&private_key).unwrap();
+        let private_key = PrivateKey::from_str(ALEO_PRIVATE_KEY).unwrap();
+        let view_key = ViewKey::try_from(&private_key).unwrap();
+        let address = Address::try_from(&private_key).unwrap();
 
         assert_eq!(ALEO_PRIVATE_KEY, private_key.to_string());
         assert_eq!(ALEO_VIEW_KEY, view_key.to_string());
@@ -72,82 +70,82 @@ mod tests {
 
     #[test]
     fn test_private_key_from_str() {
-        let private_key = PrivateKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).unwrap();
+        let private_key = PrivateKey::from_str(ALEO_PRIVATE_KEY).unwrap();
         assert_eq!(ALEO_PRIVATE_KEY, private_key.to_string());
     }
 
     #[test]
     fn test_private_key_from_invalid_str() {
-        assert!(PrivateKey::<CurrentNetwork>::from_str(ALEO_VIEW_KEY).is_err());
-        assert!(PrivateKey::<CurrentNetwork>::from_str(ALEO_ADDRESS).is_err());
-        assert!(PrivateKey::<CurrentNetwork>::from_str("APrivateKey1abcdefghijklmnopqrstuvwxyz").is_err());
-        assert!(PrivateKey::<CurrentNetwork>::from_str("APrivateKey1").is_err());
-        assert!(PrivateKey::<CurrentNetwork>::from_str("").is_err());
+        assert!(PrivateKey::from_str(ALEO_VIEW_KEY).is_err());
+        assert!(PrivateKey::from_str(ALEO_ADDRESS).is_err());
+        assert!(PrivateKey::from_str("APrivateKey1abcdefghijklmnopqrstuvwxyz").is_err());
+        assert!(PrivateKey::from_str("APrivateKey1").is_err());
+        assert!(PrivateKey::from_str("").is_err());
     }
 
     #[test]
     fn test_private_key_try_into_view_key() {
-        let private_key = PrivateKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).unwrap();
-        let view_key: ViewKey<_> = private_key.try_into().unwrap();
+        let private_key = PrivateKey::from_str(ALEO_PRIVATE_KEY).unwrap();
+        let view_key: ViewKey = private_key.try_into().unwrap();
         assert_eq!(ALEO_VIEW_KEY, view_key.to_string());
     }
 
     #[test]
     fn test_view_key_from_str() {
-        let view_key = ViewKey::<CurrentNetwork>::from_str(ALEO_VIEW_KEY).unwrap();
+        let view_key = ViewKey::from_str(ALEO_VIEW_KEY).unwrap();
         assert_eq!(ALEO_VIEW_KEY, view_key.to_string());
     }
 
     #[test]
     fn test_view_key_from_invalid_str() {
-        assert!(ViewKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).is_err());
-        assert!(ViewKey::<CurrentNetwork>::from_str(ALEO_ADDRESS).is_err());
-        assert!(ViewKey::<CurrentNetwork>::from_str("AViewKey1abcdefghijklmnopqrstuvwxyz").is_err());
-        assert!(ViewKey::<CurrentNetwork>::from_str("AViewKey1").is_err());
-        assert!(ViewKey::<CurrentNetwork>::from_str("").is_err());
+        assert!(ViewKey::from_str(ALEO_PRIVATE_KEY).is_err());
+        assert!(ViewKey::from_str(ALEO_ADDRESS).is_err());
+        assert!(ViewKey::from_str("AViewKey1abcdefghijklmnopqrstuvwxyz").is_err());
+        assert!(ViewKey::from_str("AViewKey1").is_err());
+        assert!(ViewKey::from_str("").is_err());
     }
 
     #[test]
     fn test_private_key_try_into_address() {
-        let private_key = PrivateKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).unwrap();
-        let address: Address<_> = private_key.try_into().unwrap();
+        let private_key = PrivateKey::from_str(ALEO_PRIVATE_KEY).unwrap();
+        let address: Address = private_key.try_into().unwrap();
         assert_eq!(ALEO_ADDRESS, address.to_string());
     }
 
     #[test]
     fn test_compute_key_try_into_address() {
-        let private_key = PrivateKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).unwrap();
-        let compute_key: ComputeKey<_> = private_key.try_into().unwrap();
-        let address: Address<_> = compute_key.try_into().unwrap();
+        let private_key = PrivateKey::from_str(ALEO_PRIVATE_KEY).unwrap();
+        let compute_key: ComputeKey = private_key.try_into().unwrap();
+        let address: Address = compute_key.try_into().unwrap();
         assert_eq!(ALEO_ADDRESS, address.to_string());
     }
 
     #[test]
     fn test_view_key_try_into_address() {
-        let view_key = ViewKey::<CurrentNetwork>::from_str(ALEO_VIEW_KEY).unwrap();
-        let address: Address<_> = view_key.try_into().unwrap();
+        let view_key = ViewKey::from_str(ALEO_VIEW_KEY).unwrap();
+        let address: Address = view_key.try_into().unwrap();
         assert_eq!(ALEO_ADDRESS, address.to_string());
     }
 
     #[test]
     fn test_address_from_str() {
-        let address = Address::<CurrentNetwork>::from_str(ALEO_ADDRESS).unwrap();
+        let address = Address::from_str(ALEO_ADDRESS).unwrap();
         assert_eq!(ALEO_ADDRESS, address.to_string());
     }
 
     #[test]
     fn test_address_from_invalid_str() {
-        assert!(Address::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).is_err());
-        assert!(Address::<CurrentNetwork>::from_str(ALEO_VIEW_KEY).is_err());
-        assert!(Address::<CurrentNetwork>::from_str("aleo1abcdefghijklmnopqrstuvwxyz").is_err());
-        assert!(Address::<CurrentNetwork>::from_str("aleo1").is_err());
-        assert!(Address::<CurrentNetwork>::from_str("").is_err());
+        assert!(Address::from_str(ALEO_PRIVATE_KEY).is_err());
+        assert!(Address::from_str(ALEO_VIEW_KEY).is_err());
+        assert!(Address::from_str("aleo1abcdefghijklmnopqrstuvwxyz").is_err());
+        assert!(Address::from_str("aleo1").is_err());
+        assert!(Address::from_str("").is_err());
     }
 
     #[test]
     fn test_sign_bits() {
-        let private_key = PrivateKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).unwrap();
-        let address = Address::<CurrentNetwork>::try_from(&private_key).unwrap();
+        let private_key = PrivateKey::from_str(ALEO_PRIVATE_KEY).unwrap();
+        let address = Address::try_from(&private_key).unwrap();
 
         let mut rng = TestRng::default();
 
@@ -161,8 +159,8 @@ mod tests {
 
     #[test]
     fn test_invalid_sign_bits() {
-        let private_key = PrivateKey::<CurrentNetwork>::from_str(ALEO_PRIVATE_KEY).unwrap();
-        let address = Address::<CurrentNetwork>::try_from(&private_key).unwrap();
+        let private_key = PrivateKey::from_str(ALEO_PRIVATE_KEY).unwrap();
+        let address = Address::try_from(&private_key).unwrap();
 
         let mut rng = TestRng::default();
 
@@ -182,7 +180,7 @@ mod tests {
 
         for i in 0..25 {
             // Sample an Aleo account.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng).unwrap();
+            let private_key = PrivateKey::new(&mut rng).unwrap();
 
             // Craft the Aleo signature.
             let message: Vec<bool> = (0..(32 * i)).map(|_| bool::rand(&mut rng)).collect();
@@ -200,7 +198,7 @@ mod tests {
 
         for i in 0..25 {
             // Sample an Aleo account.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng).unwrap();
+            let private_key = PrivateKey::new(&mut rng).unwrap();
 
             // Craft the Aleo signature.
             let message: Vec<bool> = (0..(32 * i)).map(|_| bool::rand(&mut rng)).collect();
@@ -213,7 +211,7 @@ mod tests {
 
             // Deserialize
             assert_eq!(expected_signature, serde_json::from_str(&candidate_string).unwrap());
-            assert_eq!(expected_signature, Signature::<CurrentNetwork>::from_str(expected_string).unwrap());
+            assert_eq!(expected_signature, Signature::from_str(expected_string).unwrap());
         }
     }
 
@@ -223,7 +221,7 @@ mod tests {
 
         for i in 0..25 {
             // Sample an Aleo account.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng).unwrap();
+            let private_key = PrivateKey::new(&mut rng).unwrap();
 
             // Craft the Aleo signature.
             let message: Vec<bool> = (0..(32 * i)).map(|_| bool::rand(&mut rng)).collect();
@@ -237,7 +235,7 @@ mod tests {
 
             // Deserialize
             assert_eq!(expected_signature, bincode::deserialize(&candidate_bytes[..]).unwrap());
-            assert_eq!(expected_signature, Signature::<CurrentNetwork>::read_le(&expected_bytes[..]).unwrap());
+            assert_eq!(expected_signature, Signature::read_le(&expected_bytes[..]).unwrap());
         }
     }
 }

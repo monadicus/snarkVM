@@ -20,32 +20,34 @@ mod helpers;
 
 #[cfg(test)]
 use console::TestRng;
+use console::{Console, Environment as ConsoleEnvironment};
 #[cfg(test)]
 use snarkvm_circuit_environment::assert_scope;
 
-use snarkvm_circuit_environment::prelude::*;
+use snarkvm_circuit_environment::{prelude::*, Circuit, Environment};
 use snarkvm_circuit_types_boolean::Boolean;
 use snarkvm_circuit_types_field::Field;
 use snarkvm_circuit_types_integers::U8;
 
 #[derive(Clone)]
-pub struct StringType<E: Environment> {
+pub struct StringType {
     mode: Mode,
-    bytes: Vec<U8<E>>,
-    size_in_bytes: Field<E>,
+    bytes: Vec<U8>,
+    size_in_bytes: Field,
 }
 
-impl<E: Environment> StringTrait for StringType<E> {}
+impl StringTrait for StringType {}
 
 #[cfg(console)]
-impl<E: Environment> Inject for StringType<E> {
-    type Primitive = console::StringType<E::Network>;
+impl Inject for StringType {
+    type Primitive = console::StringType;
 
     /// Initializes a new instance of a string.
     fn new(mode: Mode, string: Self::Primitive) -> Self {
         // Cast the number of bytes in the 'string' as a field element.
-        let num_bytes =
-            console::Field::from_u32(u32::try_from(string.len()).unwrap_or_else(|error| E::halt(error.to_string())));
+        let num_bytes = console::Field::from_u32(
+            u32::try_from(string.len()).unwrap_or_else(|error| Circuit::halt(error.to_string())),
+        );
 
         // "Load-bearing witness allocation - Please do not optimize me." - Pratyush :)
 
@@ -57,7 +59,7 @@ impl<E: Environment> Inject for StringType<E> {
             false => Field::new(Mode::Private, num_bytes),
         };
         // Ensure the witness matches the constant.
-        E::assert_eq(&expected_size_in_bytes, &size_in_bytes);
+        Circuit::assert_eq(&expected_size_in_bytes, &size_in_bytes);
 
         Self {
             mode,
@@ -68,8 +70,8 @@ impl<E: Environment> Inject for StringType<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> Eject for StringType<E> {
-    type Primitive = console::StringType<E::Network>;
+impl Eject for StringType {
+    type Primitive = console::StringType;
 
     /// Ejects the mode of the string.
     fn eject_mode(&self) -> Mode {
@@ -83,18 +85,18 @@ impl<E: Environment> Eject for StringType<E> {
     fn eject_value(&self) -> Self::Primitive {
         // Ensure the string is within the allowed capacity.
         let num_bytes = self.bytes.len();
-        match num_bytes <= E::MAX_STRING_BYTES as usize {
+        match num_bytes <= Console::MAX_STRING_BYTES as usize {
             true => console::StringType::new(
                 &String::from_utf8(self.bytes.eject_value().into_iter().map(|byte| *byte).collect())
-                    .unwrap_or_else(|error| E::halt(format!("Failed to eject a string value: {error}"))),
+                    .unwrap_or_else(|error| Circuit::halt(format!("Failed to eject a string value: {error}"))),
             ),
-            false => E::halt(format!("Attempted to eject a string of size {num_bytes}")),
+            false => Circuit::halt(format!("Attempted to eject a string of size {num_bytes}")),
         }
     }
 }
 
 #[cfg(console)]
-impl<E: Environment> Parser for StringType<E> {
+impl Parser for StringType {
     /// Parses a string into a string circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -111,7 +113,7 @@ impl<E: Environment> Parser for StringType<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> FromStr for StringType<E> {
+impl FromStr for StringType {
     type Err = Error;
 
     /// Parses a string into a string circuit.
@@ -130,23 +132,23 @@ impl<E: Environment> FromStr for StringType<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> TypeName for StringType<E> {
+impl TypeName for StringType {
     /// Returns the type name of the circuit as a string.
     #[inline]
     fn type_name() -> &'static str {
-        console::StringType::<E::Network>::type_name()
+        console::StringType::type_name()
     }
 }
 
 #[cfg(console)]
-impl<E: Environment> Debug for StringType<E> {
+impl Debug for StringType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<E: Environment> Display for StringType<E> {
+impl Display for StringType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}.{}", self.eject_value(), self.eject_mode())
     }

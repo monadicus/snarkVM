@@ -35,23 +35,15 @@ pub use view_key::*;
 
 #[cfg(all(test, console))]
 pub(crate) mod helpers {
-    use snarkvm_circuit_network::AleoV0;
-    use snarkvm_circuit_types::environment::Environment;
     use snarkvm_utilities::{TestRng, Uniform};
 
     use anyhow::Result;
 
-    type CurrentNetwork = <AleoV0 as Environment>::Network;
-
     #[allow(clippy::type_complexity)]
-    pub(crate) fn generate_account() -> Result<(
-        console::PrivateKey<CurrentNetwork>,
-        console::ComputeKey<CurrentNetwork>,
-        console::ViewKey<CurrentNetwork>,
-        console::Address<CurrentNetwork>,
-    )> {
+    pub(crate) fn generate_account()
+    -> Result<(console::PrivateKey, console::ComputeKey, console::ViewKey, console::Address)> {
         // Sample a random private key.
-        let private_key = console::PrivateKey::<CurrentNetwork>::new(&mut TestRng::default())?;
+        let private_key = console::PrivateKey::new(&mut TestRng::default())?;
 
         // Derive the compute key, view key, and address.
         let compute_key = console::ComputeKey::try_from(&private_key)?;
@@ -62,9 +54,9 @@ pub(crate) mod helpers {
         Ok((private_key, compute_key, view_key, address))
     }
 
-    pub(crate) fn generate_signature(num_fields: u64, rng: &mut TestRng) -> console::Signature<CurrentNetwork> {
+    pub(crate) fn generate_signature(num_fields: u64, rng: &mut TestRng) -> console::Signature {
         // Sample an address and a private key.
-        let private_key = console::PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let private_key = console::PrivateKey::new(rng).unwrap();
         let address = console::Address::try_from(&private_key).unwrap();
 
         // Generate a signature.

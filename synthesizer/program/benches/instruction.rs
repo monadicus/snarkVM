@@ -410,9 +410,9 @@
 //     macro_rules! bench_commit_instruction {
 //         ($instruction:tt) => {
 //             bench_ped64_commit_instruction!($instruction);
-//             let mut samples = iter::repeat_with(|| { (Field::<MainnetV0>::rand(rng), Scalar::<MainnetV0>::rand(rng)) });
+//             let mut samples = iter::repeat_with(|| { (Field::rand(rng), Scalar::<MainnetV0>::rand(rng)) });
 //             bench_instruction!(samples, $instruction { (Field, Scalar), });
-//             let mut samples = iter::repeat_with(|| { (Group::<MainnetV0>::rand(rng), Scalar::<MainnetV0>::rand(rng)) });
+//             let mut samples = iter::repeat_with(|| { (Group::rand(rng), Scalar::<MainnetV0>::rand(rng)) });
 //             bench_instruction!(samples, $instruction { (Group, Scalar), });
 //             let mut samples = iter::repeat_with(|| { (I64::<MainnetV0>::rand(rng), Scalar::<MainnetV0>::rand(rng)) });
 //             bench_instruction!(samples, $instruction { (I64, Scalar), });
@@ -525,9 +525,9 @@
 //     macro_rules! bench_hash_instruction {
 //         ($instruction:tt) => {
 //             bench_ped64_hash_instruction!($instruction);
-//             let mut samples = iter::repeat_with(|| { Field::<MainnetV0>::rand(rng) });
+//             let mut samples = iter::repeat_with(|| { Field::rand(rng) });
 //             bench_instruction!(samples, $instruction { Field, }, "group");
-//             let mut samples = iter::repeat_with(|| { Group::<MainnetV0>::rand(rng) });
+//             let mut samples = iter::repeat_with(|| { Group::rand(rng) });
 //             bench_instruction!(samples, $instruction { Group, }, "group");
 //             let mut samples = iter::repeat_with(|| { I64::<MainnetV0>::rand(rng) });
 //             bench_instruction!(samples, $instruction { I64, }, "group");
@@ -565,10 +565,10 @@
 //     let mut samples = iter::repeat_with(|| { (Boolean::<MainnetV0>::rand(rng), Boolean::<MainnetV0>::rand(rng)) });
 //     bench_instruction!(samples, IsEq { (Boolean, Boolean), });
 //     bench_instruction!(samples, IsNeq { (Boolean, Boolean), });
-//     let mut samples = iter::repeat_with(|| { (Field::<MainnetV0>::rand(rng), Field::<MainnetV0>::rand(rng)) });
+//     let mut samples = iter::repeat_with(|| { (Field::rand(rng), Field::rand(rng)) });
 //     bench_instruction!(samples, IsEq { (Field, Field), });
 //     bench_instruction!(samples, IsNeq { (Field, Field), });
-//     let mut samples = iter::repeat_with(|| { (Group::<MainnetV0>::rand(rng), Group::<MainnetV0>::rand(rng)) });
+//     let mut samples = iter::repeat_with(|| { (Group::rand(rng), Group::rand(rng)) });
 //     bench_instruction!(samples, IsEq { (Group, Group), });
 //     bench_instruction!(samples, IsNeq { (Group, Group), });
 //     let mut samples = iter::repeat_with(|| { (I8::<MainnetV0>::rand(rng), I8::<MainnetV0>::rand(rng)) });

@@ -48,11 +48,11 @@ pub const MAX_DELEGATORS: u32 = 100_000u32;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Committee<N: Network> {
     /// The committee ID, defined as the hash of the starting round, members, and total stake.
-    id: Field<N>,
+    id: Field,
     /// The starting round number for this committee.
     starting_round: u64,
     /// A map of `address` to `(stake, is_open, commission)` state.
-    members: IndexMap<Address<N>, (u64, bool, u8)>,
+    members: IndexMap<Address, (u64, bool, u8)>,
     /// The total stake of all `members`.
     total_stake: u64,
 }
@@ -64,13 +64,13 @@ impl<N: Network> Committee<N> {
     pub const MAX_COMMITTEE_SIZE: u16 = BatchHeader::<N>::MAX_CERTIFICATES;
 
     /// Initializes a new `Committee` instance.
-    pub fn new_genesis(members: IndexMap<Address<N>, (u64, bool, u8)>) -> Result<Self> {
+    pub fn new_genesis(members: IndexMap<Address, (u64, bool, u8)>) -> Result<Self> {
         // Return the new committee.
         Self::new(0u64, members)
     }
 
     /// Initializes a new `Committee` instance.
-    pub fn new(starting_round: u64, members: IndexMap<Address<N>, (u64, bool, u8)>) -> Result<Self> {
+    pub fn new(starting_round: u64, members: IndexMap<Address, (u64, bool, u8)>) -> Result<Self> {
         // Ensure there are at least 3 members.
         ensure!(members.len() >= 3, "Committee must have at least 3 members");
         // Ensure there are no more than the maximum number of members.
@@ -102,7 +102,7 @@ impl<N: Network> Committee<N> {
 
 impl<N: Network> Committee<N> {
     /// Returns the committee ID.
-    pub const fn id(&self) -> Field<N> {
+    pub const fn id(&self) -> Field {
         self.id
     }
 
@@ -112,7 +112,7 @@ impl<N: Network> Committee<N> {
     }
 
     /// Returns the committee members alongside their stake.
-    pub const fn members(&self) -> &IndexMap<Address<N>, (u64, bool, u8)> {
+    pub const fn members(&self) -> &IndexMap<Address, (u64, bool, u8)> {
         &self.members
     }
 
@@ -122,23 +122,23 @@ impl<N: Network> Committee<N> {
     }
 
     /// Returns `true` if the given address is in the committee.
-    pub fn is_committee_member(&self, address: Address<N>) -> bool {
+    pub fn is_committee_member(&self, address: Address) -> bool {
         self.members.contains_key(&address)
     }
 
     /// Returns `true` if the given address is in the committee and is open.
-    pub fn is_committee_member_open(&self, address: Address<N>) -> bool {
+    pub fn is_committee_member_open(&self, address: Address) -> bool {
         self.members.get(&address).copied().unwrap_or_default().1
     }
 
     /// Returns the amount of stake for the given address.
-    pub fn get_stake(&self, address: Address<N>) -> u64 {
+    pub fn get_stake(&self, address: Address) -> u64 {
         self.members.get(&address).copied().unwrap_or_default().0
     }
 
     /// Returns `true` if the combined stake for the given addresses reaches the availability threshold.
     /// This method takes in a `HashSet` to guarantee that the given addresses are unique.
-    pub fn is_availability_threshold_reached(&self, addresses: &HashSet<Address<N>>) -> bool {
+    pub fn is_availability_threshold_reached(&self, addresses: &HashSet<Address>) -> bool {
         let mut stake = 0u64;
         // Compute the combined stake for the given addresses.
         for address in addresses {
@@ -151,7 +151,7 @@ impl<N: Network> Committee<N> {
 
     /// Returns `true` if the combined stake for the given addresses reaches the quorum threshold.
     /// This method takes in a `HashSet` to guarantee that the given addresses are unique.
-    pub fn is_quorum_threshold_reached(&self, addresses: &HashSet<Address<N>>) -> bool {
+    pub fn is_quorum_threshold_reached(&self, addresses: &HashSet<Address>) -> bool {
         let mut stake = 0u64;
         // Compute the combined stake for the given addresses.
         for address in addresses {
@@ -185,7 +185,7 @@ impl<N: Network> Committee<N> {
 impl<N: Network> Committee<N> {
     /// Returns the leader address for the current round.
     /// Note: This method returns a deterministic result that is SNARK-friendly.
-    pub fn get_leader(&self, current_round: u64) -> Result<Address<N>> {
+    pub fn get_leader(&self, current_round: u64) -> Result<Address> {
         // Ensure the current round is at least the starting round.
         ensure!(current_round >= self.starting_round, "Current round must be at least the starting round");
         // Retrieve the total stake of the committee.
@@ -223,7 +223,7 @@ impl<N: Network> Committee<N> {
 
     /// Returns the committee members sorted by their address' x-coordinate in decreasing order.
     /// Note: This ensures the method returns a deterministic result that is SNARK-friendly.
-    fn sorted_members(&self) -> indexmap::map::IntoIter<Address<N>, (u64, bool, u8)> {
+    fn sorted_members(&self) -> indexmap::map::IntoIter<Address, (u64, bool, u8)> {
         let members = self.members.clone();
         // Note: The use of 'sorted_unstable_by' is safe here because the addresses are guaranteed to be unique.
         members.sorted_unstable_by(|address1, (_, _, _), address2, (_, _, _)| {
@@ -234,7 +234,7 @@ impl<N: Network> Committee<N> {
 
 impl<N: Network> Committee<N> {
     /// Compute the total stake of the given members.
-    fn compute_total_stake(members: &IndexMap<Address<N>, (u64, bool, u8)>) -> Result<u64> {
+    fn compute_total_stake(members: &IndexMap<Address, (u64, bool, u8)>) -> Result<u64> {
         let mut power = 0u64;
         for (stake, _, _) in members.values() {
             // Accumulate the stake, checking for overflow.
@@ -281,7 +281,7 @@ pub mod test_helpers {
                 1 => 100,
                 _ => rng.gen_range(0..=100),
             };
-            members.insert(Address::<CurrentNetwork>::new(rng.gen()), (2 * MIN_VALIDATOR_STAKE, is_open, commission));
+            members.insert(Address::new(rng.gen()), (2 * MIN_VALIDATOR_STAKE, is_open, commission));
         }
         // Return the committee.
         Committee::<CurrentNetwork>::new(1, members).unwrap()
@@ -302,7 +302,7 @@ pub mod test_helpers {
         let mut members = IndexMap::new();
         for _ in 0..num_members {
             let is_open = rng.gen();
-            members.insert(Address::<CurrentNetwork>::new(rng.gen()), (2 * MIN_VALIDATOR_STAKE, is_open, 0));
+            members.insert(Address::new(rng.gen()), (2 * MIN_VALIDATOR_STAKE, is_open, 0));
         }
         // Return the committee.
         Committee::<CurrentNetwork>::new(round, members).unwrap()
@@ -311,7 +311,7 @@ pub mod test_helpers {
     /// Samples a random committee for a given round and members.
     pub fn sample_committee_for_round_and_members(
         round: u64,
-        members: Vec<Address<CurrentNetwork>>,
+        members: Vec<Address>,
         rng: &mut TestRng,
     ) -> Committee<CurrentNetwork> {
         // Sample the members.
@@ -330,11 +330,11 @@ pub mod test_helpers {
         // Sample the members.
         let mut members = IndexMap::new();
         // Add in the minimum and maximum staked nodes.
-        members.insert(Address::<CurrentNetwork>::new(rng.gen()), (MIN_VALIDATOR_STAKE, false, 0));
+        members.insert(Address::new(rng.gen()), (MIN_VALIDATOR_STAKE, false, 0));
         while members.len() < num_members as usize - 1 {
             let stake = MIN_VALIDATOR_STAKE;
             let is_open = rng.gen();
-            members.insert(Address::<CurrentNetwork>::new(rng.gen()), (stake, is_open, 0));
+            members.insert(Address::new(rng.gen()), (stake, is_open, 0));
         }
         // Return the committee.
         Committee::<CurrentNetwork>::new(1, members).unwrap()
@@ -353,18 +353,18 @@ pub mod test_helpers {
         // Sample the members.
         let mut members = IndexMap::new();
         // Add in the minimum and maximum staked nodes.
-        members.insert(Address::<CurrentNetwork>::new(rng.gen()), (MIN_VALIDATOR_STAKE, false, 0));
+        members.insert(Address::new(rng.gen()), (MIN_VALIDATOR_STAKE, false, 0));
         while members.len() < num_members as usize - 1 {
             loop {
                 let stake = MIN_VALIDATOR_STAKE as f64 + range * distribution.sample(rng);
                 if stake >= MIN_VALIDATOR_STAKE as f64 && stake <= MAX_STAKE as f64 {
                     let is_open = rng.gen();
-                    members.insert(Address::<CurrentNetwork>::new(rng.gen()), (stake as u64, is_open, 0));
+                    members.insert(Address::new(rng.gen()), (stake as u64, is_open, 0));
                     break;
                 }
             }
         }
-        members.insert(Address::<CurrentNetwork>::new(rng.gen()), (MAX_STAKE, false, 0));
+        members.insert(Address::new(rng.gen()), (MAX_STAKE, false, 0));
         // Return the committee.
         Committee::<CurrentNetwork>::new(1, members).unwrap()
     }
@@ -383,7 +383,7 @@ mod tests {
     /// Checks the leader distribution.
     fn check_leader_distribution(committee: Committee<CurrentNetwork>, num_rounds: u64, tolerance_percent: f64) {
         // Initialize a tracker for the leaders.
-        let leaders = Arc::new(RwLock::new(IndexMap::<Address<CurrentNetwork>, i64>::new()));
+        let leaders = Arc::new(RwLock::new(IndexMap::<Address, i64>::new()));
         // Iterate through the rounds.
         cfg_into_iter!(1..=num_rounds).for_each(|round| {
             // Compute the leader.

@@ -28,15 +28,15 @@ type Variant = u8;
 #[derive(Clone, PartialEq, Eq)]
 pub enum Input<N: Network> {
     /// The plaintext hash and (optional) plaintext.
-    Constant(Field<N>, Option<Plaintext<N>>),
+    Constant(Field, Option<Plaintext<N>>),
     /// The plaintext hash and (optional) plaintext.
-    Public(Field<N>, Option<Plaintext<N>>),
+    Public(Field, Option<Plaintext<N>>),
     /// The ciphertext hash and (optional) ciphertext.
-    Private(Field<N>, Option<Ciphertext<N>>),
+    Private(Field, Option<Ciphertext<N>>),
     /// The serial number and tag of the record.
-    Record(Field<N>, Field<N>),
+    Record(Field, Field),
     /// The input commitment to the external record. Note: This is **not** the record commitment.
-    ExternalRecord(Field<N>),
+    ExternalRecord(Field),
 }
 
 impl<N: Network> Input<N> {
@@ -52,7 +52,7 @@ impl<N: Network> Input<N> {
     }
 
     /// Returns the ID of the input.
-    pub const fn id(&self) -> &Field<N> {
+    pub const fn id(&self) -> &Field {
         match self {
             Input::Constant(id, ..) => id,
             Input::Public(id, ..) => id,
@@ -68,7 +68,7 @@ impl<N: Network> Input<N> {
     }
 
     /// Returns the tag, if the input is a record.
-    pub const fn tag(&self) -> Option<&Field<N>> {
+    pub const fn tag(&self) -> Option<&Field> {
         match self {
             Input::Record(_, tag) => Some(tag),
             _ => None,
@@ -76,7 +76,7 @@ impl<N: Network> Input<N> {
     }
 
     /// Returns the tag, if the input is a record, and consumes `self`.
-    pub fn into_tag(self) -> Option<Field<N>> {
+    pub fn into_tag(self) -> Option<Field> {
         match self {
             Input::Record(_, tag) => Some(tag),
             _ => None,
@@ -84,7 +84,7 @@ impl<N: Network> Input<N> {
     }
 
     /// Returns the serial number, if the input is a record.
-    pub const fn serial_number(&self) -> Option<&Field<N>> {
+    pub const fn serial_number(&self) -> Option<&Field> {
         match self {
             Input::Record(serial_number, ..) => Some(serial_number),
             _ => None,
@@ -92,7 +92,7 @@ impl<N: Network> Input<N> {
     }
 
     /// Returns the serial number, if the input is a record, and consumes `self`.
-    pub fn into_serial_number(self) -> Option<Field<N>> {
+    pub fn into_serial_number(self) -> Option<Field> {
         match self {
             Input::Record(serial_number, ..) => Some(serial_number),
             _ => None,
@@ -106,7 +106,7 @@ impl<N: Network> Input<N> {
 
     /// Returns `true` if the input is well-formed.
     /// If the optional value exists, this method checks that it hashes to the input ID.
-    pub fn verify(&self, function_id: Field<N>, tcm: &Field<N>, index: usize) -> bool {
+    pub fn verify(&self, function_id: Field, tcm: &Field, index: usize) -> bool {
         // Ensure the hash of the value (if the value exists) is correct.
         let result = || match self {
             Input::Constant(hash, Some(input)) => {

@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<A: Aleo> Literal<A> {
+impl Literal {
     /// Returns the variant of the literal.
-    pub fn variant(&self) -> U8<A> {
+    pub fn variant(&self) -> U8 {
         U8::constant(match self {
             Self::Address(..) => console::U8::new(0),
             Self::Boolean(..) => console::U8::new(1),

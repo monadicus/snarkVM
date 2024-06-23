@@ -283,10 +283,12 @@ impl<F: PrimeField> fmt::Display for Variable<F> {
 
 #[cfg(test)]
 mod tests {
+    use console::ConsoleField;
+
     use crate::*;
 
     #[test]
     fn test_size() {
-        assert_eq!(16, std::mem::size_of::<Variable<<Circuit as Environment>::BaseField>>());
+        assert_eq!(16, std::mem::size_of::<Variable<ConsoleField>>());
     }
 }

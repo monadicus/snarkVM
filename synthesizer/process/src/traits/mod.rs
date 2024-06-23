@@ -31,9 +31,9 @@ pub trait StackEvaluate<N: Network>: Clone {
         closure: &Closure<N>,
         inputs: &[Value<N>],
         call_stack: CallStack<N>,
-        signer: Address<N>,
-        caller: Address<N>,
-        tvk: Field<N>,
+        signer: Address,
+        caller: Address,
+        tvk: Field,
     ) -> Result<Vec<Value<N>>>;
 
     /// Evaluates a program function on the given inputs.
@@ -55,12 +55,12 @@ pub trait StackExecute<N: Network> {
     fn execute_closure<A: circuit::Aleo<Network = N>>(
         &self,
         closure: &Closure<N>,
-        inputs: &[circuit::Value<A>],
+        inputs: &[circuit::Value],
         call_stack: CallStack<N>,
-        signer: circuit::Address<A>,
-        caller: circuit::Address<A>,
-        tvk: circuit::Field<A>,
-    ) -> Result<Vec<circuit::Value<A>>>;
+        signer: circuit::Address,
+        caller: circuit::Address,
+        tvk: circuit::Field,
+    ) -> Result<Vec<circuit::Value>>;
 
     /// Executes a program function on the given inputs.
     ///
@@ -72,7 +72,7 @@ pub trait StackExecute<N: Network> {
         &self,
         call_stack: CallStack<N>,
         console_caller: Option<ProgramID<N>>,
-        root_tvk: Option<Field<N>>,
+        root_tvk: Option<Field>,
         rng: &mut R,
     ) -> Result<Response<N>>;
 }

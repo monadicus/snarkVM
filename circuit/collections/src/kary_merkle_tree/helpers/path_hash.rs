@@ -16,13 +16,13 @@ use super::*;
 use snarkvm_circuit_algorithms::{Hash, Keccak, Poseidon, BHP};
 
 /// A trait for a Merkle path hash function.
-pub trait PathHash<E: Environment> {
+pub trait PathHash {
     type Hash: Clone
         + Default
         + Inject<Primitive = <Self::Primitive as console::kary_merkle_tree::PathHash>::Hash>
         + Eject<Primitive = <Self::Primitive as console::kary_merkle_tree::PathHash>::Hash>
-        + Equal<Output = Boolean<E>>
-        + Ternary<Boolean = Boolean<E>, Output = Self::Hash>;
+        + Equal<Output = Boolean>
+        + Ternary<Boolean = Boolean, Output = Self::Hash>;
     type Primitive: console::kary_merkle_tree::PathHash;
 
     /// Returns the hash of the given child nodes.
@@ -35,9 +35,9 @@ pub trait PathHash<E: Environment> {
     }
 }
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash<E> for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Hash = Field<E>;
-    type Primitive = console::algorithms::BHP<E::Network, NUM_WINDOWS, WINDOW_SIZE>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Hash = Field;
+    type Primitive = console::algorithms::BHP<NUM_WINDOWS, WINDOW_SIZE>;
 
     /// Returns the hash of the given child nodes.
     fn hash_children(&self, children: &[Self::Hash]) -> Self::Hash {
@@ -52,9 +52,9 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash<E> f
     }
 }
 
-impl<E: Environment, const RATE: usize> PathHash<E> for Poseidon<E, RATE> {
-    type Hash = Field<E>;
-    type Primitive = console::algorithms::Poseidon<E::Network, RATE>;
+impl<const RATE: usize> PathHash for Poseidon<RATE> {
+    type Hash = Field;
+    type Primitive = console::algorithms::Poseidon<RATE>;
 
     /// Returns the hash of the given child nodes.
     fn hash_children(&self, children: &[Self::Hash]) -> Self::Hash {
@@ -69,8 +69,8 @@ impl<E: Environment, const RATE: usize> PathHash<E> for Poseidon<E, RATE> {
     }
 }
 
-impl<E: Environment, const TYPE: u8, const VARIANT: usize> PathHash<E> for Keccak<E, TYPE, VARIANT> {
-    type Hash = BooleanHash<E, VARIANT>;
+impl<const TYPE: u8, const VARIANT: usize> PathHash for Keccak<TYPE, VARIANT> {
+    type Hash = BooleanHash<VARIANT>;
     type Primitive = console::algorithms::Keccak<TYPE, VARIANT>;
 
     /// Returns the hash of the given child nodes.
@@ -128,8 +128,8 @@ mod tests {
         }};
         ($hash:ident, $mode:ident, $arity:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize the hash.
-            let native = snarkvm_console_algorithms::$hash::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit = $hash::<Circuit>::constant(native.clone());
+            let native = snarkvm_console_algorithms::$hash::setup(DOMAIN)?;
+            let circuit = $hash::constant(native.clone());
 
             check_hash_children!(
                 native,
@@ -196,7 +196,7 @@ mod tests {
     #[test]
     fn test_hash_children_keccak256_constant() -> Result<()> {
         let native = snarkvm_console_algorithms::Keccak256 {};
-        let circuit = Keccak256::<Circuit>::new();
+        let circuit = Keccak256::new();
 
         check_hash_children!(native, circuit, Constant, 2, (256, 0, 0, 0))?;
         check_hash_children!(native, circuit, Constant, 3, (256, 0, 0, 0))?;
@@ -209,7 +209,7 @@ mod tests {
     #[test]
     fn test_hash_children_keccak256_public() -> Result<()> {
         let native = snarkvm_console_algorithms::Keccak256 {};
-        let circuit = Keccak256::<Circuit>::new();
+        let circuit = Keccak256::new();
 
         check_hash_children!(native, circuit, Public, 2, (256, 0, 151424, 151424))?;
         check_hash_children!(native, circuit, Public, 3, (256, 0, 151936, 151936))?;
@@ -223,7 +223,7 @@ mod tests {
     #[test]
     fn test_hash_children_keccak256_private() -> Result<()> {
         let native = snarkvm_console_algorithms::Keccak256 {};
-        let circuit = Keccak256::<Circuit>::new();
+        let circuit = Keccak256::new();
 
         check_hash_children!(native, circuit, Private, 2, (256, 0, 151424, 151424))?;
         check_hash_children!(native, circuit, Private, 3, (256, 0, 151936, 151936))?;
@@ -237,7 +237,7 @@ mod tests {
     #[test]
     fn test_hash_children_sha3_256_constant() -> Result<()> {
         let native = snarkvm_console_algorithms::Sha3_256 {};
-        let circuit = Sha3_256::<Circuit>::new();
+        let circuit = Sha3_256::new();
 
         check_hash_children!(native, circuit, Constant, 2, (256, 0, 0, 0))?;
         check_hash_children!(native, circuit, Constant, 3, (256, 0, 0, 0))?;
@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn test_hash_children_sha3_256_public() -> Result<()> {
         let native = snarkvm_console_algorithms::Sha3_256 {};
-        let circuit = Sha3_256::<Circuit>::new();
+        let circuit = Sha3_256::new();
 
         check_hash_children!(native, circuit, Public, 2, (256, 0, 151424, 151424))?;
         check_hash_children!(native, circuit, Public, 3, (256, 0, 151936, 151936))?;
@@ -264,7 +264,7 @@ mod tests {
     #[test]
     fn test_hash_children_sha3_256_private() -> Result<()> {
         let native = snarkvm_console_algorithms::Sha3_256 {};
-        let circuit = Sha3_256::<Circuit>::new();
+        let circuit = Sha3_256::new();
 
         check_hash_children!(native, circuit, Private, 2, (256, 0, 151424, 151424))?;
         check_hash_children!(native, circuit, Private, 3, (256, 0, 151936, 151936))?;

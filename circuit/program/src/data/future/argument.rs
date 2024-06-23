@@ -16,15 +16,15 @@ use super::*;
 
 /// An argument passed into a future.
 #[derive(Clone)]
-pub enum Argument<A: Aleo> {
+pub enum Argument {
     /// A plaintext value.
-    Plaintext(Plaintext<A>),
+    Plaintext(Plaintext),
     /// A future.
-    Future(Future<A>),
+    Future(Future),
 }
 
-impl<A: Aleo> Inject for Argument<A> {
-    type Primitive = console::Argument<A::Network>;
+impl Inject for Argument {
+    type Primitive = console::Argument;
 
     /// Initializes a circuit of the given mode and argument.
     fn new(mode: Mode, value: Self::Primitive) -> Self {
@@ -35,8 +35,8 @@ impl<A: Aleo> Inject for Argument<A> {
     }
 }
 
-impl<A: Aleo> Eject for Argument<A> {
-    type Primitive = console::Argument<A::Network>;
+impl Eject for Argument {
+    type Primitive = console::Argument;
 
     /// Ejects the mode of the circuit argument.
     fn eject_mode(&self) -> Mode {
@@ -55,8 +55,8 @@ impl<A: Aleo> Eject for Argument<A> {
     }
 }
 
-impl<A: Aleo> Equal<Self> for Argument<A> {
-    type Output = Boolean<A>;
+impl Equal<Self> for Argument {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -77,12 +77,12 @@ impl<A: Aleo> Equal<Self> for Argument<A> {
     }
 }
 
-impl<A: Aleo> ToBits for Argument<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for Argument {
+    type Boolean = Boolean;
 
     /// Returns the argument as a list of **little-endian** bits.
     #[inline]
-    fn write_bits_le(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_le(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Plaintext(plaintext) => {
                 vec.push(Boolean::constant(false));
@@ -97,7 +97,7 @@ impl<A: Aleo> ToBits for Argument<A> {
 
     /// Returns the argument as a list of **big-endian** bits.
     #[inline]
-    fn write_bits_be(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_be(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Plaintext(plaintext) => {
                 vec.push(Boolean::constant(false));

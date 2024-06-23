@@ -101,7 +101,7 @@ impl<N: Network, B: BlockStorage<N>> QueryTrait<N> for Query<N, B> {
     }
 
     /// Returns a state path for the given `commitment`.
-    fn get_state_path_for_commitment(&self, commitment: &Field<N>) -> Result<StatePath<N>> {
+    fn get_state_path_for_commitment(&self, commitment: &Field) -> Result<StatePath<N>> {
         match self {
             Self::VM(block_store) => block_store.get_state_path_for_commitment(commitment),
             Self::REST(url) => match N::ID {
@@ -121,7 +121,7 @@ impl<N: Network, B: BlockStorage<N>> QueryTrait<N> for Query<N, B> {
 
     /// Returns a state path for the given `commitment`.
     #[cfg(feature = "async")]
-    async fn get_state_path_for_commitment_async(&self, commitment: &Field<N>) -> Result<StatePath<N>> {
+    async fn get_state_path_for_commitment_async(&self, commitment: &Field) -> Result<StatePath<N>> {
         match self {
             Self::VM(block_store) => block_store.get_state_path_for_commitment(commitment),
             Self::REST(url) => match N::ID {

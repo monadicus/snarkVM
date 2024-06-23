@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_key_parse() -> Result<()> {
         // Literal
-        let key = MapKey::<CurrentNetwork>::parse("key as field.public;").unwrap().1;
+        let key = MapKey::parse("key as field.public;").unwrap().1;
         assert_eq!(key.plaintext_type(), &PlaintextType::<CurrentNetwork>::from_str("field")?);
 
         Ok(())
@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn test_key_display() -> Result<()> {
         // Literal
-        let key = MapKey::<CurrentNetwork>::from_str("key as field.public;")?;
+        let key = MapKey::from_str("key as field.public;")?;
         assert_eq!("key as field.public;", key.to_string());
 
         Ok(())

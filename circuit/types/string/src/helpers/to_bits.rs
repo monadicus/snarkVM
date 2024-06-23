@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for StringType<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for StringType {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *with* trailing zeros (to byte-alignment).
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -28,8 +28,8 @@ impl<E: Environment> ToBits for StringType<E> {
     }
 }
 
-impl<E: Environment> ToBits for &StringType<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for &StringType {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *with* trailing zeros (to byte-alignment).
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -58,7 +58,7 @@ mod tests {
             let expected_num_bytes = expected.len();
             assert!(expected_num_bytes <= Circuit::MAX_STRING_BYTES as usize);
 
-            let candidate = StringType::<Circuit>::new(mode, console::StringType::new(&expected));
+            let candidate = StringType::new(mode, console::StringType::new(&expected));
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_le();
@@ -83,7 +83,7 @@ mod tests {
             let expected_num_bytes = expected.len();
             assert!(expected_num_bytes <= Circuit::MAX_STRING_BYTES as usize);
 
-            let candidate = StringType::<Circuit>::new(mode, console::StringType::new(&expected));
+            let candidate = StringType::new(mode, console::StringType::new(&expected));
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_be();

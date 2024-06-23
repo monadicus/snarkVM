@@ -20,7 +20,7 @@ impl<N: Network> FromBytes for Output<N> {
         let index = Variant::read_le(&mut reader)?;
         let literal = match index {
             0 => {
-                let plaintext_hash: Field<N> = FromBytes::read_le(&mut reader)?;
+                let plaintext_hash: Field = FromBytes::read_le(&mut reader)?;
                 let plaintext_exists: bool = FromBytes::read_le(&mut reader)?;
                 let plaintext = match plaintext_exists {
                     true => Some(FromBytes::read_le(&mut reader)?),
@@ -30,7 +30,7 @@ impl<N: Network> FromBytes for Output<N> {
                 Self::Constant(plaintext_hash, plaintext)
             }
             1 => {
-                let plaintext_hash: Field<N> = FromBytes::read_le(&mut reader)?;
+                let plaintext_hash: Field = FromBytes::read_le(&mut reader)?;
                 let plaintext_exists: bool = FromBytes::read_le(&mut reader)?;
                 let plaintext = match plaintext_exists {
                     true => Some(FromBytes::read_le(&mut reader)?),
@@ -39,7 +39,7 @@ impl<N: Network> FromBytes for Output<N> {
                 Self::Public(plaintext_hash, plaintext)
             }
             2 => {
-                let ciphertext_hash: Field<N> = FromBytes::read_le(&mut reader)?;
+                let ciphertext_hash: Field = FromBytes::read_le(&mut reader)?;
                 let ciphertext_exists: bool = FromBytes::read_le(&mut reader)?;
                 let ciphertext = match ciphertext_exists {
                     true => Some(FromBytes::read_le(&mut reader)?),
@@ -63,7 +63,7 @@ impl<N: Network> FromBytes for Output<N> {
                 Self::ExternalRecord(commitment)
             }
             5 => {
-                let future_hash: Field<N> = FromBytes::read_le(&mut reader)?;
+                let future_hash: Field = FromBytes::read_le(&mut reader)?;
                 let future_exists: bool = FromBytes::read_le(&mut reader)?;
                 let future = match future_exists {
                     true => Some(FromBytes::read_le(&mut reader)?),

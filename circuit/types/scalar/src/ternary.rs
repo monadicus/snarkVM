@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Ternary for Scalar<E> {
-    type Boolean = Boolean<E>;
+impl Ternary for Scalar {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.
@@ -37,8 +37,8 @@ mod tests {
     fn check_ternary(
         name: &str,
         flag: bool,
-        first: console::Scalar<<Circuit as Environment>::Network>,
-        second: console::Scalar<<Circuit as Environment>::Network>,
+        first: console::Scalar,
+        second: console::Scalar,
         mode_condition: Mode,
         mode_a: Mode,
         mode_b: Mode,
@@ -48,9 +48,9 @@ mod tests {
         num_constraints: u64,
     ) {
         let expected = if flag { first } else { second };
-        let condition = Boolean::<Circuit>::new(mode_condition, flag);
-        let a = Scalar::<Circuit>::new(mode_a, first);
-        let b = Scalar::<Circuit>::new(mode_b, second);
+        let condition = Boolean::new(mode_condition, flag);
+        let a = Scalar::new(mode_a, first);
+        let b = Scalar::new(mode_b, second);
 
         Circuit::scope(name, || {
             let case = format!("({} ? {} : {})", condition.eject_value(), a.eject_value(), b.eject_value());
@@ -101,8 +101,8 @@ mod tests {
             }
         }
 
-        let zero = console::Scalar::<<Circuit as Environment>::Network>::zero();
-        let one = console::Scalar::<<Circuit as Environment>::Network>::one();
+        let zero = console::Scalar::zero();
+        let one = console::Scalar::one();
 
         check_ternary("true ? zero : zero", true, zero, zero);
         check_ternary("true ? zero : one", true, zero, one);

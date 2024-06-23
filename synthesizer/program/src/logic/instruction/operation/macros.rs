@@ -73,7 +73,7 @@ macro_rules! operation {
 
             /// Returns the result of executing the operation on the given circuit inputs.
             #[inline]
-            fn execute<A: circuit::Aleo<Network = N>>(inputs: &[circuit::Literal<A>; $num_inputs]) -> Result<circuit::Literal<A>> {
+            fn execute<A: circuit::Aleo<Network = N>>(inputs: &[circuit::Literal; $num_inputs]) -> Result<circuit::Literal> {
                 // Prepare the circuit operator.
                 use $circuit_operator as Operator;
                 // Compute the output.
@@ -128,7 +128,7 @@ macro_rules! operation {
 
             /// Returns the result of executing the operation on the given circuit inputs.
             #[inline]
-            fn execute<A: circuit::Aleo<Network = N>>(inputs: &[circuit::Literal<A>; $num_inputs]) -> Result<circuit::Literal<A>> {
+            fn execute<A: circuit::Aleo<Network = N>>(inputs: &[circuit::Literal; $num_inputs]) -> Result<circuit::Literal> {
                 // Prepare the circuit operator.
                 use $circuit_operator as Operator;
                 // Compute the output.

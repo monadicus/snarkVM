@@ -32,7 +32,7 @@ fn check_merkle_tree<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>, 
     rng: &mut TestRng,
 ) -> Result<()> {
     // Construct the Merkle tree for the given leaves.
-    let mut merkle_tree = MerkleTree::<E, LH, PH, DEPTH>::new(leaf_hasher, path_hasher, leaves)?;
+    let mut merkle_tree = MerkleTree::<LH, PH, DEPTH>::new(leaf_hasher, path_hasher, leaves)?;
     assert_eq!(leaves.len(), merkle_tree.number_of_leaves);
 
     // Check each leaf in the Merkle tree.
@@ -72,7 +72,6 @@ fn check_merkle_tree<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>, 
 /// 3. Construct a new Merkle tree with the only the updated leaves.
 /// 4. Check that the Merkle root of the new Merkle tree is the same as the Merkle root of the original Merkle tree.
 fn check_updated_merkle_tree_is_consistent<
-    E: Environment,
     LH: LeafHash<Hash = PH::Hash>,
     PH: PathHash<Hash = Field>,
     const DEPTH: u8,
@@ -83,7 +82,7 @@ fn check_updated_merkle_tree_is_consistent<
     updates: Vec<(usize, LH::Leaf)>,
 ) -> Result<()> {
     // Construct the Merkle tree for the given leaves.
-    let mut merkle_tree = MerkleTree::<E, LH, PH, DEPTH>::new(leaf_hasher, path_hasher, &leaves)?;
+    let mut merkle_tree = MerkleTree::<LH, PH, DEPTH>::new(leaf_hasher, path_hasher, &leaves)?;
     assert_eq!(leaves.len(), merkle_tree.number_of_leaves);
 
     // Construct an index map to track the leaves.
@@ -103,7 +102,7 @@ fn check_updated_merkle_tree_is_consistent<
     let updated_leaves = leaf_map.values().cloned().collect::<Vec<LH::Leaf>>();
 
     // Construct a new Merkle tree with the updated leaves.
-    let updated_merkle_tree = MerkleTree::<E, LH, PH, DEPTH>::new(leaf_hasher, path_hasher, &updated_leaves)?;
+    let updated_merkle_tree = MerkleTree::<LH, PH, DEPTH>::new(leaf_hasher, path_hasher, &updated_leaves)?;
 
     // Check that the Merkle root of the new Merkle tree is the same as the Merkle root of the original Merkle tree.
     assert_eq!(merkle_tree.root(), updated_merkle_tree.root());
@@ -115,11 +114,7 @@ fn check_updated_merkle_tree_is_consistent<
 /// 2. Checks that every node hash and the Merkle root is correct.
 /// 3. Updates a leaf in the Merkle tree.
 /// 4. Checks that every node hash and the Merkle root is correct.
-fn check_merkle_tree_depth_3_single_update<
-    E: Environment,
-    LH: LeafHash<Hash = PH::Hash>,
-    PH: PathHash<Hash = Field>,
->(
+fn check_merkle_tree_depth_3_single_update<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>>(
     leaf_hasher: &LH,
     path_hasher: &PH,
     leaves: &[LH::Leaf],
@@ -129,7 +124,7 @@ fn check_merkle_tree_depth_3_single_update<
     assert_eq!(1, updates.len(), "Padded depth-3 test requires 1 update");
 
     // Construct the Merkle tree for the given leaves.
-    let mut merkle_tree = MerkleTree::<E, LH, PH, 3>::new(leaf_hasher, path_hasher, leaves)?;
+    let mut merkle_tree = MerkleTree::<LH, PH, 3>::new(leaf_hasher, path_hasher, leaves)?;
     assert_eq!(7, merkle_tree.tree.len());
     assert_eq!(4, merkle_tree.number_of_leaves);
 
@@ -223,7 +218,7 @@ fn test_merkle_tree_bhp() -> Result<()> {
                 let num_updates = core::cmp::min(num_leaves, core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, j));
 
                 // Check the Merkle tree.
-                check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+                check_merkle_tree::<LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
                     &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -249,8 +244,8 @@ fn test_merkle_tree_bhp() -> Result<()> {
 #[test]
 fn test_merkle_tree_poseidon() -> Result<()> {
     fn run_test<const DEPTH: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = Poseidon<CurrentEnvironment, 4>;
-        type PH = Poseidon<CurrentEnvironment, 2>;
+        type LH = Poseidon<4>;
+        type PH = Poseidon<2>;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -263,7 +258,7 @@ fn test_merkle_tree_poseidon() -> Result<()> {
                     core::cmp::min(num_leaves, core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, j));
 
                 // Check the Merkle tree.
-                check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+                check_merkle_tree::<LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
                     &(0..num_leaves).map(|_| vec![Uniform::rand(rng)]).collect::<Vec<_>>(),
@@ -308,7 +303,7 @@ fn test_merkle_tree_bhp_update_is_consistent() -> Result<()> {
                 .collect::<Vec<(usize, Vec<bool>)>>();
 
             // Check the Merkle tree.
-            check_updated_merkle_tree_is_consistent::<CurrentEnvironment, LH, PH, DEPTH>(
+            check_updated_merkle_tree_is_consistent::<LH, PH, DEPTH>(
                 &leaf_hasher,
                 &path_hasher,
                 (0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -330,8 +325,8 @@ fn test_merkle_tree_bhp_update_is_consistent() -> Result<()> {
 #[test]
 fn test_merkle_tree_poseidon_update_is_consistent() -> Result<()> {
     fn run_test<const DEPTH: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = Poseidon<CurrentEnvironment, 4>;
-        type PH = Poseidon<CurrentEnvironment, 2>;
+        type LH = Poseidon<4>;
+        type PH = Poseidon<2>;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -349,7 +344,7 @@ fn test_merkle_tree_poseidon_update_is_consistent() -> Result<()> {
                 .collect::<Vec<(usize, Vec<_>)>>();
 
             // Check the Merkle tree.
-            check_updated_merkle_tree_is_consistent::<CurrentEnvironment, LH, PH, DEPTH>(
+            check_updated_merkle_tree_is_consistent::<LH, PH, DEPTH>(
                 &leaf_hasher,
                 &path_hasher,
                 (0..num_leaves).map(|_| vec![Uniform::rand(rng)]).collect::<Vec<Vec<_>>>(),
@@ -379,7 +374,7 @@ fn test_merkle_tree_depth_3_bhp() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-3 Merkle tree.
-    check_merkle_tree_depth_3_single_update::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_3_single_update::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -389,8 +384,8 @@ fn test_merkle_tree_depth_3_bhp() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_3_poseidon() -> Result<()> {
-    type LH = Poseidon<CurrentEnvironment, 4>;
-    type PH = Poseidon<CurrentEnvironment, 2>;
+    type LH = Poseidon<4>;
+    type PH = Poseidon<2>;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -398,7 +393,7 @@ fn test_merkle_tree_depth_3_poseidon() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-3 Merkle tree.
-    check_merkle_tree_depth_3_single_update::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_3_single_update::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| vec![Uniform::rand(&mut rng)]).collect::<Vec<_>>(),
@@ -429,8 +424,7 @@ fn test_profiler() -> Result<()> {
     for num_leaves in NUM_LEAVES {
         // New
         let leaves = generate_leaves!(*num_leaves, &mut rng);
-        let mut merkle_tree =
-            MerkleTree::<CurrentEnvironment, LH, PH, DEPTH>::new(&leaf_hasher, &path_hasher, &leaves)?;
+        let mut merkle_tree = MerkleTree::<LH, PH, DEPTH>::new(&leaf_hasher, &path_hasher, &leaves)?;
 
         // Update
         generate_leaves!(1, &mut rng)

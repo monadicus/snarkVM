@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal<Self> for Group<E> {
-    type Output = Boolean<E>;
+impl Equal<Self> for Group {
+    type Output = Boolean;
 
     ///
     /// Returns `true` if `self` and `other` are equal.
@@ -58,8 +58,8 @@ mod tests {
             let a = Uniform::rand(&mut rng);
             let b = Uniform::rand(&mut rng);
 
-            let a = Group::<Circuit>::new(Mode::Constant, a);
-            let b = Group::<Circuit>::new(Mode::Constant, b);
+            let a = Group::new(Mode::Constant, a);
+            let b = Group::new(Mode::Constant, b);
 
             Circuit::scope(&format!("Constant Equals {i}"), || {
                 let equals = a.is_equal(&b);
@@ -82,8 +82,8 @@ mod tests {
             let a = Uniform::rand(&mut rng);
             let b = Uniform::rand(&mut rng);
 
-            let a = Group::<Circuit>::new(Mode::Constant, a);
-            let b = Group::<Circuit>::new(Mode::Public, b);
+            let a = Group::new(Mode::Constant, a);
+            let b = Group::new(Mode::Public, b);
 
             Circuit::scope(&format!("Constant and Public Equals {i}"), || {
                 let equals = a.is_equal(&b);
@@ -106,8 +106,8 @@ mod tests {
             let a = Uniform::rand(&mut rng);
             let b = Uniform::rand(&mut rng);
 
-            let a = Group::<Circuit>::new(Mode::Public, a);
-            let b = Group::<Circuit>::new(Mode::Constant, b);
+            let a = Group::new(Mode::Public, a);
+            let b = Group::new(Mode::Constant, b);
 
             Circuit::scope(&format!("Public and Constant Equals {i}"), || {
                 let equals = a.is_equal(&b);
@@ -130,8 +130,8 @@ mod tests {
             let a = Uniform::rand(&mut rng);
             let b = Uniform::rand(&mut rng);
 
-            let a = Group::<Circuit>::new(Mode::Public, a);
-            let b = Group::<Circuit>::new(Mode::Public, b);
+            let a = Group::new(Mode::Public, a);
+            let b = Group::new(Mode::Public, b);
 
             Circuit::scope(&format!("Public Equals {i}"), || {
                 let equals = a.is_equal(&b);
@@ -154,8 +154,8 @@ mod tests {
             let a = Uniform::rand(&mut rng);
             let b = Uniform::rand(&mut rng);
 
-            let a = Group::<Circuit>::new(Mode::Private, a);
-            let b = Group::<Circuit>::new(Mode::Private, b);
+            let a = Group::new(Mode::Private, a);
+            let b = Group::new(Mode::Private, b);
 
             Circuit::scope(&format!("Private Equals {i}"), || {
                 let equals = a.is_equal(&b);

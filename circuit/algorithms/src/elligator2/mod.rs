@@ -20,6 +20,4 @@ use snarkvm_circuit_types::environment::assert_scope;
 use snarkvm_circuit_types::prelude::*;
 use snarkvm_fields::SquareRootField;
 
-use core::marker::PhantomData;
-
-pub struct Elligator2<E: Environment>(PhantomData<E>);
+pub struct Elligator2;

@@ -21,36 +21,36 @@ use console::{account::Address, network::prelude::*, prelude::DeserializeExt};
 
 /// A helper struct around a puzzle solution.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-pub struct Solution<N: Network> {
+pub struct Solution {
     /// The partial solution.
-    partial_solution: PartialSolution<N>,
+    partial_solution: PartialSolution,
     /// The solution target.
     target: u64,
 }
 
-impl<N: Network> Solution<N> {
+impl Solution {
     /// Initializes a new instance of the solution.
-    pub fn new(partial_solution: PartialSolution<N>, target: u64) -> Self {
+    pub fn new(partial_solution: PartialSolution, target: u64) -> Self {
         Self { partial_solution, target }
     }
 
     /// Returns the partial solution..
-    pub const fn partial_solution(&self) -> &PartialSolution<N> {
+    pub const fn partial_solution(&self) -> &PartialSolution {
         &self.partial_solution
     }
 
     /// Returns the solution ID.
-    pub const fn id(&self) -> SolutionID<N> {
+    pub const fn id(&self) -> SolutionID {
         self.partial_solution.id()
     }
 
     /// Returns the epoch hash of the solution.
-    pub const fn epoch_hash(&self) -> N::BlockHash {
+    pub const fn epoch_hash(&self) -> BlockHash {
         self.partial_solution.epoch_hash()
     }
 
     /// Returns the address of the prover.
-    pub const fn address(&self) -> Address<N> {
+    pub const fn address(&self) -> Address {
         self.partial_solution.address()
     }
 

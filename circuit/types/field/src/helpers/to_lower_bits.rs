@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_environment::Circuit;
+
 use super::*;
 
-impl<E: Environment> ToLowerBits for Field<E> {
-    type Boolean = Boolean<E>;
+impl ToLowerBits for Field {
+    type Boolean = Boolean;
 
     ///
     /// Outputs the lower `k` bits of an `n`-bit field element in little-endian representation.
@@ -23,10 +25,10 @@ impl<E: Environment> ToLowerBits for Field<E> {
     ///
     fn to_lower_bits_le(&self, k: usize) -> Vec<Self::Boolean> {
         // Ensure the size is within the allowed capacity.
-        if k > E::BaseField::size_in_bits() {
-            E::halt(format!(
+        if k > ConsoleField::size_in_bits() {
+            Circuit::halt(format!(
                 "Attempted to extract {k} bits from a {}-bit base field element",
-                E::BaseField::size_in_bits()
+                ConsoleField::size_in_bits()
             ))
         }
 
@@ -43,7 +45,7 @@ impl<E: Environment> ToLowerBits for Field<E> {
 
         // Ensure value * 1 == (2^k * b_k + ... + 2^0 * b_0)
         // and ensures that b_n, ..., b_{n-k} are all equal to zero.
-        E::assert_eq(self, accumulator);
+        Circuit::assert_eq(self, accumulator);
 
         bits
     }
@@ -59,7 +61,7 @@ impl<E: Environment> ToLowerBits for Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn ToLowerBits<Boolean = Boolean<E>>> for Field<E> {
+impl Metrics<dyn ToLowerBits<Boolean = Boolean>> for Field {
     type Case = (Mode, u64);
 
     fn count(case: &Self::Case) -> Count {
@@ -70,7 +72,7 @@ impl<E: Environment> Metrics<dyn ToLowerBits<Boolean = Boolean<E>>> for Field<E>
     }
 }
 
-impl<E: Environment> OutputMode<dyn ToLowerBits<Boolean = Boolean<E>>> for Field<E> {
+impl OutputMode<dyn ToLowerBits<Boolean = Boolean>> for Field {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -100,7 +102,7 @@ mod tests {
             let expected = value.to_bits_le();
 
             // Construct the unsigned integer as a field element.
-            let candidate = Field::<Circuit>::new(mode, console::Field::from_bits_le(&expected).unwrap());
+            let candidate = Field::new(mode, console::Field::from_bits_le(&expected).unwrap());
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_lower_bits_le(I::BITS as usize);

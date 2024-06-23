@@ -25,7 +25,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     /// The `priority_fee_in_microcredits` is an additional fee **on top** of the execution fee.
     pub fn execute<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         (program_id, function_name): (impl TryInto<ProgramID<N>>, impl TryInto<Identifier<N>>),
         inputs: impl ExactSizeIterator<Item = impl TryInto<Value<N>>>,
         fee_record: Option<Record<N, Plaintext<N>>>,
@@ -226,7 +226,7 @@ mod tests {
         rng: &mut TestRng,
     ) -> Result<(
         VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>>,
-        IndexMap<Field<CurrentNetwork>, Record<CurrentNetwork, Ciphertext<CurrentNetwork>>>,
+        IndexMap<Field, Record<Ciphertext<CurrentNetwork>>>,
     )> {
         // Initialize the genesis block.
         let genesis = crate::vm::test_helpers::sample_genesis_block(rng);
@@ -251,7 +251,7 @@ mod tests {
 
         // Initialize a new caller.
         let validator_private_key = crate::vm::test_helpers::sample_genesis_private_key(rng);
-        let withdrawal_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let withdrawal_private_key = PrivateKey::new(rng).unwrap();
         let withdrawal_address = Address::try_from(&withdrawal_private_key).unwrap();
 
         // Prepare the VM and records.
@@ -259,9 +259,9 @@ mod tests {
 
         // Prepare the inputs.
         let inputs = [
-            Value::<CurrentNetwork>::from_str(&withdrawal_address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str("1_000_000u64").unwrap(),
-            Value::<CurrentNetwork>::from_str("5u8").unwrap(),
+            Value::from_str(&withdrawal_address.to_string()).unwrap(),
+            Value::from_str("1_000_000u64").unwrap(),
+            Value::from_str("5u8").unwrap(),
         ]
         .into_iter();
 
@@ -292,7 +292,7 @@ mod tests {
         // Initialize a new caller.
         let validator_private_key = crate::vm::test_helpers::sample_genesis_private_key(rng);
         let validator_address = Address::try_from(&validator_private_key).unwrap();
-        let delegator_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let delegator_private_key = PrivateKey::new(rng).unwrap();
         let delegator_address = Address::try_from(&delegator_private_key).unwrap();
 
         // Prepare the VM and records.
@@ -300,9 +300,9 @@ mod tests {
 
         // Prepare the inputs.
         let inputs = [
-            Value::<CurrentNetwork>::from_str(&validator_address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str(&delegator_address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str("1_000_000u64").unwrap(),
+            Value::from_str(&validator_address.to_string()).unwrap(),
+            Value::from_str(&delegator_address.to_string()).unwrap(),
+            Value::from_str("1_000_000u64").unwrap(),
         ]
         .into_iter();
 
@@ -365,11 +365,9 @@ mod tests {
         let (vm, _) = prepare_vm(rng).unwrap();
 
         // Prepare the inputs.
-        let inputs = [
-            Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str("1u64").unwrap(),
-        ]
-        .into_iter();
+        let inputs =
+            [Value::from_str(&address.to_string()).unwrap(), Value::<CurrentNetwork>::from_str("1u64").unwrap()]
+                .
 
         // Execute.
         let transaction =
@@ -410,9 +408,9 @@ mod tests {
         let inputs = [
             Value::<CurrentNetwork>::Record(record),
             Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str("1u64").unwrap(),
+            Value::from_str("1u64").unwrap(),
         ]
-        .into_iter();
+        .into_ite
 
         // Execute.
         let transaction =
@@ -446,7 +444,7 @@ mod tests {
             Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
             Value::<CurrentNetwork>::from_str("1u64").unwrap(),
         ]
-        .into_iter();
+        .into_ite
 
         // Execute.
         let transaction =
@@ -480,7 +478,7 @@ mod tests {
             Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
             Value::<CurrentNetwork>::from_str("1u64").unwrap(),
         ]
-        .into_iter();
+        .into_ite
 
         // Execute.
         let transaction =

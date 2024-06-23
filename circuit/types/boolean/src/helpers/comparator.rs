@@ -14,14 +14,18 @@
 
 use super::*;
 
-impl<E: Environment> Boolean<E> {
+impl Boolean {
     /// Returns `true` if `circuit_bits_le <= constant_bits_le`.
     /// This *internal* function assumes the inputs are in **little-endian** representation.
     #[doc(hidden)]
-    pub fn is_less_than_or_equal_constant(circuit_bits_le: &[Boolean<E>], constant_bits_le: &[bool]) -> Boolean<E> {
+    pub fn is_less_than_or_equal_constant(circuit_bits_le: &[Boolean], constant_bits_le: &[bool]) -> Boolean {
         // Ensure the length matches.
         if circuit_bits_le.len() != constant_bits_le.len() {
-            E::halt(format!("Mismatching length of bits ({} != {})", circuit_bits_le.len(), constant_bits_le.len()))
+            Circuit::halt(format!(
+                "Mismatching length of bits ({} != {})",
+                circuit_bits_le.len(),
+                constant_bits_le.len()
+            ))
         }
 
         // Compute `!(constant_bits_le < circuit_bits_le)`, equivalent to `constant_bits_le >= circuit_bits_le`.
@@ -33,10 +37,10 @@ impl<E: Environment> Boolean<E> {
     /// Asserts that `circuit_bits_le <= constant_bits_le`.
     /// This *internal* function assumes the inputs are in **little-endian** representation.
     #[doc(hidden)]
-    pub fn assert_less_than_or_equal_constant(circuit_bits_le: &[Boolean<E>], constant_bits_le: &[bool]) {
+    pub fn assert_less_than_or_equal_constant(circuit_bits_le: &[Boolean], constant_bits_le: &[bool]) {
         // Compute `!(constant_bits_le < circuit_bits_le)`, equivalent to `constant_bits_le >= circuit_bits_le`.
         let is_less_than_or_equal = Boolean::is_less_than_or_equal_constant(circuit_bits_le, constant_bits_le);
         // Assert that `circuit_bits_le <= constant_bits_le`.
-        E::assert(is_less_than_or_equal);
+        Circuit::assert(is_less_than_or_equal);
     }
 }

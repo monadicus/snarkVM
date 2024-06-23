@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Div<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Div<Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn div(self, other: Self) -> Self::Output {
@@ -22,15 +22,15 @@ impl<E: Environment, I: IntegerType> Div<Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Div<Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Div<Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn div(self, other: Integer<E, I>) -> Self::Output {
+    fn div(self, other: Integer<I>) -> Self::Output {
         self / &other
     }
 }
 
-impl<E: Environment, I: IntegerType> Div<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Div<&Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn div(self, other: &Self) -> Self::Output {
@@ -38,41 +38,41 @@ impl<E: Environment, I: IntegerType> Div<&Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Div<&Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Div<&Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn div(self, other: &Integer<E, I>) -> Self::Output {
+    fn div(self, other: &Integer<I>) -> Self::Output {
         let mut output = self.clone();
         output /= other;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType> DivAssign<Integer<E, I>> for Integer<E, I> {
-    fn div_assign(&mut self, other: Integer<E, I>) {
+impl<I: IntegerType> DivAssign<Integer<I>> for Integer<I> {
+    fn div_assign(&mut self, other: Integer<I>) {
         *self /= &other;
     }
 }
 
-impl<E: Environment, I: IntegerType> DivAssign<&Integer<E, I>> for Integer<E, I> {
-    fn div_assign(&mut self, other: &Integer<E, I>) {
+impl<I: IntegerType> DivAssign<&Integer<I>> for Integer<I> {
+    fn div_assign(&mut self, other: &Integer<I>) {
         // Stores the quotient of `self` and `other` in `self`.
         *self = self.div_checked(other);
     }
 }
 
-impl<E: Environment, I: IntegerType> DivChecked<Self> for Integer<E, I> {
+impl<I: IntegerType> DivChecked<Self> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn div_checked(&self, other: &Integer<E, I>) -> Self::Output {
+    fn div_checked(&self, other: &Integer<I>) -> Self::Output {
         match (self.is_constant(), other.is_constant()) {
             // If `other` is a constant and is zero, then halt.
-            (_, true) if other.eject_value().is_zero() => E::halt("Attempted to divide by zero."),
+            (_, true) if other.eject_value().is_zero() => Circuit::halt("Attempted to divide by zero."),
             // If `self` and `other` are constants, and other is not zero, then directly return the value of the division.
             (true, true) => match self.eject_value().checked_div(&other.eject_value()) {
                 Some(value) => Integer::constant(console::Integer::new(value)),
-                None => E::halt("Overflow on division of two integer constants"),
+                None => Circuit::halt("Overflow on division of two integer constants"),
             },
             // Handle the remaining cases.
             // Note that `other` is either a constant and non-zero, or not a constant.
@@ -83,7 +83,7 @@ impl<E: Environment, I: IntegerType> DivChecked<Self> for Integer<E, I> {
                     let min = Integer::constant(console::Integer::MIN);
                     let neg_one = Integer::constant(-console::Integer::one());
                     let overflows = self.is_equal(&min) & other.is_equal(&neg_one);
-                    E::assert(!overflows);
+                    Circuit::assert(!overflows);
 
                     // Divide the absolute value of `self` and `other` in the base field.
                     // Note that it is safe to use `abs_wrapped`, since the case for console::Integer::MIN is handled above.
@@ -108,37 +108,37 @@ impl<E: Environment, I: IntegerType> DivChecked<Self> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Div<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Div<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
-        <Self as Metrics<dyn DivChecked<Integer<E, I>, Output = Integer<E, I>>>>::count(case)
+        <Self as Metrics<dyn DivChecked<Integer<I>, Output = Integer<I>>>>::count(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Div<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Div<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
-        <Self as OutputMode<dyn DivChecked<Integer<E, I>, Output = Integer<E, I>>>>::output_mode(case)
+        <Self as OutputMode<dyn DivChecked<Integer<I>, Output = Integer<I>>>>::output_mode(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn DivChecked<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn DivChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
         match (case.0, case.1) {
             (Mode::Constant, Mode::Constant) => Count::is(I::BITS, 0, 0, 0),
             (Mode::Constant, _) | (_, Mode::Constant) => {
-                match (I::is_signed(), 2 * I::BITS < E::BaseField::size_in_data_bits() as u64) {
+                match (I::is_signed(), 2 * I::BITS < ConsoleField::size_in_data_bits() as u64) {
                     (true, true) => Count::less_than(7 * I::BITS + 1, 0, (9 * I::BITS) + 11, (9 * I::BITS) + 18),
                     (true, false) => Count::less_than(7 * I::BITS + 1, 0, 1486, 1497),
                     (false, true) => Count::less_than(I::BITS + 1, 0, (3 * I::BITS) + 2, (3 * I::BITS) + 5),
                     (false, false) => Count::less_than(I::BITS + 1, 0, 709, 716),
                 }
             }
-            (_, _) => match (I::is_signed(), 2 * I::BITS < E::BaseField::size_in_data_bits() as u64) {
+            (_, _) => match (I::is_signed(), 2 * I::BITS < ConsoleField::size_in_data_bits() as u64) {
                 (true, true) => Count::is(6 * I::BITS, 0, (9 * I::BITS) + 11, (9 * I::BITS) + 18),
                 (true, false) => Count::is(6 * I::BITS, 0, 1486, 1497),
                 (false, true) => Count::is(I::BITS, 0, (3 * I::BITS) + 2, (3 * I::BITS) + 5),
@@ -148,9 +148,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn DivChecked<Integer<E, I>, Outpu
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn DivChecked<Integer<E, I>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType> OutputMode<dyn DivChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -174,13 +172,13 @@ mod tests {
 
     fn check_div<I: IntegerType + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, I>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<I>::new(mode_b, second);
         if second == console::Integer::zero() {
             match mode_b {
                 Mode::Constant => check_operation_halts(&a, &b, Integer::div_checked),
@@ -254,8 +252,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Div: ({first} / {second})");
                 check_div::<I>(&name, first, second, mode_a, mode_b);

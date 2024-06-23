@@ -14,39 +14,39 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Pow<Integer<E, M>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType, M: Magnitude> Pow<Integer<M>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: Integer<E, M>) -> Self::Output {
+    fn pow(self, other: Integer<M>) -> Self::Output {
         self.pow_checked(&other)
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Pow<&Integer<E, M>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType, M: Magnitude> Pow<&Integer<M>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow(self, other: &Integer<E, M>) -> Self::Output {
+    fn pow(self, other: &Integer<M>) -> Self::Output {
         self.pow_checked(other)
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> PowChecked<Integer<E, M>> for Integer<E, I> {
+impl<I: IntegerType, M: Magnitude> PowChecked<Integer<M>> for Integer<I> {
     type Output = Self;
 
     /// Returns the `power` of `self` to the power of `other`.
     #[inline]
-    fn pow_checked(&self, other: &Integer<E, M>) -> Self::Output {
+    fn pow_checked(&self, other: &Integer<M>) -> Self::Output {
         // Determine the variable mode.
         if self.is_constant() && other.is_constant() {
             // Compute the result and return the new constant.
             // This cast is safe since `Magnitude`s can only be `u8`, `u16`, or `u32`.
             match self.eject_value().checked_pow(&other.eject_value().to_u32().unwrap()) {
                 Some(value) => Integer::new(Mode::Constant, console::Integer::new(value)),
-                None => E::halt("Integer overflow on exponentiation of two constants"),
+                None => Circuit::halt("Integer overflow on exponentiation of two constants"),
             }
         } else {
             let mut result = Self::one();
@@ -78,7 +78,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> PowChecked<Integer<E, M>> for
                     };
 
                     let overflow = overflow | positive_product_overflows | negative_product_underflows;
-                    E::assert_eq(overflow & bit, E::zero());
+                    Circuit::assert_eq(overflow & bit, Circuit::zero());
 
                     // Return the product of `self` and `other` with the appropriate sign.
                     Self::ternary(operands_same_sign, &product, &(!&product).add_wrapped(&Self::one()))
@@ -86,7 +86,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> PowChecked<Integer<E, M>> for
                     let (product, overflow) = Self::mul_with_flags(&result, self);
 
                     // For unsigned multiplication, check that the overflow flag is not set.
-                    E::assert_eq(overflow & bit, E::zero());
+                    Circuit::assert_eq(overflow & bit, Circuit::zero());
 
                     // Return the product of `self` and `other`.
                     product
@@ -99,15 +99,15 @@ impl<E: Environment, I: IntegerType, M: Magnitude> PowChecked<Integer<E, M>> for
     }
 }
 
-impl<E: Environment, I: IntegerType> Integer<E, I> {
+impl<I: IntegerType> Integer<I> {
     /// Multiply the integer bits of `this` and `that`, returning a flag indicating whether the product overflowed.
     /// This method assumes that the `this` and `that` are both positive.
     #[inline]
-    fn mul_with_flags(this: &Integer<E, I>, that: &Integer<E, I>) -> (Integer<E, I>, Boolean<E>) {
+    fn mul_with_flags(this: &Integer<I>, that: &Integer<I>) -> (Integer<I>, Boolean) {
         // Case 1 - 2 integers fit in 1 field element (u8, u16, u32, u64, i8, i16, i32, i64).
-        if 2 * I::BITS < (E::BaseField::size_in_bits() - 1) as u64 {
+        if 2 * I::BITS < (ConsoleField::size_in_bits() - 1) as u64 {
             // Instead of multiplying the bits of `self` and `other`, witness the integer product.
-            let product: Integer<E, I> = witness!(|this, that| this.mul_wrapped(&that));
+            let product: Integer<I> = witness!(|this, that| this.mul_wrapped(&that));
 
             // Check that the computed product is not equal to witnessed product, in the base field.
             // Note: The multiplication is safe as the field twice as large as the maximum integer type supported.
@@ -119,7 +119,7 @@ impl<E: Environment, I: IntegerType> Integer<E, I> {
             (product, flag)
         }
         // Case 2 - 1.5 integers fit in 1 field element (u128, i128).
-        else if (I::BITS + I::BITS / 2) < (E::BaseField::size_in_bits() - 1) as u64 {
+        else if (I::BITS + I::BITS / 2) < (ConsoleField::size_in_bits() - 1) as u64 {
             // Use Karatsuba multiplication to compute the product of `self` and `other` and the carry bits.
             let (product, z_1_upper_bits, z2) = Self::karatsuba_multiply(this, that);
             // Reconstruct the upper bits of z_1 in the field.
@@ -131,35 +131,31 @@ impl<E: Environment, I: IntegerType> Integer<E, I> {
             // Return the product of `self` and `other` and the overflow flag.
             (product, flag)
         } else {
-            E::halt(format!("Multiplication of integers of size {} is not supported", I::BITS))
+            Circuit::halt(format!("Multiplication of integers of size {} is not supported", I::BITS))
         }
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Metrics<dyn PowChecked<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType, M: Magnitude> Metrics<dyn PowChecked<Integer<M>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode, bool, bool);
 
     fn count(case: &Self::Case) -> Count {
         match (case.0, case.1) {
             (Mode::Constant, Mode::Constant) => Count::is(I::BITS, 0, 0, 0),
             (Mode::Constant, _) | (_, Mode::Constant) => {
-                let mul_count = count!(Integer<E, I>, MulWrapped<Integer<E, I>, Output=Integer<E, I>>, case);
+                let mul_count = count!(Integer<I>, MulWrapped<Integer<I>, Output = Integer<I>>, case);
                 (2 * M::BITS * mul_count) + Count::is(2 * I::BITS, 0, I::BITS, I::BITS)
             }
             (_, _) => {
-                let mul_count = count!(Integer<E, I>, MulWrapped<Integer<E, I>, Output=Integer<E, I>>, case);
+                let mul_count = count!(Integer<I>, MulWrapped<Integer<I>, Output = Integer<I>>, case);
                 (2 * M::BITS * mul_count) + Count::is(2 * I::BITS, 0, I::BITS, I::BITS)
             }
         }
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> OutputMode<dyn PowChecked<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
-    type Case = (Mode, CircuitType<Integer<E, M>>);
+impl<I: IntegerType, M: Magnitude> OutputMode<dyn PowChecked<Integer<M>, Output = Integer<I>>> for Integer<I> {
+    type Case = (Mode, CircuitType<Integer<M>>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match (case.0, (case.1.mode(), &case.1)) {
@@ -174,7 +170,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> OutputMode<dyn PowChecked<Int
                     true => Mode::Constant,
                     false => Mode::Private,
                 },
-                _ => E::halt("The constant is required for the output mode of `pow_wrapped` with a constant."),
+                _ => Circuit::halt("The constant is required for the output mode of `pow_wrapped` with a constant."),
             },
             (_, _) => Mode::Private,
         }
@@ -194,13 +190,13 @@ mod tests {
 
     fn check_pow<I: IntegerType + RefUnwindSafe, M: Magnitude + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, M>,
+        first: console::Integer<I>,
+        second: console::Integer<M>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, M>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<M>::new(mode_b, second);
         match first.checked_pow(&second.to_u32().unwrap()) {
             Some(expected) => Circuit::scope(name, || {
                 let candidate = a.pow_checked(&b);
@@ -270,8 +266,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in M::MIN..=M::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, M>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<M>::new(second);
 
                 let name = format!("Pow: ({first} ** {second})");
                 check_pow::<I, M>(&name, first, second, mode_a, mode_b);

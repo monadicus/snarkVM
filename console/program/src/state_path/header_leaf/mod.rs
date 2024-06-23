@@ -53,7 +53,7 @@ mod test_helpers {
 
     type CurrentNetwork = MainnetV0;
 
-    pub(super) fn sample_leaf(rng: &mut TestRng) -> HeaderLeaf<CurrentNetwork> {
+    pub(super) fn sample_leaf(rng: &mut TestRng) -> HeaderLeaf {
         // Construct a new leaf.
         HeaderLeaf::new(rng.gen(), Uniform::rand(rng))
     }

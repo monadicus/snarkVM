@@ -14,15 +14,15 @@
 
 use super::*;
 
-impl<E: Environment> Double for Field<E> {
-    type Output = Field<E>;
+impl Double for Field {
+    type Output = Field;
 
     fn double(&self) -> Self::Output {
         self + self
     }
 }
 
-impl<E: Environment> Metrics<dyn Double<Output = Field<E>>> for Field<E> {
+impl Metrics<dyn Double<Output = Field>> for Field {
     type Case = Mode;
 
     fn count(_parameter: &Self::Case) -> Count {
@@ -30,7 +30,7 @@ impl<E: Environment> Metrics<dyn Double<Output = Field<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn Double<Output = Field<E>>> for Field<E> {
+impl OutputMode<dyn Double<Output = Field>> for Field {
     type Case = Mode;
 
     fn output_mode(input: &Self::Case) -> Mode {
@@ -52,7 +52,7 @@ mod tests {
         for _ in 0..ITERATIONS {
             // Sample a random element.
             let given = Uniform::rand(rng);
-            let candidate = Field::<Circuit>::new(mode, given);
+            let candidate = Field::new(mode, given);
 
             Circuit::scope(name, || {
                 let result = candidate.double();
@@ -74,18 +74,18 @@ mod tests {
 
     #[test]
     fn test_0_double() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero).double();
+        let candidate = Field::new(Mode::Public, zero).double();
         assert_eq!(zero, candidate.eject_value());
     }
 
     #[test]
     fn test_1_double() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
         let two = one + one;
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one).double();
+        let candidate = Field::new(Mode::Public, one).double();
         assert_eq!(two, candidate.eject_value());
     }
 }

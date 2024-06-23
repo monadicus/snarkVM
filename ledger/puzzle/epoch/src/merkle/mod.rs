@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use console::{
-    network::Network,
+    network::{BlockHash, Network},
     prelude::{cfg_into_iter, FromBytes, ToBits as TBits, ToBytes, Uniform},
     types::Field,
 };
@@ -39,24 +39,24 @@ impl<N: Network> PuzzleTrait<N> for MerklePuzzle<N> {
     }
 
     /// Returns the leaves for the puzzle, given the epoch hash and seeded RNG.
-    fn to_leaves(&self, epoch_hash: N::BlockHash, rng: &mut ChaChaRng) -> Result<Vec<Vec<bool>>> {
+    fn to_leaves(&self, epoch_hash: BlockHash, rng: &mut ChaChaRng) -> Result<Vec<Vec<bool>>> {
         // Sample a random number of leaves.
         let num_leaves = self.num_leaves(epoch_hash)?;
         // Sample random field elements for each of the leaves, and convert them to bits.
-        let leaves = (0..num_leaves).map(|_| Field::<N>::rand(rng).to_bits_le()).collect::<Vec<_>>();
+        let leaves = (0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<_>>();
         // Return the leaves.
         Ok(leaves)
     }
 
     /// Returns the batches of leaves for the puzzle, given the epoch hash and seeded RNGs.
-    fn to_all_leaves(&self, epoch_hash: N::BlockHash, rngs: Vec<ChaChaRng>) -> Result<Vec<Vec<Vec<bool>>>> {
+    fn to_all_leaves(&self, epoch_hash: BlockHash, rngs: Vec<ChaChaRng>) -> Result<Vec<Vec<Vec<bool>>>> {
         // Sample a random number of leaves.
         let num_leaves = self.num_leaves(epoch_hash)?;
         // Construct the epoch inputs.
         let leaves = cfg_into_iter!(rngs)
             .map(|mut rng| {
                 // Sample random field elements for each of the leaves, and convert them to bits.
-                (0..num_leaves).map(|_| Field::<N>::rand(&mut rng).to_bits_le()).collect::<Vec<_>>()
+                (0..num_leaves).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
         // Return the leaves.
@@ -66,7 +66,7 @@ impl<N: Network> PuzzleTrait<N> for MerklePuzzle<N> {
 
 impl<N: Network> MerklePuzzle<N> {
     /// Returns the number of leaves given the epoch hash.
-    pub fn num_leaves(&self, epoch_hash: N::BlockHash) -> Result<usize> {
+    pub fn num_leaves(&self, epoch_hash: BlockHash) -> Result<usize> {
         // Prepare the seed.
         let seed = u64::from_bytes_le(&epoch_hash.to_bytes_le()?[0..8])?;
         // Seed a random number generator from the epoch hash.
@@ -85,7 +85,7 @@ mod tests {
     #[test]
     fn test_num_leaves() {
         // Initialize the epoch hash.
-        let epoch_hash = <CurrentNetwork as Network>::BlockHash::default();
+        let epoch_hash = BlockHash::default();
         // Initialize the puzzle.
         let puzzle = MerklePuzzle::<CurrentNetwork>::new();
         // Sample the number of leaves.
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn test_to_leaves() {
         // Initialize the epoch hash.
-        let epoch_hash = <CurrentNetwork as Network>::BlockHash::default();
+        let epoch_hash = BlockHash::default();
         // Initialize the puzzle.
         let puzzle = MerklePuzzle::<CurrentNetwork>::new();
         // Sample the number of leaves.
@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn test_to_all_leaves() {
         // Initialize the epoch hash.
-        let epoch_hash = <CurrentNetwork as Network>::BlockHash::default();
+        let epoch_hash = BlockHash::default();
         // Initialize the puzzle.
         let puzzle = MerklePuzzle::<CurrentNetwork>::new();
         // Sample the number of leaves.

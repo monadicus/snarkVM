@@ -26,17 +26,17 @@ use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, U16};
 
 /// A future.
 #[derive(Clone)]
-pub struct Future<A: Aleo> {
+pub struct Future {
     /// The program ID.
-    program_id: ProgramID<A>,
+    program_id: ProgramID,
     /// The name of the function.
-    function_name: Identifier<A>,
+    function_name: Identifier,
     /// The arguments.
-    arguments: Vec<Argument<A>>,
+    arguments: Vec<Argument>,
 }
 
-impl<A: Aleo> Inject for Future<A> {
-    type Primitive = console::Future<A::Network>;
+impl Inject for Future {
+    type Primitive = console::Future;
 
     /// Initializes a circuit of the given mode and future.
     fn new(mode: Mode, value: Self::Primitive) -> Self {
@@ -48,8 +48,8 @@ impl<A: Aleo> Inject for Future<A> {
     }
 }
 
-impl<A: Aleo> Eject for Future<A> {
-    type Primitive = console::Future<A::Network>;
+impl Eject for Future {
+    type Primitive = console::Future;
 
     /// Ejects the mode of the circuit future.
     fn eject_mode(&self) -> Mode {
@@ -69,28 +69,28 @@ impl<A: Aleo> Eject for Future<A> {
     }
 }
 
-impl<A: Aleo> Future<A> {
+impl Future {
     /// Returns a future from the given program ID, function name, and arguments.
     #[inline]
-    pub const fn from(program_id: ProgramID<A>, function_name: Identifier<A>, arguments: Vec<Argument<A>>) -> Self {
+    pub const fn from(program_id: ProgramID, function_name: Identifier, arguments: Vec<Argument>) -> Self {
         Self { program_id, function_name, arguments }
     }
 
     /// Returns the program ID.
     #[inline]
-    pub const fn program_id(&self) -> &ProgramID<A> {
+    pub const fn program_id(&self) -> &ProgramID {
         &self.program_id
     }
 
     /// Returns the name of the function.
     #[inline]
-    pub const fn function_name(&self) -> &Identifier<A> {
+    pub const fn function_name(&self) -> &Identifier {
         &self.function_name
     }
 
     /// Returns the inputs.
     #[inline]
-    pub fn inputs(&self) -> &[Argument<A>] {
+    pub fn inputs(&self) -> &[Argument] {
         &self.arguments
     }
 }

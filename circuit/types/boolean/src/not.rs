@@ -15,8 +15,8 @@
 use super::*;
 use std::rc::Rc;
 
-impl<E: Environment> Not for Boolean<E> {
-    type Output = Boolean<E>;
+impl Not for Boolean {
+    type Output = Boolean;
 
     /// Returns `(NOT a)`.
     fn not(self) -> Self::Output {
@@ -24,8 +24,8 @@ impl<E: Environment> Not for Boolean<E> {
     }
 }
 
-impl<E: Environment> Not for &Boolean<E> {
-    type Output = Boolean<E>;
+impl Not for &Boolean {
+    type Output = Boolean;
 
     /// Returns `(NOT a)`.
     fn not(self) -> Self::Output {
@@ -34,16 +34,16 @@ impl<E: Environment> Not for &Boolean<E> {
         //     Case 2: If `(self == 1)`, then `(1 - self) == 0`.
         match self.is_constant() {
             // Constant case.
-            true => Boolean(E::one() - &self.0),
+            true => Boolean(Circuit::one() - &self.0),
             // Public and private cases.
             // Note: We directly instantiate a public variable to correctly represent a boolean in a linear combination.
             // For more information, see `LinearCombination::is_boolean_type`.
-            false => Boolean(Variable::Public(Rc::new((0, E::BaseField::one()))) - &self.0),
+            false => Boolean(Variable::Public(Rc::new((0, ConsoleField::one()))) - &self.0),
         }
     }
 }
 
-impl<E: Environment> Metrics<dyn Not<Output = Boolean<E>>> for Boolean<E> {
+impl Metrics<dyn Not<Output = Boolean>> for Boolean {
     type Case = Mode;
 
     fn count(_case: &Self::Case) -> Count {
@@ -51,7 +51,7 @@ impl<E: Environment> Metrics<dyn Not<Output = Boolean<E>>> for Boolean<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn Not<Output = Boolean<E>>> for Boolean<E> {
+impl OutputMode<dyn Not<Output = Boolean>> for Boolean {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -67,7 +67,7 @@ mod tests {
     use super::*;
     use snarkvm_circuit_environment::Circuit;
 
-    fn check_not(name: &str, expected: bool, candidate_input: Boolean<Circuit>) {
+    fn check_not(name: &str, expected: bool, candidate_input: Boolean) {
         Circuit::scope(name, || {
             let mode = candidate_input.mode();
             let candidate_output = !candidate_input;
@@ -81,12 +81,12 @@ mod tests {
     fn test_not_constant() {
         // NOT false
         let expected = true;
-        let candidate_input = Boolean::<Circuit>::new(Mode::Constant, false);
+        let candidate_input = Boolean::new(Mode::Constant, false);
         check_not("NOT false", expected, candidate_input);
 
         // NOT true
         let expected = false;
-        let candidate_input = Boolean::<Circuit>::new(Mode::Constant, true);
+        let candidate_input = Boolean::new(Mode::Constant, true);
         check_not("NOT true", expected, candidate_input);
     }
 
@@ -94,12 +94,12 @@ mod tests {
     fn test_not_public() {
         // NOT false
         let expected = true;
-        let candidate_input = Boolean::<Circuit>::new(Mode::Public, false);
+        let candidate_input = Boolean::new(Mode::Public, false);
         check_not("NOT false", expected, candidate_input);
 
         // NOT true
         let expected = false;
-        let candidate_input = Boolean::<Circuit>::new(Mode::Public, true);
+        let candidate_input = Boolean::new(Mode::Public, true);
         check_not("NOT true", expected, candidate_input);
     }
 
@@ -107,12 +107,12 @@ mod tests {
     fn test_not_private() {
         // NOT false
         let expected = true;
-        let candidate_input = Boolean::<Circuit>::new(Mode::Private, false);
+        let candidate_input = Boolean::new(Mode::Private, false);
         check_not("NOT false", expected, candidate_input);
 
         // NOT true
         let expected = false;
-        let candidate_input = Boolean::<Circuit>::new(Mode::Private, true);
+        let candidate_input = Boolean::new(Mode::Private, true);
         check_not("NOT true", expected, candidate_input);
     }
 }

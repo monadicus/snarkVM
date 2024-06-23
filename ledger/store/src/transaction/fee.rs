@@ -31,9 +31,9 @@ use core::marker::PhantomData;
 /// A trait for fee storage.
 pub trait FeeStorage<N: Network>: Clone + Send + Sync {
     /// The mapping of `transaction ID` to `(fee transition ID, global state root, proof)`.
-    type FeeMap: for<'a> Map<'a, N::TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>;
+    type FeeMap: for<'a> Map<'a, TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>;
     /// The mapping of `fee transition ID` to `transaction ID`.
-    type ReverseFeeMap: for<'a> Map<'a, N::TransitionID, N::TransactionID>;
+    type ReverseFeeMap: for<'a> Map<'a, N::TransitionID, TransactionID>;
 
     /// The transition storage.
     type TransitionStorage: TransitionStorage<N>;
@@ -103,7 +103,7 @@ pub trait FeeStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Stores the given `(transaction ID, fee)` pair into storage.
-    fn insert(&self, transaction_id: N::TransactionID, fee: &Fee<N>) -> Result<()> {
+    fn insert(&self, transaction_id: TransactionID, fee: &Fee<N>) -> Result<()> {
         atomic_batch_scope!(self, {
             // Store the fee.
             self.fee_map()
@@ -118,7 +118,7 @@ pub trait FeeStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Removes the fee for the given `transaction ID`.
-    fn remove(&self, transaction_id: &N::TransactionID) -> Result<()> {
+    fn remove(&self, transaction_id: &TransactionID) -> Result<()> {
         // Retrieve the fee transition ID.
         let (transition_id, _, _) = match self.fee_map().get_confirmed(transaction_id)? {
             Some(fee_id) => cow_to_cloned!(fee_id),
@@ -138,10 +138,7 @@ pub trait FeeStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the transaction ID that contains the given `transition ID`.
-    fn find_transaction_id_from_transition_id(
-        &self,
-        transition_id: &N::TransitionID,
-    ) -> Result<Option<N::TransactionID>> {
+    fn find_transaction_id_from_transition_id(&self, transition_id: &N::TransitionID) -> Result<Option<TransactionID>> {
         match self.reverse_fee_map().get_confirmed(transition_id)? {
             Some(transaction_id) => Ok(Some(cow_to_copied!(transaction_id))),
             None => Ok(None),
@@ -149,7 +146,7 @@ pub trait FeeStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the fee for the given `transaction ID`.
-    fn get_fee(&self, transaction_id: &N::TransactionID) -> Result<Option<Fee<N>>> {
+    fn get_fee(&self, transaction_id: &TransactionID) -> Result<Option<Fee<N>>> {
         // Retrieve the fee transition ID.
         let (fee_transition_id, global_state_root, proof) = match self.fee_map().get_confirmed(transaction_id)? {
             Some(fee) => cow_to_cloned!(fee),
@@ -187,12 +184,12 @@ impl<N: Network, F: FeeStorage<N>> FeeStore<N, F> {
     }
 
     /// Stores the given `(transaction_id, fee)` into storage.
-    pub fn insert(&self, transaction_id: N::TransactionID, fee: &Fee<N>) -> Result<()> {
+    pub fn insert(&self, transaction_id: TransactionID, fee: &Fee<N>) -> Result<()> {
         self.storage.insert(transaction_id, fee)
     }
 
     /// Removes the fee for the given `transaction ID`.
-    pub fn remove(&self, transaction_id: &N::TransactionID) -> Result<()> {
+    pub fn remove(&self, transaction_id: &TransactionID) -> Result<()> {
         self.storage.remove(transaction_id)
     }
 
@@ -244,7 +241,7 @@ impl<N: Network, F: FeeStorage<N>> FeeStore<N, F> {
 
 impl<N: Network, F: FeeStorage<N>> FeeStore<N, F> {
     /// Returns the fee for the given `transaction ID`.
-    pub fn get_fee(&self, transaction_id: &N::TransactionID) -> Result<Option<Fee<N>>> {
+    pub fn get_fee(&self, transaction_id: &TransactionID) -> Result<Option<Fee<N>>> {
         self.storage.get_fee(transaction_id)
     }
 }
@@ -254,7 +251,7 @@ impl<N: Network, F: FeeStorage<N>> FeeStore<N, F> {
     pub fn find_transaction_id_from_transition_id(
         &self,
         transition_id: &N::TransitionID,
-    ) -> Result<Option<N::TransactionID>> {
+    ) -> Result<Option<TransactionID>> {
         self.storage.find_transaction_id_from_transition_id(transition_id)
     }
 }

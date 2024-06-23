@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> FromBoolean for Field<E> {
-    type Boolean = Boolean<E>;
+impl FromBoolean for Field {
+    type Boolean = Boolean;
 
     /// Initializes a base field from a boolean.
     fn from_boolean(boolean: &Self::Boolean) -> Self {
@@ -23,7 +23,7 @@ impl<E: Environment> FromBoolean for Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn FromBoolean<Boolean = Boolean<E>>> for Field<E> {
+impl Metrics<dyn FromBoolean<Boolean = Boolean>> for Field {
     type Case = ();
 
     fn count(_case: &Self::Case) -> Count {
@@ -31,7 +31,7 @@ impl<E: Environment> Metrics<dyn FromBoolean<Boolean = Boolean<E>>> for Field<E>
     }
 }
 
-impl<E: Environment> OutputMode<dyn FromBoolean<Boolean = Boolean<E>>> for Field<E> {
+impl OutputMode<dyn FromBoolean<Boolean = Boolean>> for Field {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -47,16 +47,16 @@ mod tests {
     fn check_from_boolean(mode: Mode) {
         for expected in &[true, false] {
             // Inject the boolean.
-            let given = Boolean::<Circuit>::new(mode, *expected);
+            let given = Boolean::new(mode, *expected);
 
             Circuit::scope(format!("{mode} {expected}"), || {
                 let candidate = Field::from_boolean(&given);
                 match expected {
                     true => {
-                        assert_eq!(console::Field::<<Circuit as Environment>::Network>::one(), candidate.eject_value())
+                        assert_eq!(console::Field::one(), candidate.eject_value())
                     }
                     false => {
-                        assert_eq!(console::Field::<<Circuit as Environment>::Network>::zero(), candidate.eject_value())
+                        assert_eq!(console::Field::zero(), candidate.eject_value())
                     }
                 }
                 assert_count!(FromBoolean(Boolean) => Field, &());

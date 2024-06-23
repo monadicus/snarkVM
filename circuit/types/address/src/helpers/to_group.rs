@@ -14,23 +14,23 @@
 
 use super::*;
 
-impl<E: Environment> From<Address<E>> for Group<E> {
+impl From<Address> for Group {
     /// Returns the affine group element in the address.
-    fn from(value: Address<E>) -> Self {
+    fn from(value: Address) -> Self {
         value.to_group()
     }
 }
 
-impl<E: Environment> From<&Address<E>> for Group<E> {
+impl From<&Address> for Group {
     /// Returns the affine group element in the address.
-    fn from(value: &Address<E>) -> Self {
+    fn from(value: &Address) -> Self {
         value.to_group()
     }
 }
 
-impl<E: Environment> ToGroup for Address<E> {
-    type Group = Group<E>;
-    type Scalar = Scalar<E>;
+impl ToGroup for Address {
+    type Group = Group;
+    type Scalar = Scalar;
 
     /// Returns the affine group element in the address.
     fn to_group(&self) -> Self::Group {
@@ -43,11 +43,7 @@ mod tests {
     use super::*;
     use snarkvm_circuit_environment::Circuit;
 
-    fn check_to_group(
-        name: &str,
-        expected: console::Group<<Circuit as Environment>::Network>,
-        candidate: &Address<Circuit>,
-    ) {
+    fn check_to_group(name: &str, expected: console::Group, candidate: &Address) {
         Circuit::scope(name, || {
             // Perform the operation.
             let candidate = candidate.to_group();
@@ -59,21 +55,21 @@ mod tests {
     #[test]
     fn test_to_group_constant() {
         let expected = console::Address::rand(&mut TestRng::default());
-        let candidate = Address::<Circuit>::new(Mode::Constant, expected);
+        let candidate = Address::new(Mode::Constant, expected);
         check_to_group("Constant", *expected, &candidate);
     }
 
     #[test]
     fn test_to_group_public() {
         let expected = console::Address::rand(&mut TestRng::default());
-        let candidate = Address::<Circuit>::new(Mode::Public, expected);
+        let candidate = Address::new(Mode::Public, expected);
         check_to_group("Public", *expected, &candidate);
     }
 
     #[test]
     fn test_to_group_private() {
         let expected = console::Address::rand(&mut TestRng::default());
-        let candidate = Address::<Circuit>::new(Mode::Private, expected);
+        let candidate = Address::new(Mode::Private, expected);
         check_to_group("Private", *expected, &candidate);
     }
 }

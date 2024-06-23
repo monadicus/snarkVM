@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> ToFields for Record<A, Plaintext<A>> {
-    type Field = Field<A>;
+impl ToFields for Record<Plaintext> {
+    type Field = Field;
 
     /// Returns this record as a list of field elements.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -25,17 +28,17 @@ impl<A: Aleo> ToFields for Record<A, Plaintext<A>> {
         // During decryption, this final bit ensures we've reached the end.
         bits_le.push(Boolean::constant(true));
         // Pack the bits into field elements.
-        let fields = bits_le.chunks(A::BaseField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
+        let fields = bits_le.chunks(ConsoleField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= A::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoV0::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => fields,
-            false => A::halt("Record<Plaintext> exceeds maximum allowed size"),
+            false => Circuit::halt("Record<Plaintext> exceeds maximum allowed size"),
         }
     }
 }
 
-impl<A: Aleo> ToFields for Record<A, Ciphertext<A>> {
-    type Field = Field<A>;
+impl ToFields for Record<Ciphertext> {
+    type Field = Field;
 
     /// Returns this record as a list of field elements.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -45,11 +48,11 @@ impl<A: Aleo> ToFields for Record<A, Ciphertext<A>> {
         // During decryption, this final bit ensures we've reached the end.
         bits_le.push(Boolean::constant(true));
         // Pack the bits into field elements.
-        let fields = bits_le.chunks(A::BaseField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
+        let fields = bits_le.chunks(ConsoleField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= A::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoV0::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => fields,
-            false => A::halt("Record<Ciphertext> exceeds maximum allowed size"),
+            false => Circuit::halt("Record<Ciphertext> exceeds maximum allowed size"),
         }
     }
 }

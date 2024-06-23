@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Equal<Self> for Integer<E, I> {
-    type Output = Boolean<E>;
+impl<I: IntegerType> Equal<Self> for Integer<I> {
+    type Output = Boolean;
 
     ///
     /// Returns `true` if `self` and `other` are equal.
@@ -49,7 +49,7 @@ impl<E: Environment, I: IntegerType> Equal<Self> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Equal<Integer<E, I>, Output = Boolean<E>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Equal<Integer<I>, Output = Boolean>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -60,7 +60,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn Equal<Integer<E, I>, Output = B
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Equal<Integer<E, I>, Output = Boolean<E>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Equal<Integer<I>, Output = Boolean>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -82,14 +82,14 @@ mod tests {
 
     fn check_equals<I: IntegerType>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
         let expected = first == second;
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, I>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<I>::new(mode_b, second);
         Circuit::scope(name, || {
             let candidate = a.is_equal(&b);
             assert_eq!(expected, candidate.eject_value());
@@ -118,8 +118,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Equals: ({first} == {second})");
                 check_equals::<I>(&name, first, second, mode_a, mode_b);

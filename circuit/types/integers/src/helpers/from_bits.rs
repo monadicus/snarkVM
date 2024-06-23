@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> FromBits for Integer<E, I> {
-    type Boolean = Boolean<E>;
+impl<I: IntegerType> FromBits for Integer<I> {
+    type Boolean = Boolean;
 
     /// Initializes a new integer from a list of little-endian bits *with* trailing zeros.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
@@ -63,11 +63,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random integer.
             let expected = Uniform::rand(&mut rng);
-            let given_bits = Integer::<Circuit, I>::new(mode, expected).to_bits_le();
+            let given_bits = Integer::<I>::new(mode, expected).to_bits_le();
             let expected_size_in_bits = given_bits.len();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Integer::<Circuit, I>::from_bits_le(&given_bits);
+                let candidate = Integer::<I>::from_bits_le(&given_bits);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.len());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
@@ -77,7 +77,7 @@ mod tests {
             let candidate = [given_bits, vec![Boolean::new(mode, false); i as usize]].concat();
 
             Circuit::scope(&format!("Excess {mode} {i}"), || {
-                let candidate = Integer::<Circuit, I>::from_bits_le(&candidate);
+                let candidate = Integer::<I>::from_bits_le(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.len());
                 match mode.is_constant() {
@@ -103,11 +103,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random integer.
             let expected = Uniform::rand(&mut rng);
-            let given_bits = Integer::<Circuit, I>::new(mode, expected).to_bits_be();
+            let given_bits = Integer::<I>::new(mode, expected).to_bits_be();
             let expected_size_in_bits = given_bits.len();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Integer::<Circuit, I>::from_bits_be(&given_bits);
+                let candidate = Integer::<I>::from_bits_be(&given_bits);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.len());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
@@ -117,7 +117,7 @@ mod tests {
             let candidate = [vec![Boolean::new(mode, false); i as usize], given_bits].concat();
 
             Circuit::scope(&format!("Excess {mode} {i}"), || {
-                let candidate = Integer::<Circuit, I>::from_bits_be(&candidate);
+                let candidate = Integer::<I>::from_bits_be(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.len());
                 match mode.is_constant() {

@@ -21,24 +21,31 @@ mod verify;
 use crate::{compute_function_id, Identifier, Plaintext, ProgramID, Record, Value};
 use snarkvm_circuit_account::Signature;
 use snarkvm_circuit_network::Aleo;
-use snarkvm_circuit_types::{environment::prelude::*, Address, Boolean, Field, Group, U16};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Address,
+    Boolean,
+    Field,
+    Group,
+    U16,
+};
 
-pub enum InputID<A: Aleo> {
+pub enum InputID {
     /// The hash of the constant input.
-    Constant(Field<A>),
+    Constant(Field),
     /// The hash of the public input.
-    Public(Field<A>),
+    Public(Field),
     /// The ciphertext hash of the private input.
-    Private(Field<A>),
+    Private(Field),
     /// The `(commitment, gamma, serial_number, tag)` tuple of the record input.
-    Record(Field<A>, Box<Group<A>>, Field<A>, Field<A>),
+    Record(Field, Box<Group>, Field, Field),
     /// The hash of the external record input.
-    ExternalRecord(Field<A>),
+    ExternalRecord(Field),
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for InputID<A> {
-    type Primitive = console::InputID<A::Network>;
+impl Inject for InputID {
+    type Primitive = console::InputID;
 
     /// Initializes the input ID from the given mode and console input ID.
     fn new(_: Mode, input: Self::Primitive) -> Self {
@@ -63,8 +70,8 @@ impl<A: Aleo> Inject for InputID<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for InputID<A> {
-    type Primitive = console::InputID<A::Network>;
+impl Eject for InputID {
+    type Primitive = console::InputID;
 
     /// Ejects the mode of the input ID.
     fn eject_mode(&self) -> Mode {
@@ -98,8 +105,8 @@ impl<A: Aleo> Eject for InputID<A> {
     }
 }
 
-impl<A: Aleo> ToFields for InputID<A> {
-    type Field = Field<A>;
+impl ToFields for InputID {
+    type Field = Field;
 
     /// Returns the input as a list of field elements.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -115,34 +122,34 @@ impl<A: Aleo> ToFields for InputID<A> {
     }
 }
 
-pub struct Request<A: Aleo> {
+pub struct Request {
     /// The request signer.
-    signer: Address<A>,
+    signer: Address,
     /// The network ID.
-    network_id: U16<A>,
+    network_id: U16,
     /// The program ID.
-    program_id: ProgramID<A>,
+    program_id: ProgramID,
     /// The function name.
-    function_name: Identifier<A>,
+    function_name: Identifier,
     /// The function input IDs.
-    input_ids: Vec<InputID<A>>,
+    input_ids: Vec<InputID>,
     /// The function inputs.
-    inputs: Vec<Value<A>>,
+    inputs: Vec<Value>,
     /// The signature for the transition.
-    signature: Signature<A>,
+    signature: Signature,
     /// The tag secret key.
-    sk_tag: Field<A>,
+    sk_tag: Field,
     /// The transition view key.
-    tvk: Field<A>,
+    tvk: Field,
     /// The transition commitment.
-    tcm: Field<A>,
+    tcm: Field,
     /// The signer commitment.
-    scm: Field<A>,
+    scm: Field,
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Request<A> {
-    type Primitive = console::Request<A::Network>;
+impl Inject for Request {
+    type Primitive = console::Request;
 
     /// Initializes the request from the given mode and console request.
     fn new(mode: Mode, request: Self::Primitive) -> Self {
@@ -209,7 +216,7 @@ impl<A: Aleo> Inject for Request<A> {
             .collect::<Result<Vec<_>, _>>()
         {
             Ok(inputs) => inputs,
-            Err(error) => A::halt(format!("{error}")),
+            Err(error) => Circuit::halt(format!("{error}")),
         };
 
         Self {
@@ -228,66 +235,66 @@ impl<A: Aleo> Inject for Request<A> {
     }
 }
 
-impl<A: Aleo> Request<A> {
+impl Request {
     /// Returns the request signer.
-    pub const fn signer(&self) -> &Address<A> {
+    pub const fn signer(&self) -> &Address {
         &self.signer
     }
 
     /// Returns the network ID.
-    pub const fn network_id(&self) -> &U16<A> {
+    pub const fn network_id(&self) -> &U16 {
         &self.network_id
     }
 
     /// Returns the program ID.
-    pub const fn program_id(&self) -> &ProgramID<A> {
+    pub const fn program_id(&self) -> &ProgramID {
         &self.program_id
     }
 
     /// Returns the function name.
-    pub const fn function_name(&self) -> &Identifier<A> {
+    pub const fn function_name(&self) -> &Identifier {
         &self.function_name
     }
 
     /// Returns the input IDs for the transition.
-    pub fn input_ids(&self) -> &[InputID<A>] {
+    pub fn input_ids(&self) -> &[InputID] {
         &self.input_ids
     }
 
     /// Returns the function inputs.
-    pub fn inputs(&self) -> &[Value<A>] {
+    pub fn inputs(&self) -> &[Value] {
         &self.inputs
     }
 
     /// Returns the signature for the transition.
-    pub const fn signature(&self) -> &Signature<A> {
+    pub const fn signature(&self) -> &Signature {
         &self.signature
     }
 
     /// Returns the tag secret key.
-    pub const fn sk_tag(&self) -> &Field<A> {
+    pub const fn sk_tag(&self) -> &Field {
         &self.sk_tag
     }
 
     /// Returns the transition view key.
-    pub const fn tvk(&self) -> &Field<A> {
+    pub const fn tvk(&self) -> &Field {
         &self.tvk
     }
 
     /// Returns the transition commitment.
-    pub const fn tcm(&self) -> &Field<A> {
+    pub const fn tcm(&self) -> &Field {
         &self.tcm
     }
 
     /// Returns the signer commitment.
-    pub const fn scm(&self) -> &Field<A> {
+    pub const fn scm(&self) -> &Field {
         &self.scm
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Request<A> {
-    type Primitive = console::Request<A::Network>;
+impl Eject for Request {
+    type Primitive = console::Request;
 
     /// Ejects the mode of the request.
     fn eject_mode(&self) -> Mode {

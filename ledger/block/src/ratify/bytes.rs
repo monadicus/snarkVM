@@ -35,7 +35,7 @@ impl<N: Network> FromBytes for Ratify<N> {
                 let mut public_balances = PublicBalances::with_capacity(num_public_balances as usize);
                 for _ in 0..num_public_balances {
                     // Read the address.
-                    let address: Address<N> = FromBytes::read_le(&mut reader)?;
+                    let address: Address = FromBytes::read_le(&mut reader)?;
                     // Read the amount.
                     let amount: u64 = FromBytes::read_le(&mut reader)?;
                     // Insert the public balance.
@@ -47,11 +47,11 @@ impl<N: Network> FromBytes for Ratify<N> {
                 let mut bonded_balances = BondedBalances::with_capacity(num_bonded_balances as usize);
                 for _ in 0..num_bonded_balances {
                     // Read the address.
-                    let address: Address<N> = FromBytes::read_le(&mut reader)?;
+                    let address: Address = FromBytes::read_le(&mut reader)?;
                     // Read the validator address.
-                    let validator_address: Address<N> = FromBytes::read_le(&mut reader)?;
+                    let validator_address: Address = FromBytes::read_le(&mut reader)?;
                     // Read the withdrawal address.
-                    let withdrawal_address: Address<N> = FromBytes::read_le(&mut reader)?;
+                    let withdrawal_address: Address = FromBytes::read_le(&mut reader)?;
                     // Read the amount.
                     let amount: u64 = FromBytes::read_le(&mut reader)?;
                     // Insert the bonded balance.

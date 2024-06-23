@@ -57,14 +57,14 @@ pub(crate) mod test_helpers {
     type CurrentNetwork = MainnetV0;
 
     /// Compute 2^EXPONENT - 1, in a purposefully constraint-inefficient manner for testing.
-    fn create_example_circuit<E: Environment>() -> Field<E> {
-        let one = console::types::Field::<E::Network>::one();
+    fn create_example_circuit<E: Environment>() -> Field {
+        let one = console::types::Field::one();
         let two = one + one;
 
         const EXPONENT: u64 = 64;
 
         // Compute 2^EXPONENT - 1, in a purposefully constraint-inefficient manner for testing.
-        let mut candidate = Field::<E>::new(Mode::Public, one);
+        let mut candidate = Field::new(Mode::Public, one);
         let mut accumulator = Field::new(Mode::Private, two);
         for _ in 0..EXPONENT {
             candidate += &accumulator;
@@ -171,12 +171,12 @@ mod test {
             Circuit::reset();
 
             // Inject a field element.
-            let console_field = console::types::Field::<CurrentNetwork>::one();
-            let circuit_field_0 = Field::<Circuit>::new(Mode::Private, console_field);
+            let console_field = console::types::Field::one();
+            let circuit_field_0 = Field::new(Mode::Private, console_field);
 
             // Inject another field element.
             let console_field = console_field.double();
-            let circuit_field_1 = Field::<Circuit>::new(Mode::Private, console_field);
+            let circuit_field_1 = Field::new(Mode::Private, console_field);
 
             // Multiply the two field elements.
             let _circuit_field_2 = circuit_field_0 * circuit_field_1;

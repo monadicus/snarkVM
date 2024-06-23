@@ -31,7 +31,7 @@ impl<N: Network> FromBytes for Transaction<N> {
         let (id, transaction) = match variant {
             0 => {
                 // Read the ID.
-                let id = N::TransactionID::read_le(&mut reader)?;
+                let id = TransactionID::read_le(&mut reader)?;
                 // Read the owner.
                 let owner = ProgramOwner::read_le(&mut reader)?;
                 // Read the deployment.
@@ -46,7 +46,7 @@ impl<N: Network> FromBytes for Transaction<N> {
             }
             1 => {
                 // Read the ID.
-                let id = N::TransactionID::read_le(&mut reader)?;
+                let id = TransactionID::read_le(&mut reader)?;
                 // Read the execution.
                 let execution = Execution::read_le(&mut reader)?;
 
@@ -66,7 +66,7 @@ impl<N: Network> FromBytes for Transaction<N> {
             }
             2 => {
                 // Read the ID.
-                let id = N::TransactionID::read_le(&mut reader)?;
+                let id = TransactionID::read_le(&mut reader)?;
                 // Read the fee.
                 let fee = Fee::read_le(&mut reader)?;
 

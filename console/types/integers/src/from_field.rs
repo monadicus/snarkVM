@@ -73,10 +73,10 @@ mod tests {
             // Filter for field elements that exceed the integer domain.
             if expected > integer_max {
                 // Perform the operation.
-                assert!(Integer::<_, I>::from_field(&expected).is_err());
+                assert!(Integer::<I>::from_field(&expected).is_err());
             } else {
                 // Perform the operation.
-                assert!(Integer::<_, I>::from_field(&expected).is_ok());
+                assert!(Integer::<I>::from_field(&expected).is_ok());
             }
         }
         Ok(())

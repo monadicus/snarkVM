@@ -23,20 +23,20 @@ use console::{network::prelude::*, types::Field};
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum FinalizeOperation<N: Network> {
     /// Appends a mapping to the program tree, as (`mapping ID`).
-    InitializeMapping(Field<N>),
+    InitializeMapping(Field),
     /// Inserts a key-value leaf into the mapping tree,
     /// as (`mapping ID`, `key ID`, `value ID`).
-    InsertKeyValue(Field<N>, Field<N>, Field<N>),
+    InsertKeyValue(Field, Field, Field),
     /// Updates the key-value leaf in the mapping tree,
     /// as (`mapping ID`, `key ID`, `value ID`).
-    UpdateKeyValue(Field<N>, Field<N>, Field<N>),
+    UpdateKeyValue(Field, Field, Field),
     /// Removes the key-value leaf in the mapping tree,
     /// as (`mapping ID`, `key ID`).
-    RemoveKeyValue(Field<N>, Field<N>),
+    RemoveKeyValue(Field, Field),
     /// Replaces a mapping from the program tree, as (`mapping ID`).
-    ReplaceMapping(Field<N>),
+    ReplaceMapping(Field),
     /// Removes a mapping from the program tree, as (`mapping ID`).
-    RemoveMapping(Field<N>),
+    RemoveMapping(Field),
 }
 
 #[cfg(test)]

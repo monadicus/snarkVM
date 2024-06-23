@@ -79,10 +79,10 @@ mod tests {
         /// Attempts to construct a boolean from the given element,
         /// format it in display mode, and recover a boolean from it.
         fn check_display(element: bool) {
-            let candidate = Boolean::<E>::new(element);
+            let candidate = Boolean::new(element);
             assert_eq!(format!("{element}"), format!("{candidate}"));
 
-            let candidate_recovered = Boolean::<E>::from_str(&format!("{candidate}")).unwrap();
+            let candidate_recovered = Boolean::from_str(&format!("{candidate}")).unwrap();
             assert_eq!(candidate, candidate_recovered);
         }
 

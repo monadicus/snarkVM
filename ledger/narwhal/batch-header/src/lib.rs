@@ -34,27 +34,27 @@ use indexmap::IndexSet;
 use rayon::prelude::*;
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct BatchHeader<N: Network> {
+pub struct BatchHeader {
     /// The batch ID, defined as the hash of the author, round number, timestamp, transmission IDs,
     /// committee ID, previous batch certificate IDs, and last election certificate IDs.
-    batch_id: Field<N>,
+    batch_id: Field,
     /// The author of the batch.
-    author: Address<N>,
+    author: Address,
     /// The round number.
     round: u64,
     /// The timestamp.
     timestamp: i64,
     /// The committee ID.
-    committee_id: Field<N>,
+    committee_id: Field,
     /// The set of `transmission IDs`.
-    transmission_ids: IndexSet<TransmissionID<N>>,
+    transmission_ids: IndexSet<TransmissionID>,
     /// The batch certificate IDs of the previous round.
-    previous_certificate_ids: IndexSet<Field<N>>,
+    previous_certificate_ids: IndexSet<Field>,
     /// The signature of the batch ID from the creator.
-    signature: Signature<N>,
+    signature: Signature,
 }
 
-impl<N: Network> BatchHeader<N> {
+impl BatchHeader {
     /// The maximum number of certificates in a batch.
     #[cfg(not(any(test, feature = "test-helpers")))]
     pub const MAX_CERTIFICATES: u16 = N::MAX_CERTIFICATES;
@@ -71,15 +71,15 @@ impl<N: Network> BatchHeader<N> {
     pub const MAX_TRANSMISSIONS_PER_BATCH: usize = 50;
 }
 
-impl<N: Network> BatchHeader<N> {
+impl BatchHeader {
     /// Initializes a new batch header.
     pub fn new<R: Rng + CryptoRng>(
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         round: u64,
         timestamp: i64,
-        committee_id: Field<N>,
-        transmission_ids: IndexSet<TransmissionID<N>>,
-        previous_certificate_ids: IndexSet<Field<N>>,
+        committee_id: Field,
+        transmission_ids: IndexSet<TransmissionID>,
+        previous_certificate_ids: IndexSet<Field>,
         rng: &mut R,
     ) -> Result<Self> {
         match round {
@@ -132,13 +132,13 @@ impl<N: Network> BatchHeader<N> {
 
     /// Initializes a new batch header.
     pub fn from(
-        author: Address<N>,
+        author: Address,
         round: u64,
         timestamp: i64,
-        committee_id: Field<N>,
-        transmission_ids: IndexSet<TransmissionID<N>>,
-        previous_certificate_ids: IndexSet<Field<N>>,
-        signature: Signature<N>,
+        committee_id: Field,
+        transmission_ids: IndexSet<TransmissionID>,
+        previous_certificate_ids: IndexSet<Field>,
+        signature: Signature,
     ) -> Result<Self> {
         match round {
             0 | 1 => {
@@ -189,14 +189,14 @@ impl<N: Network> BatchHeader<N> {
     }
 }
 
-impl<N: Network> BatchHeader<N> {
+impl BatchHeader {
     /// Returns the batch ID.
-    pub const fn batch_id(&self) -> Field<N> {
+    pub const fn batch_id(&self) -> Field {
         self.batch_id
     }
 
     /// Returns the author.
-    pub const fn author(&self) -> Address<N> {
+    pub const fn author(&self) -> Address {
         self.author
     }
 
@@ -211,27 +211,27 @@ impl<N: Network> BatchHeader<N> {
     }
 
     /// Returns the committee ID.
-    pub const fn committee_id(&self) -> Field<N> {
+    pub const fn committee_id(&self) -> Field {
         self.committee_id
     }
 
     /// Returns the transmission IDs.
-    pub const fn transmission_ids(&self) -> &IndexSet<TransmissionID<N>> {
+    pub const fn transmission_ids(&self) -> &IndexSet<TransmissionID> {
         &self.transmission_ids
     }
 
     /// Returns the batch certificate IDs for the previous round.
-    pub const fn previous_certificate_ids(&self) -> &IndexSet<Field<N>> {
+    pub const fn previous_certificate_ids(&self) -> &IndexSet<Field> {
         &self.previous_certificate_ids
     }
 
     /// Returns the signature.
-    pub const fn signature(&self) -> &Signature<N> {
+    pub const fn signature(&self) -> &Signature {
         &self.signature
     }
 }
 
-impl<N: Network> BatchHeader<N> {
+impl BatchHeader {
     /// Returns `true` if the batch header is empty.
     pub fn is_empty(&self) -> bool {
         self.transmission_ids.is_empty()
@@ -243,7 +243,7 @@ impl<N: Network> BatchHeader<N> {
     }
 
     /// Returns `true` if the batch contains the specified `transmission ID`.
-    pub fn contains(&self, transmission_id: impl Into<TransmissionID<N>>) -> bool {
+    pub fn contains(&self, transmission_id: impl Into<TransmissionID>) -> bool {
         self.transmission_ids.contains(&transmission_id.into())
     }
 }
@@ -258,14 +258,14 @@ pub mod test_helpers {
     type CurrentNetwork = MainnetV0;
 
     /// Returns a sample batch header, sampled at random.
-    pub fn sample_batch_header(rng: &mut TestRng) -> BatchHeader<CurrentNetwork> {
+    pub fn sample_batch_header(rng: &mut TestRng) -> BatchHeader {
         sample_batch_header_for_round(rng.gen(), rng)
     }
 
     /// Returns a sample batch header with a given round; the rest is sampled at random.
-    pub fn sample_batch_header_for_round(round: u64, rng: &mut TestRng) -> BatchHeader<CurrentNetwork> {
+    pub fn sample_batch_header_for_round(round: u64, rng: &mut TestRng) -> BatchHeader {
         // Sample certificate IDs.
-        let certificate_ids = (0..10).map(|_| Field::<CurrentNetwork>::rand(rng)).collect::<IndexSet<_>>();
+        let certificate_ids = (0..10).map(|_| Field::rand(rng)).collect::<IndexSet<_>>();
         // Return the batch header.
         sample_batch_header_for_round_with_previous_certificate_ids(round, certificate_ids, rng)
     }
@@ -273,13 +273,13 @@ pub mod test_helpers {
     /// Returns a sample batch header with a given round and set of previous certificate IDs; the rest is sampled at random.
     pub fn sample_batch_header_for_round_with_previous_certificate_ids(
         round: u64,
-        previous_certificate_ids: IndexSet<Field<CurrentNetwork>>,
+        previous_certificate_ids: IndexSet<Field>,
         rng: &mut TestRng,
-    ) -> BatchHeader<CurrentNetwork> {
+    ) -> BatchHeader {
         // Sample a private key.
         let private_key = PrivateKey::new(rng).unwrap();
         // Sample the committee ID.
-        let committee_id = Field::<CurrentNetwork>::rand(rng);
+        let committee_id = Field::rand(rng);
         // Sample transmission IDs.
         let transmission_ids =
             narwhal_transmission_id::test_helpers::sample_transmission_ids(rng).into_iter().collect::<IndexSet<_>>();
@@ -291,7 +291,7 @@ pub mod test_helpers {
     }
 
     /// Returns a list of sample batch headers, sampled at random.
-    pub fn sample_batch_headers(rng: &mut TestRng) -> Vec<BatchHeader<CurrentNetwork>> {
+    pub fn sample_batch_headers(rng: &mut TestRng) -> Vec<BatchHeader> {
         // Initialize a sample vector.
         let mut sample = Vec::with_capacity(10);
         // Append sample batches.

@@ -214,7 +214,7 @@ mod tests {
     #[test]
     fn test_parse_literal() -> Result<()> {
         // Sanity check.
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse("5u8")?;
+        let (remainder, candidate) = Plaintext::parse("5u8")?;
         assert_eq!("5u8", candidate.to_string());
         assert_eq!("", remainder);
 
@@ -227,7 +227,7 @@ mod tests {
         let expected = r"{
   foo: 5u8
 }";
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse("{ foo: 5u8 }")?;
+        let (remainder, candidate) = Plaintext::parse("{ foo: 5u8 }")?;
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
 
@@ -256,7 +256,7 @@ mod tests {
     }
   }
 }";
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(
+        let (remainder, candidate) = Plaintext::parse(
             "{ foo: 5u8, bar: { baz: 10field, qux: {quux:{corge :{grault:  {garply:{waldo:{fred:{plugh:{xyzzy: { thud: true}} }}}  }}}}}}",
         )?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
@@ -269,31 +269,30 @@ mod tests {
     #[test]
     fn test_parse_fails() {
         // Must be non-empty.
-        assert!(Plaintext::<CurrentNetwork>::parse("").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("{}").is_err());
+        assert!(Plaintext::parse("").is_err());
+        assert!(Plaintext::parse("{}").is_err());
 
         // Invalid characters.
-        assert!(Plaintext::<CurrentNetwork>::parse("_").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("__").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("___").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("-").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("--").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("---").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("*").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("**").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("***").is_err());
+        assert!(Plaintext::parse("_").is_err());
+        assert!(Plaintext::parse("__").is_err());
+        assert!(Plaintext::parse("___").is_err());
+        assert!(Plaintext::parse("-").is_err());
+        assert!(Plaintext::parse("--").is_err());
+        assert!(Plaintext::parse("---").is_err());
+        assert!(Plaintext::parse("*").is_err());
+        assert!(Plaintext::parse("**").is_err());
+        assert!(Plaintext::parse("***").is_err());
 
         // Must not start with a number.
-        assert!(Plaintext::<CurrentNetwork>::parse("1").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("2").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("3").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("12").is_err());
-        assert!(Plaintext::<CurrentNetwork>::parse("111").is_err());
+        assert!(Plaintext::parse("1").is_err());
+        assert!(Plaintext::parse("2").is_err());
+        assert!(Plaintext::parse("3").is_err());
+        assert!(Plaintext::parse("1foo").is_err());
+        assert!(Plaintext::parse("12").is_err());
+        assert!(Plaintext::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let plaintext =
-            Plaintext::<CurrentNetwork>::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
+        let plaintext = Plaintext::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(plaintext.is_err());
     }
 
@@ -317,7 +316,7 @@ mod tests {
   }
 }";
 
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(expected).unwrap();
+        let (remainder, candidate) = Plaintext::parse(expected).unwrap();
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -336,7 +335,7 @@ mod tests {
   }
 }";
 
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(expected).unwrap();
+        let (remainder, candidate) = Plaintext::parse(expected).unwrap();
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -355,7 +354,7 @@ mod tests {
   }
 }";
 
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(expected).unwrap();
+        let (remainder, candidate) = Plaintext::parse(expected).unwrap();
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -369,7 +368,7 @@ mod tests {
   2u8,
   3u8
 ]";
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(expected).unwrap();
+        let (remainder, candidate) = Plaintext::parse(expected).unwrap();
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -389,7 +388,7 @@ mod tests {
     bar: 6u8
   }
 ]";
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(expected).unwrap();
+        let (remainder, candidate) = Plaintext::parse(expected).unwrap();
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -409,7 +408,7 @@ mod tests {
     6u8
   ]
 }";
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(expected).unwrap();
+        let (remainder, candidate) = Plaintext::parse(expected).unwrap();
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -471,7 +470,7 @@ mod tests {
     }
   ]
 }";
-        let (remainder, candidate) = Plaintext::<CurrentNetwork>::parse(expected).unwrap();
+        let (remainder, candidate) = Plaintext::parse(expected).unwrap();
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);

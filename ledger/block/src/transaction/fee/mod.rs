@@ -75,7 +75,7 @@ impl<N: Network> Fee<N> {
     }
 
     /// Returns the payer, if the fee is public.
-    pub fn payer(&self) -> Option<Address<N>> {
+    pub fn payer(&self) -> Option<Address> {
         // Retrieve the payer.
         match self.transition.outputs().last() {
             Some(Output::Future(_, Some(future))) => match future.arguments().first() {
@@ -136,7 +136,7 @@ impl<N: Network> Fee<N> {
     }
 
     /// Returns the deployment or execution ID.
-    pub fn deployment_or_execution_id(&self) -> Result<Field<N>> {
+    pub fn deployment_or_execution_id(&self) -> Result<Field> {
         // Determine the input index for the deployment or execution ID.
         // Note: Checking whether the `output` is a `Record` or `Future` is a faster way to determine if the fee is private or public respectively.
         let input_index = match self.transition.outputs().last() {
@@ -224,10 +224,7 @@ pub mod test_helpers {
     }
 
     /// Samples a random private fee.
-    pub fn sample_fee_private(
-        deployment_or_execution_id: Field<CurrentNetwork>,
-        rng: &mut TestRng,
-    ) -> Fee<CurrentNetwork> {
+    pub fn sample_fee_private(deployment_or_execution_id: Field, rng: &mut TestRng) -> Fee<CurrentNetwork> {
         // Sample the genesis block, transaction, and private key.
         let (block, transaction, private_key) = crate::test_helpers::sample_genesis_block_and_components(rng);
         // Retrieve a credits record.
@@ -285,10 +282,7 @@ pub mod test_helpers {
     }
 
     /// Samples a random public fee.
-    pub fn sample_fee_public(
-        deployment_or_execution_id: Field<CurrentNetwork>,
-        rng: &mut TestRng,
-    ) -> Fee<CurrentNetwork> {
+    pub fn sample_fee_public(deployment_or_execution_id: Field, rng: &mut TestRng) -> Fee<CurrentNetwork> {
         // Sample the genesis block and private key.
         let (block, _, private_key) = crate::test_helpers::sample_genesis_block_and_components(rng);
         // Set the base fee amount.

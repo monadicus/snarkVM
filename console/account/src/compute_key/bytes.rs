@@ -37,9 +37,6 @@ impl ToBytes for ComputeKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -49,13 +46,13 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new compute key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let expected = ComputeKey::try_from(private_key)?;
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, ComputeKey::read_le(&expected_bytes[..])?);
-            assert!(ComputeKey::<CurrentNetwork>::read_le(&expected_bytes[1..]).is_err());
+            assert!(ComputeKey::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Zero for Scalar<E> {
-    type Boolean = Boolean<E>;
+impl Zero for Scalar {
+    type Boolean = Boolean;
 
     fn zero() -> Self {
         Self::constant(console::Scalar::zero())
@@ -33,11 +33,11 @@ mod tests {
 
     #[test]
     fn test_zero() {
-        let zero = console::Scalar::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Scalar::zero();
 
         Circuit::scope("Zero", || {
             assert_scope!(0, 0, 0, 0);
-            let candidate = Scalar::<Circuit>::zero();
+            let candidate = Scalar::zero();
             assert_eq!(zero, candidate.eject_value());
             assert_scope!(1, 0, 0, 0);
         });
@@ -45,7 +45,7 @@ mod tests {
 
     #[test]
     fn test_is_zero() {
-        let candidate = Scalar::<Circuit>::zero();
+        let candidate = Scalar::zero();
         // Should equal 0.
         assert!(candidate.is_zero().eject_value());
         // Should not equal 1.

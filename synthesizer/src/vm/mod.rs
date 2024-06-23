@@ -81,7 +81,7 @@ pub struct VM<N: Network, C: ConsensusStorage<N>> {
     /// The VM store.
     store: ConsensusStore<N, C>,
     /// A cache containing the list of recent partially-verified transactions.
-    partially_verified_transactions: Arc<RwLock<LruCache<N::TransactionID, ()>>>,
+    partially_verified_transactions: Arc<RwLock<LruCache<TransactionID, ()>>>,
     /// The restrictions list.
     restrictions: Restrictions<N>,
     /// The lock to guarantee atomicity over calls to speculate and finalize.
@@ -111,7 +111,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         fn load_deployment_and_imports<N: Network, T: TransactionStorage<N>>(
             process: &Process<N>,
             transaction_store: &TransactionStore<N, T>,
-            transaction_id: N::TransactionID,
+            transaction_id: TransactionID,
         ) -> Result<Vec<(ProgramID<N>, Deployment<N>)>> {
             // Retrieve the deployment from the transaction ID.
             let deployment = match transaction_store.get_deployment(&transaction_id)? {
@@ -218,7 +218,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
 
     /// Returns the partially-verified transactions.
     #[inline]
-    pub fn partially_verified_transactions(&self) -> Arc<RwLock<LruCache<N::TransactionID, ()>>> {
+    pub fn partially_verified_transactions(&self) -> Arc<RwLock<LruCache<TransactionID, ()>>> {
         self.partially_verified_transactions.clone()
     }
 
@@ -272,7 +272,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
 
 impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     /// Returns a new genesis block for a beacon chain.
-    pub fn genesis_beacon<R: Rng + CryptoRng>(&self, private_key: &PrivateKey<N>, rng: &mut R) -> Result<Block<N>> {
+    pub fn genesis_beacon<R: Rng + CryptoRng>(&self, private_key: &PrivateKey, rng: &mut R) -> Result<Block<N>> {
         let private_keys = [*private_key, PrivateKey::new(rng)?, PrivateKey::new(rng)?, PrivateKey::new(rng)?];
 
         // Construct the committee members.
@@ -307,10 +307,10 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     /// Returns a new genesis block for a quorum chain.
     pub fn genesis_quorum<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         committee: Committee<N>,
-        public_balances: IndexMap<Address<N>, u64>,
-        bonded_balances: IndexMap<Address<N>, (Address<N>, Address<N>, u64)>,
+        public_balances: IndexMap<Address, u64>,
+        bonded_balances: IndexMap<Address, (Address, Address, u64)>,
         rng: &mut R,
     ) -> Result<Block<N>> {
         // Retrieve the total stake.
@@ -365,7 +365,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         // Prepare the block header.
         let header = Header::genesis(&ratifications, &transactions, ratified_finalize_operations)?;
         // Prepare the previous block hash.
-        let previous_hash = N::BlockHash::default();
+        let previous_hash = BlockHash::default();
 
         // Construct the block.
         let block = Block::new_beacon(
@@ -505,7 +505,7 @@ pub(crate) mod test_helpers {
         static INSTANCE: OnceCell<PrivateKey<CurrentNetwork>> = OnceCell::new();
         *INSTANCE.get_or_init(|| {
             // Initialize a new caller.
-            PrivateKey::<CurrentNetwork>::new(rng).unwrap()
+            PrivateKey::new(rng).unwrap()
         })
     }
 
@@ -639,9 +639,7 @@ function compute:
                 vm.add_next_block(&genesis).unwrap();
 
                 // Prepare the inputs.
-                let inputs =
-                    [Value::<CurrentNetwork>::Record(record), Value::<CurrentNetwork>::from_str("1u64").unwrap()]
-                        .into_iter();
+                let inputs = [Value::Record(record), Value::from_str("1u64").unwrap()].into_iter();
 
                 // Authorize.
                 let authorization = vm.authorize(&caller_private_key, "credits.aleo", "split", inputs, rng).unwrap();
@@ -683,11 +681,8 @@ function compute:
                 vm.add_next_block(&genesis).unwrap();
 
                 // Prepare the inputs.
-                let inputs = [
-                    Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
-                    Value::<CurrentNetwork>::from_str("1u64").unwrap(),
-                ]
-                .into_iter();
+                let inputs =
+                    [Value::from_str(&address.to_string()).unwrap(), Value::from_str("1u64").unwrap()].into_iter();
 
                 // Execute.
                 let transaction = vm
@@ -718,11 +713,8 @@ function compute:
                 vm.add_next_block(&genesis).unwrap();
 
                 // Prepare the inputs.
-                let inputs = [
-                    Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
-                    Value::<CurrentNetwork>::from_str("1u64").unwrap(),
-                ]
-                .into_iter();
+                let inputs =
+                    [Value::from_str(&address.to_string()).unwrap(), Value::from_str("1u64").unwrap()].into_iter();
 
                 // Execute.
                 let transaction_without_fee = vm
@@ -961,7 +953,7 @@ finalize getter:
         let rng = &mut TestRng::fixed(123456789);
 
         // Initialize a new caller.
-        let caller_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let caller_private_key = PrivateKey::new(rng).unwrap();
         let caller_view_key = ViewKey::try_from(&caller_private_key).unwrap();
 
         // Initialize the VM.
@@ -1274,7 +1266,7 @@ function call_fee_public:
 finalize call_fee_public:
     input r0 as credits.aleo/fee_public.future;
     await r0;
-    
+
 function call_fee_private:
     input r0 as credits.aleo/credits.record;
     input r1 as u64.private;
@@ -1513,11 +1505,7 @@ function do:
 
         // Create a standard transaction
         // Prepare the inputs.
-        let inputs = [
-            Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str("1u64").unwrap(),
-        ]
-        .into_iter();
+        let inputs = [Value::from_str(&address.to_string()).unwrap(), Value::from_str("1u64").unwrap()].into_iter();
 
         // Execute.
         let transaction =
@@ -1586,11 +1574,7 @@ function do:
 
         // Create a standard transaction
         // Prepare the inputs.
-        let inputs = [
-            Value::<CurrentNetwork>::from_str(&address.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str("1u64").unwrap(),
-        ]
-        .into_iter();
+        let inputs = [Value::from_str(&address.to_string()).unwrap(), Value::from_str("1u64").unwrap()].into_iter();
 
         // Execute.
         let transaction =
@@ -2390,11 +2374,7 @@ finalize transfer_public_to_private:
         assert!(
             !vm.transition_store()
                 .contains_serial_number(
-                    &Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::serial_number(
-                        recipient_private_key,
-                        *commitment
-                    )
-                    .unwrap()
+                    &Record::<Plaintext>::serial_number(recipient_private_key, *commitment).unwrap()
                 )
                 .unwrap()
         );

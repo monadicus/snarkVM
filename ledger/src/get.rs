@@ -31,12 +31,12 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns a state path for the given commitment.
-    pub fn get_state_path_for_commitment(&self, commitment: &Field<N>) -> Result<StatePath<N>> {
+    pub fn get_state_path_for_commitment(&self, commitment: &Field) -> Result<StatePath<N>> {
         self.vm.block_store().get_state_path_for_commitment(commitment)
     }
 
     /// Returns the epoch hash for the given block height.
-    pub fn get_epoch_hash(&self, block_height: u32) -> Result<N::BlockHash> {
+    pub fn get_epoch_hash(&self, block_height: u32) -> Result<BlockHash> {
         // Compute the epoch number from the current block height.
         let epoch_number = block_height.saturating_div(N::NUM_BLOCKS_PER_EPOCH);
         // Compute the epoch starting height (a multiple of `NUM_BLOCKS_PER_EPOCH`).
@@ -72,7 +72,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the block for the given block hash.
-    pub fn get_block_by_hash(&self, block_hash: &N::BlockHash) -> Result<Block<N>> {
+    pub fn get_block_by_hash(&self, block_hash: &BlockHash) -> Result<Block<N>> {
         // Retrieve the block.
         match self.vm.block_store().get_block(block_hash)? {
             Some(block) => Ok(block),
@@ -81,7 +81,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the block height for the given block hash.
-    pub fn get_height(&self, block_hash: &N::BlockHash) -> Result<u32> {
+    pub fn get_height(&self, block_hash: &BlockHash) -> Result<u32> {
         match self.vm.block_store().get_block_height(block_hash)? {
             Some(height) => Ok(height),
             None => bail!("Missing block height for block '{block_hash}'"),
@@ -89,7 +89,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the block hash for the given block height.
-    pub fn get_hash(&self, height: u32) -> Result<N::BlockHash> {
+    pub fn get_hash(&self, height: u32) -> Result<BlockHash> {
         // If the height is 0, return the genesis block hash.
         if height == 0 {
             return Ok(self.genesis_block.hash());
@@ -101,10 +101,10 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the previous block hash for the given block height.
-    pub fn get_previous_hash(&self, height: u32) -> Result<N::BlockHash> {
+    pub fn get_previous_hash(&self, height: u32) -> Result<BlockHash> {
         // If the height is 0, return the default block hash.
         if height == 0 {
-            return Ok(N::BlockHash::default());
+            return Ok(BlockHash::default());
         }
         match self.vm.block_store().get_previous_block_hash(height)? {
             Some(previous_hash) => Ok(previous_hash),
@@ -148,7 +148,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the aborted transaction IDs for the given block height.
-    pub fn get_aborted_transaction_ids(&self, height: u32) -> Result<Vec<N::TransactionID>> {
+    pub fn get_aborted_transaction_ids(&self, height: u32) -> Result<Vec<TransactionID>> {
         // If the height is 0, return the genesis block aborted transaction IDs.
         if height == 0 {
             return Ok(self.genesis_block.aborted_transaction_ids().clone());
@@ -165,7 +165,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the transaction for the given transaction ID.
-    pub fn get_transaction(&self, transaction_id: N::TransactionID) -> Result<Transaction<N>> {
+    pub fn get_transaction(&self, transaction_id: TransactionID) -> Result<Transaction<N>> {
         // Retrieve the transaction.
         match self.vm.block_store().get_transaction(&transaction_id)? {
             Some(transaction) => Ok(transaction),
@@ -174,7 +174,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the confirmed transaction for the given transaction ID.
-    pub fn get_confirmed_transaction(&self, transaction_id: N::TransactionID) -> Result<ConfirmedTransaction<N>> {
+    pub fn get_confirmed_transaction(&self, transaction_id: TransactionID) -> Result<ConfirmedTransaction<N>> {
         // Retrieve the confirmed transaction.
         match self.vm.block_store().get_confirmed_transaction(&transaction_id)? {
             Some(confirmed_transaction) => Ok(confirmed_transaction),
@@ -183,7 +183,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the unconfirmed transaction for the given `transaction ID`.
-    pub fn get_unconfirmed_transaction(&self, transaction_id: &N::TransactionID) -> Result<Transaction<N>> {
+    pub fn get_unconfirmed_transaction(&self, transaction_id: &TransactionID) -> Result<Transaction<N>> {
         // Retrieve the unconfirmed transaction.
         match self.vm.block_store().get_unconfirmed_transaction(transaction_id)? {
             Some(unconfirmed_transaction) => Ok(unconfirmed_transaction),
@@ -215,7 +215,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the solution for the given solution ID.
-    pub fn get_solution(&self, solution_id: &SolutionID<N>) -> Result<Solution<N>> {
+    pub fn get_solution(&self, solution_id: &SolutionID) -> Result<Solution> {
         self.vm.block_store().get_solution(solution_id)
     }
 
@@ -238,12 +238,12 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the batch certificate for the given `certificate ID`.
-    pub fn get_batch_certificate(&self, certificate_id: &Field<N>) -> Result<Option<BatchCertificate<N>>> {
+    pub fn get_batch_certificate(&self, certificate_id: &Field) -> Result<Option<BatchCertificate<N>>> {
         self.vm.block_store().get_batch_certificate(certificate_id)
     }
 
     /// Returns the delegators for the given validator.
-    pub fn get_delegators_for_validator(&self, validator: &Address<N>) -> Result<Vec<Address<N>>> {
+    pub fn get_delegators_for_validator(&self, validator: &Address) -> Result<Vec<Address>> {
         // Construct the credits.aleo program ID.
         let credits_program_id = ProgramID::from_str("credits.aleo")?;
         // Construct the bonded mapping name.

@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Initializes an affine group element from a given x- and y-coordinate field element.
     /// For safety, the resulting point is always enforced to be on the curve and in the subgroup.
-    pub fn from_xy_coordinates(x: Field<E>, y: Field<E>) -> Self {
+    pub fn from_xy_coordinates(x: Field, y: Field) -> Self {
         let point = Self { x, y };
         point.enforce_in_group();
         point
@@ -26,7 +26,7 @@ impl<E: Environment> Group<E> {
     /// Initializes an affine group element from a given x- and y-coordinate field element.
     /// Note: The resulting point is **not** enforced to be on the curve or in the subgroup.
     #[doc(hidden)]
-    pub fn from_xy_coordinates_unchecked(x: Field<E>, y: Field<E>) -> Self {
+    pub fn from_xy_coordinates_unchecked(x: Field, y: Field) -> Self {
         Self { x, y }
     }
 }
@@ -49,14 +49,14 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let point: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let point: console::Group = Uniform::rand(&mut rng);
 
             // Inject the x- and y-coordinates.
             let x_coordinate = Field::new(mode, point.to_x_coordinate());
             let y_coordinate = Field::new(mode, point.to_y_coordinate());
 
             Circuit::scope(format!("{mode} {i}"), || {
-                let affine = Group::<Circuit>::from_xy_coordinates(x_coordinate, y_coordinate);
+                let affine = Group::from_xy_coordinates(x_coordinate, y_coordinate);
                 assert_eq!(point, affine.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });
@@ -74,14 +74,14 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let point: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let point: console::Group = Uniform::rand(&mut rng);
 
             // Inject the x- and y-coordinates.
             let x_coordinate = Field::new(mode, point.to_x_coordinate());
             let y_coordinate = Field::new(mode, point.to_y_coordinate());
 
             Circuit::scope(format!("{mode} {i}"), || {
-                let affine = Group::<Circuit>::from_xy_coordinates_unchecked(x_coordinate, y_coordinate);
+                let affine = Group::from_xy_coordinates_unchecked(x_coordinate, y_coordinate);
                 assert_eq!(point, affine.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });

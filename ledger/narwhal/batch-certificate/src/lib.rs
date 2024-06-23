@@ -37,19 +37,19 @@ use rayon::prelude::*;
 #[derive(Clone)]
 pub struct BatchCertificate<N: Network> {
     /// The batch header.
-    batch_header: BatchHeader<N>,
+    batch_header: BatchHeader,
     /// The signatures for the batch ID from the committee.
-    signatures: IndexSet<Signature<N>>,
+    signatures: IndexSet<Signature>,
 }
 
 impl<N: Network> BatchCertificate<N> {
     /// The maximum number of signatures in a batch certificate.
-    pub const MAX_SIGNATURES: u16 = BatchHeader::<N>::MAX_CERTIFICATES;
+    pub const MAX_SIGNATURES: u16 = N::MAX_CERTIFICATES;
 }
 
 impl<N: Network> BatchCertificate<N> {
     /// Initializes a new batch certificate.
-    pub fn from(batch_header: BatchHeader<N>, signatures: IndexSet<Signature<N>>) -> Result<Self> {
+    pub fn from(batch_header: BatchHeader, signatures: IndexSet<Signature>) -> Result<Self> {
         // Ensure that the number of signatures is within bounds.
         ensure!(signatures.len() <= Self::MAX_SIGNATURES as usize, "Invalid number of signatures");
 
@@ -73,7 +73,7 @@ impl<N: Network> BatchCertificate<N> {
     }
 
     /// Initializes a new batch certificate.
-    pub fn from_unchecked(batch_header: BatchHeader<N>, signatures: IndexSet<Signature<N>>) -> Result<Self> {
+    pub fn from_unchecked(batch_header: BatchHeader, signatures: IndexSet<Signature>) -> Result<Self> {
         // Ensure the signatures are not empty.
         ensure!(!signatures.is_empty(), "Batch certificate must contain signatures");
         // Return the batch certificate.
@@ -97,22 +97,22 @@ impl<N: Network> Hash for BatchCertificate<N> {
 
 impl<N: Network> BatchCertificate<N> {
     /// Returns the certificate ID.
-    pub const fn id(&self) -> Field<N> {
+    pub const fn id(&self) -> Field {
         self.batch_header.batch_id()
     }
 
     /// Returns the batch header.
-    pub const fn batch_header(&self) -> &BatchHeader<N> {
+    pub const fn batch_header(&self) -> &BatchHeader {
         &self.batch_header
     }
 
     /// Returns the batch ID.
-    pub const fn batch_id(&self) -> Field<N> {
+    pub const fn batch_id(&self) -> Field {
         self.batch_header().batch_id()
     }
 
     /// Returns the author.
-    pub const fn author(&self) -> Address<N> {
+    pub const fn author(&self) -> Address {
         self.batch_header().author()
     }
 
@@ -127,22 +127,22 @@ impl<N: Network> BatchCertificate<N> {
     }
 
     /// Returns the committee ID.
-    pub const fn committee_id(&self) -> Field<N> {
+    pub const fn committee_id(&self) -> Field {
         self.batch_header().committee_id()
     }
 
     /// Returns the transmission IDs.
-    pub const fn transmission_ids(&self) -> &IndexSet<TransmissionID<N>> {
+    pub const fn transmission_ids(&self) -> &IndexSet<TransmissionID> {
         self.batch_header().transmission_ids()
     }
 
     /// Returns the batch certificate IDs for the previous round.
-    pub const fn previous_certificate_ids(&self) -> &IndexSet<Field<N>> {
+    pub const fn previous_certificate_ids(&self) -> &IndexSet<Field> {
         self.batch_header().previous_certificate_ids()
     }
 
     /// Returns the signatures of the batch ID from the committee.
-    pub fn signatures(&self) -> Box<dyn '_ + ExactSizeIterator<Item = &Signature<N>>> {
+    pub fn signatures(&self) -> Box<dyn '_ + ExactSizeIterator<Item = &Signature>> {
         Box::new(self.signatures.iter())
     }
 }
@@ -164,7 +164,7 @@ pub mod test_helpers {
     /// Returns a sample batch certificate with a given round; the rest is sampled at random.
     pub fn sample_batch_certificate_for_round(round: u64, rng: &mut TestRng) -> BatchCertificate<CurrentNetwork> {
         // Sample certificate IDs.
-        let certificate_ids = (0..10).map(|_| Field::<CurrentNetwork>::rand(rng)).collect::<IndexSet<_>>();
+        let certificate_ids = (0..10).map(|_| Field::rand(rng)).collect::<IndexSet<_>>();
         // Return the batch certificate.
         sample_batch_certificate_for_round_with_previous_certificate_ids(round, certificate_ids, rng)
     }
@@ -172,7 +172,7 @@ pub mod test_helpers {
     /// Returns a sample batch certificate with a given round; the rest is sampled at random.
     pub fn sample_batch_certificate_for_round_with_previous_certificate_ids(
         round: u64,
-        previous_certificate_ids: IndexSet<Field<CurrentNetwork>>,
+        previous_certificate_ids: IndexSet<Field>,
         rng: &mut TestRng,
     ) -> BatchCertificate<CurrentNetwork> {
         // Sample a batch header.
@@ -245,6 +245,6 @@ mod tests {
 
     #[test]
     fn test_maximum_signatures() {
-        assert_eq!(BatchHeader::<CurrentNetwork>::MAX_CERTIFICATES, BatchCertificate::<CurrentNetwork>::MAX_SIGNATURES);
+        assert_eq!(BatchHeader::MAX_CERTIFICATES, BatchCertificate::MAX_SIGNATURES);
     }
 }

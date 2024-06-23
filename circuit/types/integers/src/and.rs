@@ -14,54 +14,54 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> BitAnd<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitAnd<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self AND other)`.
-    fn bitand(self, other: Integer<E, I>) -> Self::Output {
+    fn bitand(self, other: Integer<I>) -> Self::Output {
         self & &other
     }
 }
 
-impl<E: Environment, I: IntegerType> BitAnd<Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitAnd<Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self AND other)`.
-    fn bitand(self, other: Integer<E, I>) -> Self::Output {
+    fn bitand(self, other: Integer<I>) -> Self::Output {
         self & &other
     }
 }
 
-impl<E: Environment, I: IntegerType> BitAnd<&Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitAnd<&Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self AND other)`.
-    fn bitand(self, other: &Integer<E, I>) -> Self::Output {
+    fn bitand(self, other: &Integer<I>) -> Self::Output {
         &self & other
     }
 }
 
-impl<E: Environment, I: IntegerType> BitAnd<&Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitAnd<&Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self AND other)`.
-    fn bitand(self, other: &Integer<E, I>) -> Self::Output {
+    fn bitand(self, other: &Integer<I>) -> Self::Output {
         let mut output = self.clone();
         output &= other;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType> BitAndAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitAndAssign<Integer<I>> for Integer<I> {
     /// Sets `self` as `(self AND other)`.
-    fn bitand_assign(&mut self, other: Integer<E, I>) {
+    fn bitand_assign(&mut self, other: Integer<I>) {
         *self &= &other;
     }
 }
 
-impl<E: Environment, I: IntegerType> BitAndAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitAndAssign<&Integer<I>> for Integer<I> {
     /// Sets `self` as `(self AND other)`.
-    fn bitand_assign(&mut self, other: &Integer<E, I>) {
+    fn bitand_assign(&mut self, other: &Integer<I>) {
         // Stores the bitwise AND of `self` and `other` in `self`.
         *self = Self {
             bits_le: self.bits_le.iter().zip_eq(other.bits_le.iter()).map(|(a, b)| a & b).collect(),
@@ -70,7 +70,7 @@ impl<E: Environment, I: IntegerType> BitAndAssign<&Integer<E, I>> for Integer<E,
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn BitAnd<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn BitAnd<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -81,8 +81,8 @@ impl<E: Environment, I: IntegerType> Metrics<dyn BitAnd<Integer<E, I>, Output = 
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn BitAnd<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
-    type Case = (CircuitType<Integer<E, I>>, CircuitType<Integer<E, I>>);
+impl<I: IntegerType> OutputMode<dyn BitAnd<Integer<I>, Output = Integer<I>>> for Integer<I> {
+    type Case = (CircuitType<Integer<I>>, CircuitType<Integer<I>>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match (case.0.mode(), case.1.mode()) {
@@ -93,7 +93,9 @@ impl<E: Environment, I: IntegerType> OutputMode<dyn BitAnd<Integer<E, I>, Output
                     true => Mode::Constant,
                     false => mode_b,
                 },
-                _ => E::halt(format!("The constant is required to determine the output mode of Constant AND {mode_b}")),
+                _ => Circuit::halt(format!(
+                    "The constant is required to determine the output mode of Constant AND {mode_b}"
+                )),
             },
             (mode_a, Mode::Constant) => match &case.1 {
                 // Determine if the constant is all zeros.
@@ -101,7 +103,9 @@ impl<E: Environment, I: IntegerType> OutputMode<dyn BitAnd<Integer<E, I>, Output
                     true => Mode::Constant,
                     false => mode_a,
                 },
-                _ => E::halt(format!("The constant is required to determine the output mode of {mode_a} AND Constant")),
+                _ => Circuit::halt(format!(
+                    "The constant is required to determine the output mode of {mode_a} AND Constant"
+                )),
             },
             (_, _) => Mode::Private,
         }
@@ -120,12 +124,12 @@ mod tests {
     #[allow(clippy::needless_borrow)]
     fn check_and<I: IntegerType + BitAnd<Output = I>>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
+        let a = Integer::<I>::new(mode_a, first);
         let b = Integer::new(mode_b, second);
         let expected = first & second;
         Circuit::scope(name, || {
@@ -167,8 +171,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("BitAnd: ({first} & {second})");
                 check_and::<I>(&name, first, second, mode_a, mode_b);

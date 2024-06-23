@@ -15,8 +15,8 @@
 use super::*;
 
 #[cfg(console)]
-impl<A: Aleo> ToBits for ComputeKey<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for ComputeKey {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of the compute key *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -30,8 +30,8 @@ impl<A: Aleo> ToBits for ComputeKey<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> ToBits for &ComputeKey<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for &ComputeKey {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of the compute key *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -62,14 +62,14 @@ mod tests {
     const ITERATIONS: u64 = 100;
 
     fn check_to_bits_le(mode: Mode, num_constants: u64, num_public: u64, num_private: u64, num_constraints: u64) {
-        let expected_number_of_bits = console::ComputeKey::<<CurrentAleo as Environment>::Network>::size_in_bits();
+        let expected_number_of_bits = console::ComputeKey::size_in_bits();
 
         let rng = &mut TestRng::default();
 
         for i in 0..ITERATIONS {
             // Sample a random compute key.
             let expected = console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap();
-            let candidate = ComputeKey::<CurrentAleo>::new(mode, expected);
+            let candidate = ComputeKey::new(mode, expected);
 
             CurrentAleo::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_le();
@@ -89,14 +89,14 @@ mod tests {
     }
 
     fn check_to_bits_be(mode: Mode, num_constants: u64, num_public: u64, num_private: u64, num_constraints: u64) {
-        let expected_number_of_bits = console::ComputeKey::<<CurrentAleo as Environment>::Network>::size_in_bits();
+        let expected_number_of_bits = console::ComputeKey::size_in_bits();
 
         let rng = &mut TestRng::default();
 
         for i in 0..ITERATIONS {
             // Sample a random compute key.
             let expected = console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap();
-            let candidate = ComputeKey::<CurrentAleo>::new(mode, expected);
+            let candidate = ComputeKey::new(mode, expected);
 
             CurrentAleo::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_be();

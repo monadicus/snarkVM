@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo, Private: Visibility<A>> Equal<Self> for Entry<A, Private> {
-    type Output = Boolean<A>;
+impl<Private: Visibility> Equal<Self> for Entry<Private> {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

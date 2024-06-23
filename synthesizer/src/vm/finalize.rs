@@ -39,7 +39,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         candidate_solutions: &Solutions<N>,
         candidate_transactions: impl ExactSizeIterator<Item = &'a Transaction<N>>,
         rng: &mut R,
-    ) -> Result<(Ratifications<N>, Transactions<N>, Vec<N::TransactionID>, Vec<FinalizeOperation<N>>)> {
+    ) -> Result<(Ratifications<N>, Transactions<N>, Vec<TransactionID>, Vec<FinalizeOperation<N>>)> {
         let timer = timer!("VM::speculate");
 
         // Collect the candidate transactions into a vector.
@@ -70,7 +70,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         // Get the aborted transaction ids.
         let verification_aborted_transaction_ids = verification_aborted_transactions.iter().map(|(tx, e)| (tx.id(), e));
         let speculation_aborted_transaction_ids = speculation_aborted_transactions.iter().map(|(tx, e)| (tx.id(), e));
-        let unordered_aborted_transaction_ids: IndexMap<N::TransactionID, &String> =
+        let unordered_aborted_transaction_ids: IndexMap<TransactionID, &String> =
             verification_aborted_transaction_ids.chain(speculation_aborted_transaction_ids).collect();
 
         // Filter and order the aborted transaction ids according to candidate_transactions
@@ -278,13 +278,13 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
             // Initialize a list of created transition IDs.
             let mut transition_ids: IndexSet<N::TransitionID> = IndexSet::new();
             // Initialize a list of spent input IDs.
-            let mut input_ids: IndexSet<Field<N>> = IndexSet::new();
+            let mut input_ids: IndexSet<Field> = IndexSet::new();
             // Initialize a list of created output IDs.
-            let mut output_ids: IndexSet<Field<N>> = IndexSet::new();
+            let mut output_ids: IndexSet<Field> = IndexSet::new();
             // Initialize the list of created transition public keys.
-            let mut tpks: IndexSet<Group<N>> = IndexSet::new();
+            let mut tpks: IndexSet<Group> = IndexSet::new();
             // Initialize the list of deployment payers.
-            let mut deployment_payers: IndexSet<Address<N>> = IndexSet::new();
+            let mut deployment_payers: IndexSet<Address> = IndexSet::new();
 
             // Finalize the transactions.
             'outer: for transaction in transactions {
@@ -771,10 +771,10 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         &self,
         transaction: &Transaction<N>,
         transition_ids: &IndexSet<N::TransitionID>,
-        input_ids: &IndexSet<Field<N>>,
-        output_ids: &IndexSet<Field<N>>,
-        tpks: &IndexSet<Group<N>>,
-        deployment_payers: &IndexSet<Address<N>>,
+        input_ids: &IndexSet<Field>,
+        output_ids: &IndexSet<Field>,
+        tpks: &IndexSet<Group>,
+        deployment_payers: &IndexSet<Address>,
     ) -> Option<String> {
         // Ensure that the transaction is not producing a duplicate transition.
         for transition_id in transaction.transition_ids() {
@@ -844,13 +844,13 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
         // Initialize a list of created transition IDs.
         let mut transition_ids: IndexSet<N::TransitionID> = Default::default();
         // Initialize a list of spent input IDs.
-        let mut input_ids: IndexSet<Field<N>> = Default::default();
+        let mut input_ids: IndexSet<Field> = Default::default();
         // Initialize a list of created output IDs.
-        let mut output_ids: IndexSet<Field<N>> = Default::default();
+        let mut output_ids: IndexSet<Field> = Default::default();
         // Initialize the list of created transition public keys.
-        let mut tpks: IndexSet<Group<N>> = Default::default();
+        let mut tpks: IndexSet<Group> = Default::default();
         // Initialize the list of deployment payers.
-        let mut deployment_payers: IndexSet<Address<N>> = Default::default();
+        let mut deployment_payers: IndexSet<Address> = Default::default();
 
         // Abort the transactions that are have duplicates or are invalid. This will prevent the VM from performing
         // verification on transactions that would have been aborted in `VM::atomic_speculate`.
@@ -1380,7 +1380,7 @@ mod tests {
         vm: &VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>>,
         private_key: &PrivateKey<CurrentNetwork>,
         previous_block: &Block<CurrentNetwork>,
-        unspent_records: &mut Vec<Record<CurrentNetwork, Ciphertext<CurrentNetwork>>>,
+        unspent_records: &mut Vec<Record<Ciphertext<CurrentNetwork>>>,
         rng: &mut R,
     ) -> Result<(String, Block<CurrentNetwork>)> {
         let program_name = format!("a{}.aleo", Alphanumeric.sample_string(rng, 8).to_lowercase());
@@ -1431,7 +1431,7 @@ finalize transfer_public:
         ))?;
 
         // Prepare the additional fee.
-        let view_key = ViewKey::<CurrentNetwork>::try_from(private_key)?;
+        let view_key = ViewKey::try_from(private_key)?;
         let credits = Some(unspent_records.pop().unwrap().decrypt(&view_key)?);
 
         // Deploy.
@@ -1449,7 +1449,7 @@ finalize transfer_public:
         private_key: &PrivateKey<CurrentNetwork>,
         transactions: &[Transaction<CurrentNetwork>],
         previous_block: &Block<CurrentNetwork>,
-        unspent_records: &mut Vec<Record<CurrentNetwork, Ciphertext<CurrentNetwork>>>,
+        unspent_records: &mut Vec<Record<Ciphertext<CurrentNetwork>>>,
         rng: &mut R,
     ) -> Result<Block<CurrentNetwork>> {
         // Speculate on the candidate ratifications, solutions, and transactions.
@@ -1516,11 +1516,11 @@ finalize transfer_public:
         vm: &VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>>,
         private_key: &PrivateKey<CurrentNetwork>,
         previous_block: &Block<CurrentNetwork>,
-        unspent_records: &mut Vec<Record<CurrentNetwork, Ciphertext<CurrentNetwork>>>,
+        unspent_records: &mut Vec<Record<Ciphertext<CurrentNetwork>>>,
         rng: &mut R,
     ) -> Result<Block<CurrentNetwork>> {
         // Prepare the additional fee.
-        let view_key = ViewKey::<CurrentNetwork>::try_from(private_key)?;
+        let view_key = ViewKey::try_from(private_key)?;
 
         // Generate split transactions.
         let mut transactions = Vec::new();
@@ -1534,11 +1534,7 @@ finalize transfer_public:
             };
 
             // Prepare the inputs.
-            let inputs = [
-                Value::<CurrentNetwork>::Record(record),
-                Value::<CurrentNetwork>::from_str(&format!("{split_balance}u64")).unwrap(),
-            ]
-            .into_iter();
+            let inputs = [Value::Record(record), Value::from_str(&format!("{split_balance}u64")).unwrap()].into_iter();
 
             // Execute.
             let transaction = vm.execute(private_key, ("credits.aleo", "split"), inputs, None, 0, None, rng).unwrap();
@@ -1557,13 +1553,13 @@ finalize transfer_public:
         program_id: &str,
         function_name: &str,
         inputs: Vec<Value<CurrentNetwork>>,
-        unspent_records: &mut Vec<Record<CurrentNetwork, Ciphertext<CurrentNetwork>>>,
+        unspent_records: &mut Vec<Record<Ciphertext<CurrentNetwork>>>,
         rng: &mut TestRng,
     ) -> Transaction<CurrentNetwork> {
         assert!(vm.contains_program(&ProgramID::from_str(program_id).unwrap()));
 
         // Prepare the additional fee.
-        let view_key = ViewKey::<CurrentNetwork>::try_from(caller_private_key).unwrap();
+        let view_key = ViewKey::try_from(caller_private_key).unwrap();
         let credits = Some(unspent_records.pop().unwrap().decrypt(&view_key).unwrap());
 
         // Execute.
@@ -1582,15 +1578,13 @@ finalize transfer_public:
         vm: &VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>>,
         caller_private_key: PrivateKey<CurrentNetwork>,
         program_id: &str,
-        recipient: Address<CurrentNetwork>,
+        recipient: Address,
         amount: u64,
-        unspent_records: &mut Vec<Record<CurrentNetwork, Ciphertext<CurrentNetwork>>>,
+        unspent_records: &mut Vec<Record<Ciphertext<CurrentNetwork>>>,
         rng: &mut TestRng,
     ) -> Transaction<CurrentNetwork> {
-        let inputs = vec![
-            Value::<CurrentNetwork>::from_str(&recipient.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str(&format!("{amount}u64")).unwrap(),
-        ];
+        let inputs =
+            vec![Value::from_str(&recipient.to_string()).unwrap(), Value::from_str(&format!("{amount}u64")).unwrap()];
 
         create_execution(vm, caller_private_key, program_id, "mint_public", inputs, unspent_records, rng)
     }
@@ -1600,15 +1594,13 @@ finalize transfer_public:
         vm: &VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>>,
         caller_private_key: PrivateKey<CurrentNetwork>,
         program_id: &str,
-        recipient: Address<CurrentNetwork>,
+        recipient: Address,
         amount: u64,
-        unspent_records: &mut Vec<Record<CurrentNetwork, Ciphertext<CurrentNetwork>>>,
+        unspent_records: &mut Vec<Record<Ciphertext<CurrentNetwork>>>,
         rng: &mut TestRng,
     ) -> Transaction<CurrentNetwork> {
-        let inputs = vec![
-            Value::<CurrentNetwork>::from_str(&recipient.to_string()).unwrap(),
-            Value::<CurrentNetwork>::from_str(&format!("{amount}u64")).unwrap(),
-        ];
+        let inputs =
+            vec![Value::from_str(&recipient.to_string()).unwrap(), Value::from_str(&format!("{amount}u64")).unwrap()];
 
         create_execution(vm, caller_private_key, program_id, "transfer_public", inputs, unspent_records, rng)
     }
@@ -1634,7 +1626,7 @@ finalize transfer_public:
     fn sample_validators<N: Network>(
         num_validators: usize,
         rng: &mut TestRng,
-    ) -> IndexMap<PrivateKey<N>, (u64, bool, u8)> {
+    ) -> IndexMap<PrivateKey, (u64, bool, u8)> {
         (0..num_validators)
             .map(|_| {
                 let private_key = PrivateKey::new(rng).unwrap();
@@ -1648,9 +1640,9 @@ finalize transfer_public:
 
     /// Returns a `committee_map` and the `allocated_amount` given the validators and delegators.
     fn sample_committee_map_and_allocated_amount<N: Network>(
-        validators: &IndexMap<PrivateKey<N>, (u64, bool, u8)>,
-        delegators: &IndexMap<PrivateKey<N>, (Address<N>, u64)>,
-    ) -> (IndexMap<Address<N>, (u64, bool, u8)>, u64) {
+        validators: &IndexMap<PrivateKey, (u64, bool, u8)>,
+        delegators: &IndexMap<PrivateKey, (Address, u64)>,
+    ) -> (IndexMap<Address, (u64, bool, u8)>, u64) {
         // Reset the tracked amount.
         let mut allocated_amount = 0;
 
@@ -1681,9 +1673,9 @@ finalize transfer_public:
     /// Returns the `bonded_balances` given the validators and delegators.
     /// Note that the withdrawal address is the same as the staker address.
     fn sample_bonded_balances<N: Network>(
-        validators: &IndexMap<PrivateKey<N>, (u64, bool, u8)>,
-        delegators: &IndexMap<PrivateKey<N>, (Address<N>, u64)>,
-    ) -> IndexMap<Address<N>, (Address<N>, Address<N>, u64)> {
+        validators: &IndexMap<PrivateKey, (u64, bool, u8)>,
+        delegators: &IndexMap<PrivateKey, (Address, u64)>,
+    ) -> IndexMap<Address, (Address, Address, u64)> {
         let mut bonded_balances = IndexMap::with_capacity(validators.len() + delegators.len());
         for (private_key, (amount, _, _)) in validators {
             let address = Address::try_from(private_key).unwrap();
@@ -1698,7 +1690,7 @@ finalize transfer_public:
 
     /// Returns the `public_balances` given the addresses and total amount.
     /// Note that the balances are evenly distributed among the addresses.
-    fn sample_public_balances<N: Network>(addresses: &[Address<N>], total_amount: u64) -> IndexMap<Address<N>, u64> {
+    fn sample_public_balances<N: Network>(addresses: &[Address], total_amount: u64) -> IndexMap<Address, u64> {
         // Check that the addresses are not empty.
         assert!(!addresses.is_empty(), "must provide at least one address");
         // Distribute the total amount evenly among the addresses.
@@ -1781,7 +1773,7 @@ finalize transfer_public:
             sample_validators::<CurrentNetwork>(Committee::<CurrentNetwork>::MAX_COMMITTEE_SIZE as usize, rng);
 
         // Initialize a new address.
-        let new_validator_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let new_validator_private_key = PrivateKey::new(rng).unwrap();
         let new_validator_address = Address::try_from(&new_validator_private_key).unwrap();
 
         // Construct the committee.
@@ -1821,9 +1813,9 @@ finalize transfer_public:
 
         // Attempt to bond a new validator above the maximum number of validators.
         let inputs = vec![
-            Value::<CurrentNetwork>::from_str(&validator_addresses.first().unwrap().to_string()).unwrap(), // Withdrawal address
-            Value::<CurrentNetwork>::from_str(&format!("{MIN_VALIDATOR_STAKE}u64")).unwrap(),              // Amount
-            Value::<CurrentNetwork>::from_str("42u8").unwrap(),                                            // Commission
+            Valuet().unwrap().to_string()).unwrap(), // Withdrawal address
+            Value::from_str(&format!("{MIN_VALIDATOR_STAKE}u64")).unwrap(),              // Amount
+            Value::from_str("42u8").unwrap(),                                            // Commission
         ];
 
         // Execute.
@@ -2065,7 +2057,7 @@ finalize transfer_public:
                 .map(|(_, record)| record)
                 .collect::<Vec<_>>();
 
-            // Create a program that will always cause a E::halt in the finalize execution.
+            // Create a program that will always cause a Circuit::halt in the finalize execution.
             let program_id = "testing.aleo";
             let program = Program::<CurrentNetwork>::from_str(&format!(
                 "
@@ -2077,7 +2069,7 @@ mapping hashes:
 
 function ped_hash:
     input r0 as u128.public;
-    // hash.ped64 r0 into r1 as field; // <--- This will cause a E::halt.
+    // hash.ped64 r0 into r1 as field; // <--- This will cause a Circuit::halt.
     async ped_hash r0 into r1;
     output r1 as {program_id}/ped_hash.future;
 
@@ -2104,8 +2096,8 @@ function ped_hash:
             // Add the deployment block to the VM.
             vm.add_next_block(&deployment_block).unwrap();
 
-            // Construct a transaction that will cause a E::halt in the finalize execution.
-            let inputs = vec![Value::<CurrentNetwork>::from_str("1u128").unwrap()];
+            // Construct a transaction that will cause a Circuit::halt in the finalize execution.
+            let inputs = vec![Value::from_str("1u128").unwrap()];
             let transaction =
                 create_execution(&vm, caller_private_key, program_id, "ped_hash", inputs, &mut unspent_records, rng);
 
@@ -2191,7 +2183,7 @@ finalize compute:
             .unwrap();
 
             // Prepare the additional fee.
-            let view_key = ViewKey::<CurrentNetwork>::try_from(private_key).unwrap();
+            let view_key = ViewKey::try_from(private_key).unwrap();
             let credits = Some(unspent_records.pop().unwrap().decrypt(&view_key).unwrap());
 
             // Deploy.
@@ -2211,7 +2203,7 @@ finalize compute:
         vm.add_next_block(&splits_block).unwrap();
 
         // Create an execution transaction, that will be rejected.
-        let r0 = Value::<CurrentNetwork>::from_str("100u8").unwrap();
+        let r0 = Value::from_str("100u8").unwrap();
         let first = create_execution(&vm, private_key, "testing.aleo", "compute", vec![r0], &mut unspent_records, rng);
 
         // Construct the next block.
@@ -2234,11 +2226,11 @@ finalize compute:
         );
 
         // Create an execution transaction, that will be rejected.
-        let r0 = Value::<CurrentNetwork>::from_str("100u8").unwrap();
+        let r0 = Value::from_str("100u8").unwrap();
         let first = create_execution(&vm, private_key, "testing.aleo", "compute", vec![r0], &mut unspent_records, rng);
 
         // Create an execution transaction, that will be accepted.
-        let r0 = Value::<CurrentNetwork>::from_str("1u8").unwrap();
+        let r0 = Value::from_str("1u8").unwrap();
         let second = create_execution(&vm, private_key, "testing.aleo", "compute", vec![r0], &mut unspent_records, rng);
 
         // Construct the next block.
@@ -2257,7 +2249,7 @@ finalize compute:
             .get_value_speculative(program_id, mapping_name, &Plaintext::from(Literal::Address(address)))
             .unwrap()
             .unwrap();
-        let expected = Value::<CurrentNetwork>::from_str("3u8").unwrap();
+        let expected = Value::from_str("3u8").unwrap();
         assert_eq!(value, expected);
     }
 
@@ -2406,7 +2398,7 @@ finalize compute:
         // Construct the delegators, greater than the maximum delegator size.
         let delegators = (0..MAX_DELEGATORS + 1)
             .map(|_| {
-                let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+                let private_key = PrivateKey::new(rng).unwrap();
                 let validator = Address::try_from(validators.keys().next().unwrap()).unwrap();
                 let amount = MIN_DELEGATOR_STAKE;
                 (private_key, (validator, amount))
@@ -2714,10 +2706,9 @@ finalize compute:
                     private_key,
                     ("credits.aleo", "bond_public"),
                     vec![
-                        Value::<CurrentNetwork>::from_str(&validator.to_string()).unwrap(),
-                        Value::<CurrentNetwork>::from_str(&Address::try_from(private_key).unwrap().to_string())
-                            .unwrap(),
-                        Value::<CurrentNetwork>::from_str(&format!("{amount}u64")).unwrap(),
+                        Value::from_str(&validator.to_string()).unwrap(),
+                        Value::from_str(&Address::try_from(private_key).unwrap().to_string()).unwrap(),
+                        Value::from_str(&format!("{amount}u64")).unwrap(),
                     ]
                     .into_iter(),
                     None,
@@ -2838,7 +2829,7 @@ finalize compute:
         // Attempt to construct a genesis quorum, with a validator with an insufficient amount.
         let mut validators = (0..3)
             .map(|_| {
-                let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+                let private_key = PrivateKey::new(rng).unwrap();
                 let address = Address::try_from(&private_key).unwrap();
                 let amount = MIN_VALIDATOR_STAKE;
                 let is_open = true;
@@ -3117,12 +3108,10 @@ finalize compute:
                 &delegator_key,
                 ("credits.aleo", "bond_public"),
                 vec![
-                    Value::<CurrentNetwork>::from_str(
-                        &Address::try_from(validators.keys().next().unwrap()).unwrap().to_string(),
-                    )
-                    .unwrap(),
-                    Value::<CurrentNetwork>::from_str(&Address::try_from(delegator_key).unwrap().to_string()).unwrap(),
-                    Value::<CurrentNetwork>::from_str(&format!("{MIN_DELEGATOR_STAKE}u64")).unwrap(),
+                    Value::from_str(&Address::try_from(validators.keys().next().unwrap()).unwrap().to_string())
+                        .unwrap(),
+                    Value::from_str(&Address::try_from(delegator_key).unwrap().to_string()).unwrap(),
+                    Value::from_str(&format!("{MIN_DELEGATOR_STAKE}u64")).unwrap(),
                 ]
                 .into_iter(),
                 None,
@@ -3156,12 +3145,10 @@ finalize compute:
                 &delegator_key,
                 ("credits.aleo", "bond_public"),
                 vec![
-                    Value::<CurrentNetwork>::from_str(
-                        &Address::try_from(validators.keys().nth(1).unwrap()).unwrap().to_string(),
-                    )
-                    .unwrap(),
-                    Value::<CurrentNetwork>::from_str(&Address::try_from(delegator_key).unwrap().to_string()).unwrap(),
-                    Value::<CurrentNetwork>::from_str(&format!("{MIN_DELEGATOR_STAKE}u64")).unwrap(),
+                    Value::from_str(&Address::try_from(validators.keys().nth(1).unwrap()).unwrap().to_string())
+                        .unwrap(),
+                    Value::from_str(&Address::try_from(delegator_key).unwrap().to_string()).unwrap(),
+                    Value::from_str(&format!("{MIN_DELEGATOR_STAKE}u64")).unwrap(),
                 ]
                 .into_iter(),
                 None,

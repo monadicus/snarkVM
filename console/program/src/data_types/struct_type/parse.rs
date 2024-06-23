@@ -120,7 +120,7 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<()> {
-        let expected = StructType::<CurrentNetwork> {
+        let expected = StructType {
             name: Identifier::from_str("message")?,
             members: IndexMap::from_iter(vec![
                 (Identifier::from_str("sender")?, PlaintextType::from_str("address")?),
@@ -128,7 +128,7 @@ mod tests {
             ]),
         };
 
-        let (remainder, candidate) = StructType::<CurrentNetwork>::parse(
+        let (remainder, candidate) = StructType::parse(
             r"
 struct message:
     sender as address;
@@ -143,70 +143,66 @@ struct message:
     #[test]
     fn test_parse_fails() {
         // Must be non-empty.
-        assert!(StructType::<CurrentNetwork>::parse("").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("struct message:").is_err());
+        assert!(StructType::parse("").is_err());
+        assert!(StructType::parse("struct message:").is_err());
 
         // Invalid characters.
-        assert!(StructType::<CurrentNetwork>::parse("{}").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("_").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("__").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("___").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("-").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("--").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("---").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("*").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("**").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("***").is_err());
+        assert!(StructType::parse("{}").is_err());
+        assert!(StructType::parse("_").is_err());
+        assert!(StructType::parse("__").is_err());
+        assert!(StructType::parse("___").is_err());
+        assert!(StructType::parse("-").is_err());
+        assert!(StructType::parse("--").is_err());
+        assert!(StructType::parse("---").is_err());
+        assert!(StructType::parse("*").is_err());
+        assert!(StructType::parse("**").is_err());
+        assert!(StructType::parse("***").is_err());
 
         // Must not start with a number.
-        assert!(StructType::<CurrentNetwork>::parse("1").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("2").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("3").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("12").is_err());
-        assert!(StructType::<CurrentNetwork>::parse("111").is_err());
+        assert!(StructType::parse("1").is_err());
+        assert!(StructType::parse("2").is_err());
+        assert!(StructType::parse("3").is_err());
+        assert!(StructType::parse("1foo").is_err());
+        assert!(StructType::parse("12").is_err());
+        assert!(StructType::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let struct_ =
-            StructType::<CurrentNetwork>::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
+        let struct_ = StructType::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(struct_.is_err());
     }
 
     #[test]
     fn test_display() {
         let expected = "struct message:\n    first as field;\n    second as field;";
-        let message = StructType::<CurrentNetwork>::parse(expected).unwrap().1;
+        let message = StructType::parse(expected).unwrap().1;
         assert_eq!(expected, format!("{message}"));
     }
 
     #[test]
     fn test_display_fails() {
         // Duplicate identifier.
-        let candidate =
-            StructType::<CurrentNetwork>::parse("struct message:\n    first as field;\n    first as field;");
+        let candidate = StructType::parse("struct message:\n    first as field;\n    first as field;");
         assert!(candidate.is_err());
         // Visibility in plaintext type.
-        let candidate = StructType::<CurrentNetwork>::parse(
-            "struct message:\n    first as field.public;\n    first as field.private;",
-        );
+        let candidate = StructType::parse("struct message:\n    first as field.public;\n    first as field.private;");
         assert!(candidate.is_err());
     }
 
     #[test]
     fn test_max_members() {
         let mut string = "struct message:\n".to_string();
-        for i in 0..CurrentNetwork::MAX_STRUCT_ENTRIES {
+        for i in 0..AleoNetwork::MAX_STRUCT_ENTRIES {
             string += &format!("    member_{i} as field;\n");
         }
-        assert!(StructType::<CurrentNetwork>::parse(&string).is_ok());
+        assert!(StructType::parse(&string).is_ok());
     }
 
     #[test]
     fn test_too_many_members() {
         let mut string = "struct message:\n".to_string();
-        for i in 0..=CurrentNetwork::MAX_STRUCT_ENTRIES {
+        for i in 0..=AleoNetwork::MAX_STRUCT_ENTRIES {
             string += &format!("    member_{i} as field;\n");
         }
-        assert!(StructType::<CurrentNetwork>::parse(&string).is_err());
+        assert!(StructType::parse(&string).is_err());
     }
 }

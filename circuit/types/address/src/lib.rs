@@ -21,6 +21,7 @@ mod compare;
 mod equal;
 mod ternary;
 
+use console::ConsoleField;
 #[cfg(test)]
 use console::{TestRng, Uniform};
 #[cfg(test)]
@@ -35,11 +36,11 @@ use snarkvm_circuit_types_scalar::Scalar;
 use core::str::FromStr;
 
 #[derive(Clone)]
-pub struct Address<E: Environment>(Group<E>);
+pub struct Address(Group);
 
-impl<E: Environment> AddressTrait for Address<E> {}
+impl AddressTrait for Address {}
 
-impl<E: Environment> Address<E> {
+impl Address {
     /// Initializes the zero address.
     #[inline]
     pub fn zero() -> Self {
@@ -48,8 +49,8 @@ impl<E: Environment> Address<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> Inject for Address<E> {
-    type Primitive = console::Address<E::Network>;
+impl Inject for Address {
+    type Primitive = console::Address;
 
     /// Initializes a new instance of an address.
     fn new(mode: Mode, address: Self::Primitive) -> Self {
@@ -58,8 +59,8 @@ impl<E: Environment> Inject for Address<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> Eject for Address<E> {
-    type Primitive = console::Address<E::Network>;
+impl Eject for Address {
+    type Primitive = console::Address;
 
     /// Ejects the mode of the address.
     fn eject_mode(&self) -> Mode {
@@ -73,7 +74,7 @@ impl<E: Environment> Eject for Address<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> Parser for Address<E> {
+impl Parser for Address {
     /// Parses a string into an address circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -90,7 +91,7 @@ impl<E: Environment> Parser for Address<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> FromStr for Address<E> {
+impl FromStr for Address {
     type Err = Error;
 
     /// Parses a string into a address.
@@ -109,36 +110,36 @@ impl<E: Environment> FromStr for Address<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> TypeName for Address<E> {
+impl TypeName for Address {
     /// Returns the type name of the circuit as a string.
     #[inline]
     fn type_name() -> &'static str {
-        console::Address::<E::Network>::type_name()
+        console::Address::type_name()
     }
 }
 
 #[cfg(console)]
-impl<E: Environment> Debug for Address<E> {
+impl Debug for Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<E: Environment> Display for Address<E> {
+impl Display for Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}.{}", self.eject_value(), self.eject_mode())
     }
 }
 
-impl<E: Environment> From<Address<E>> for LinearCombination<E::BaseField> {
-    fn from(address: Address<E>) -> Self {
+impl From<Address> for LinearCombination<ConsoleField> {
+    fn from(address: Address) -> Self {
         From::from(&address)
     }
 }
 
-impl<E: Environment> From<&Address<E>> for LinearCombination<E::BaseField> {
-    fn from(address: &Address<E>) -> Self {
+impl From<&Address> for LinearCombination<ConsoleField> {
+    fn from(address: &Address) -> Self {
         From::from(address.to_field())
     }
 }
@@ -146,12 +147,11 @@ impl<E: Environment> From<&Address<E>> for LinearCombination<E::BaseField> {
 #[cfg(all(test, console))]
 mod tests {
     use super::*;
-    use snarkvm_circuit_environment::Circuit;
 
     #[test]
     fn test_address_parse() {
         let expected = "aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.public";
-        let address = Address::<Circuit>::parse(expected).unwrap().1;
+        let address = Address::parse(expected).unwrap().1;
         assert_eq!(expected, &format!("{address}"));
     }
 }

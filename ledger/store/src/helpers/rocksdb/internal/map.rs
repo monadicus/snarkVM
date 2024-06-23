@@ -735,12 +735,10 @@ mod tests {
     #[serial]
     fn test_contains_key_sanity_check() {
         // Initialize an address.
-        let address =
-            Address::<CurrentNetwork>::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8")
-                .unwrap();
+        let address = Address::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8").unwrap();
 
         // Initialize a map.
-        let map: DataMap<Address<CurrentNetwork>, ()> =
+        let map: DataMap<Address, ()> =
             RocksDB::open_map_testing(temp_dir(), None, MapID::Test(TestMap::Test)).expect("Failed to open data map");
         map.insert(address, ()).expect("Failed to insert into data map");
         assert!(map.contains_key_confirmed(&address).unwrap());

@@ -14,15 +14,15 @@
 
 use super::*;
 
-impl<E: Environment> Square for Field<E> {
-    type Output = Field<E>;
+impl Square for Field {
+    type Output = Field;
 
     fn square(&self) -> Self::Output {
         self * self
     }
 }
 
-impl<E: Environment> Metrics<dyn Square<Output = Field<E>>> for Field<E> {
+impl Metrics<dyn Square<Output = Field>> for Field {
     type Case = Mode;
 
     fn count(case: &Self::Case) -> Count {
@@ -33,7 +33,7 @@ impl<E: Environment> Metrics<dyn Square<Output = Field<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn Square<Output = Field<E>>> for Field<E> {
+impl OutputMode<dyn Square<Output = Field>> for Field {
     type Case = Mode;
 
     fn output_mode(input: &Self::Case) -> Mode {
@@ -51,7 +51,7 @@ mod tests {
 
     const ITERATIONS: u64 = 500;
 
-    fn check_square(name: &str, expected: &console::Field<<Circuit as Environment>::Network>, a: &Field<Circuit>) {
+    fn check_square(name: &str, expected: &console::Field, a: &Field) {
         Circuit::scope(name, || {
             let result = a.square();
             assert_eq!(*expected, result.eject_value());
@@ -64,7 +64,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element
             let first = Uniform::rand(rng);
-            let a = Field::<Circuit>::new(mode, first);
+            let a = Field::new(mode, first);
 
             let name = format!("Square: {i}");
             check_square(&name, &first.square(), &a);
@@ -72,12 +72,12 @@ mod tests {
 
         // Test zero case.
         let name = "Square Zero";
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
         check_square(name, &zero, &Field::new(mode, zero));
 
         // Test one case.
         let name = "Square One";
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
         check_square(name, &one, &Field::new(mode, one));
     }
 
@@ -92,27 +92,27 @@ mod tests {
 
     #[test]
     fn test_0_square() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero).square();
+        let candidate = Field::new(Mode::Public, zero).square();
         assert_eq!(zero, candidate.eject_value());
     }
 
     #[test]
     fn test_1_double() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one).square();
+        let candidate = Field::new(Mode::Public, one).square();
         assert_eq!(one, candidate.eject_value());
     }
 
     #[test]
     fn test_2_double() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
         let two = one + one;
         let four = two.square();
 
-        let candidate = (Field::<Circuit>::new(Mode::Public, one) + Field::new(Mode::Public, one)).square();
+        let candidate = (Field::new(Mode::Public, one) + Field::new(Mode::Public, one)).square();
         assert_eq!(four, candidate.eject_value());
     }
 }

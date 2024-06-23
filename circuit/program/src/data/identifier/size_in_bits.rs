@@ -14,12 +14,12 @@
 
 use super::*;
 
-impl<A: Aleo> Identifier<A> {
+impl Identifier {
     /// Returns the number of bits of this identifier.
-    pub fn size_in_bits(&self) -> U8<A> {
+    pub fn size_in_bits(&self) -> U8 {
         match self.1.checked_mul(8) {
             Some(num_bits) => U8::constant(console::U8::new(num_bits)),
-            None => A::halt("Identifier exceeds maximum allowed size"),
+            None => Circuit::halt("Identifier exceeds maximum allowed size"),
         }
     }
 }

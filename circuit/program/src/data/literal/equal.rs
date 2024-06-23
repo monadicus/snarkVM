@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> Equal<Self> for Literal<A> {
-    type Output = Boolean<A>;
+impl Equal<Self> for Literal {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

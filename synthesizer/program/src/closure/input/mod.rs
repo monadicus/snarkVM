@@ -23,28 +23,28 @@ use console::{
 /// An input statement defines an input argument to a function, and is of the form
 /// `input {register} as {register_type}`.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct Input<N: Network> {
+pub struct Input {
     /// The input register.
-    register: Register<N>,
+    register: Register,
     /// The input register type.
-    register_type: RegisterType<N>,
+    register_type: RegisterType,
 }
 
-impl<N: Network> Input<N> {
+impl Input {
     /// Returns the input register.
     #[inline]
-    pub const fn register(&self) -> &Register<N> {
+    pub const fn register(&self) -> &Register {
         &self.register
     }
 
     /// Returns the input register type.
     #[inline]
-    pub const fn register_type(&self) -> &RegisterType<N> {
+    pub const fn register_type(&self) -> &RegisterType {
         &self.register_type
     }
 }
 
-impl<N: Network> TypeName for Input<N> {
+impl TypeName for Input {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -52,14 +52,14 @@ impl<N: Network> TypeName for Input<N> {
     }
 }
 
-impl<N: Network> Ord for Input<N> {
+impl Ord for Input {
     /// Ordering is determined by the register (the register type is ignored).
     fn cmp(&self, other: &Self) -> Ordering {
         self.register().cmp(other.register())
     }
 }
 
-impl<N: Network> PartialOrd for Input<N> {
+impl PartialOrd for Input {
     /// Ordering is determined by the register (the register type is ignored).
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
@@ -75,17 +75,17 @@ mod tests {
 
     #[test]
     fn test_input_type_name() -> Result<()> {
-        assert_eq!(Input::<CurrentNetwork>::type_name(), "input");
+        assert_eq!(Input::type_name(), "input");
         Ok(())
     }
 
     #[test]
     fn test_input_partial_ord() -> Result<()> {
-        let input1 = Input::<CurrentNetwork>::from_str("input r0 as field;")?;
-        let input2 = Input::<CurrentNetwork>::from_str("input r1 as field;")?;
+        let input1 = Input::from_str("input r0 as field;")?;
+        let input2 = Input::from_str("input r1 as field;")?;
 
-        let input3 = Input::<CurrentNetwork>::from_str("input r0 as signature;")?;
-        let input4 = Input::<CurrentNetwork>::from_str("input r1 as signature;")?;
+        let input3 = Input::from_str("input r0 as signature;")?;
+        let input4 = Input::from_str("input r1 as signature;")?;
 
         assert_eq!(input1.partial_cmp(&input1), Some(Ordering::Equal));
         assert_eq!(input1.partial_cmp(&input2), Some(Ordering::Less));

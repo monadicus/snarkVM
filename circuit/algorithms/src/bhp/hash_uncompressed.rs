@@ -14,11 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed
-    for BHP<E, NUM_WINDOWS, WINDOW_SIZE>
-{
-    type Input = Boolean<E>;
-    type Output = Group<E>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Input = Boolean;
+    type Output = Group;
 
     /// Returns the BHP hash of the given input as an affine group element.
     ///
@@ -28,7 +26,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
         // The number of hasher bits to fit.
         let num_hasher_bits = NUM_WINDOWS as usize * WINDOW_SIZE as usize * BHP_CHUNK_SIZE;
         // The number of data bits in the output.
-        let num_data_bits = E::BaseField::size_in_data_bits();
+        let num_data_bits = ConsoleField::size_in_data_bits();
         // The maximum number of input bits per iteration.
         let max_input_bits_per_iteration = num_hasher_bits - num_data_bits;
 
@@ -85,8 +83,8 @@ mod tests {
     macro_rules! check_hash_uncompressed {
         ($bhp:ident, $mode:ident, $num_bits:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr), $rng:expr) => {{
             // Initialize BHP.
-            let native = console::$bhp::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit = $bhp::<Circuit>::constant(native.clone());
+            let native = console::$bhp::setup(DOMAIN)?;
+            let circuit = $bhp::constant(native.clone());
 
             for i in 0..ITERATIONS {
                 // Sample a random input.
@@ -94,7 +92,7 @@ mod tests {
                 // Compute the expected hash.
                 let expected = console::HashUncompressed::hash_uncompressed(&native, &input)?;
                 // Prepare the circuit input.
-                let circuit_input: Vec<Boolean<_>> = Inject::new(Mode::$mode, input);
+                let circuit_input: Vec<Boolean> = Inject::new(Mode::$mode, input);
 
                 Circuit::scope(format!("BHP {i}"), || {
                     // Perform the hash operation.
@@ -120,8 +118,8 @@ mod tests {
         use console::HashUncompressed as H;
 
         // Initialize BHP.
-        let native = console::BHP::<<Circuit as Environment>::Network, NUM_WINDOWS, WINDOW_SIZE>::setup(DOMAIN)?;
-        let circuit = BHP::<Circuit, NUM_WINDOWS, WINDOW_SIZE>::new(Mode::Constant, native.clone());
+        let native = console::BHP::<NUM_WINDOWS, WINDOW_SIZE>::setup(DOMAIN)?;
+        let circuit = BHP::<NUM_WINDOWS, WINDOW_SIZE>::new(Mode::Constant, native.clone());
         // Determine the number of inputs.
         let num_input_bits = NUM_WINDOWS as usize * WINDOW_SIZE as usize * BHP_CHUNK_SIZE;
 
@@ -133,7 +131,7 @@ mod tests {
             // Compute the expected hash.
             let expected = native.hash_uncompressed(&input).expect("Failed to hash native input");
             // Prepare the circuit input.
-            let circuit_input: Vec<Boolean<_>> = Inject::new(mode, input);
+            let circuit_input: Vec<Boolean> = Inject::new(mode, input);
 
             Circuit::scope(format!("BHP {mode} {i}"), || {
                 // Perform the hash operation.

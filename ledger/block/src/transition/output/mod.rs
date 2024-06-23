@@ -28,17 +28,17 @@ type Variant = u8;
 #[derive(Clone, PartialEq, Eq)]
 pub enum Output<N: Network> {
     /// The plaintext hash and (optional) plaintext.
-    Constant(Field<N>, Option<Plaintext<N>>),
+    Constant(Field, Option<Plaintext<N>>),
     /// The plaintext hash and (optional) plaintext.
-    Public(Field<N>, Option<Plaintext<N>>),
+    Public(Field, Option<Plaintext<N>>),
     /// The ciphertext hash and (optional) ciphertext.
-    Private(Field<N>, Option<Ciphertext<N>>),
+    Private(Field, Option<Ciphertext<N>>),
     /// The commitment, checksum, and (optional) record ciphertext.
-    Record(Field<N>, Field<N>, Option<Record<N, Ciphertext<N>>>),
+    Record(Field, Field, Option<Record<N, Ciphertext<N>>>),
     /// The output commitment of the external record. Note: This is **not** the record commitment.
-    ExternalRecord(Field<N>),
+    ExternalRecord(Field),
     /// The future hash and (optional) future.
-    Future(Field<N>, Option<Future<N>>),
+    Future(Field, Option<Future<N>>),
 }
 
 impl<N: Network> Output<N> {
@@ -55,7 +55,7 @@ impl<N: Network> Output<N> {
     }
 
     /// Returns the ID of the output.
-    pub const fn id(&self) -> &Field<N> {
+    pub const fn id(&self) -> &Field {
         match self {
             Output::Constant(id, ..) => id,
             Output::Public(id, ..) => id,
@@ -73,7 +73,7 @@ impl<N: Network> Output<N> {
 
     /// Returns the commitment and record, if the output is a record.
     #[allow(clippy::type_complexity)]
-    pub const fn record(&self) -> Option<(&Field<N>, &Record<N, Ciphertext<N>>)> {
+    pub const fn record(&self) -> Option<(&Field, &Record<N, Ciphertext<N>>)> {
         match self {
             Output::Record(commitment, _, Some(record)) => Some((commitment, record)),
             _ => None,
@@ -82,7 +82,7 @@ impl<N: Network> Output<N> {
 
     /// Consumes `self` and returns the commitment and record, if the output is a record.
     #[allow(clippy::type_complexity)]
-    pub fn into_record(self) -> Option<(Field<N>, Record<N, Ciphertext<N>>)> {
+    pub fn into_record(self) -> Option<(Field, Record<N, Ciphertext<N>>)> {
         match self {
             Output::Record(commitment, _, Some(record)) => Some((commitment, record)),
             _ => None,
@@ -90,7 +90,7 @@ impl<N: Network> Output<N> {
     }
 
     /// Returns the commitment, if the output is a record.
-    pub const fn commitment(&self) -> Option<&Field<N>> {
+    pub const fn commitment(&self) -> Option<&Field> {
         match self {
             Output::Record(commitment, ..) => Some(commitment),
             _ => None,
@@ -98,7 +98,7 @@ impl<N: Network> Output<N> {
     }
 
     /// Returns the commitment, if the output is a record, and consumes `self`.
-    pub fn into_commitment(self) -> Option<Field<N>> {
+    pub fn into_commitment(self) -> Option<Field> {
         match self {
             Output::Record(commitment, ..) => Some(commitment),
             _ => None,
@@ -106,7 +106,7 @@ impl<N: Network> Output<N> {
     }
 
     /// Returns the nonce, if the output is a record.
-    pub const fn nonce(&self) -> Option<&Group<N>> {
+    pub const fn nonce(&self) -> Option<&Group> {
         match self {
             Output::Record(_, _, Some(record)) => Some(record.nonce()),
             _ => None,
@@ -114,7 +114,7 @@ impl<N: Network> Output<N> {
     }
 
     /// Returns the nonce, if the output is a record, and consumes `self`.
-    pub fn into_nonce(self) -> Option<Group<N>> {
+    pub fn into_nonce(self) -> Option<Group> {
         match self {
             Output::Record(_, _, Some(record)) => Some(record.into_nonce()),
             _ => None,
@@ -122,7 +122,7 @@ impl<N: Network> Output<N> {
     }
 
     /// Returns the checksum, if the output is a record.
-    pub const fn checksum(&self) -> Option<&Field<N>> {
+    pub const fn checksum(&self) -> Option<&Field> {
         match self {
             Output::Record(_, checksum, ..) => Some(checksum),
             _ => None,
@@ -130,7 +130,7 @@ impl<N: Network> Output<N> {
     }
 
     /// Returns the checksum, if the output is a record, and consumes `self`.
-    pub fn into_checksum(self) -> Option<Field<N>> {
+    pub fn into_checksum(self) -> Option<Field> {
         match self {
             Output::Record(_, checksum, ..) => Some(checksum),
             _ => None,
@@ -155,7 +155,7 @@ impl<N: Network> Output<N> {
 
     /// Returns `true` if the output is well-formed.
     /// If the optional value exists, this method checks that it hashes to the output ID.
-    pub fn verify(&self, function_id: Field<N>, tcm: &Field<N>, index: usize) -> bool {
+    pub fn verify(&self, function_id: Field, tcm: &Field, index: usize) -> bool {
         // Ensure the hash of the value (if the value exists) is correct.
         let result = || match self {
             Output::Constant(hash, Some(output)) => {
@@ -283,7 +283,7 @@ pub(crate) mod test_helpers {
         // Sample a random record.
         let randomizer = Uniform::rand(rng);
         let nonce = CurrentNetwork::g_scalar_multiply(&randomizer);
-        let record = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::from_str(
+        let record = Record::<Plaintext>::from_str(
             &format!("{{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: {nonce}.public }}"),
         ).unwrap();
         let record_ciphertext = record.encrypt(randomizer).unwrap();

@@ -75,7 +75,7 @@ mod tests {
                 (Identifier::from_str("a")?, Entry::Private(Plaintext::from(Literal::Field(Field::rand(rng))))),
                 (Identifier::from_str("b")?, Entry::Private(Plaintext::from(Literal::Scalar(Scalar::rand(rng))))),
             ]),
-            nonce: N::g_scalar_multiply(&randomizer),
+            nonce: AleoNetwork::g_scalar_multiply(&randomizer),
         };
 
         // Encrypt the record.

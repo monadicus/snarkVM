@@ -12,38 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, U16, U8};
 
 #[derive(Clone)]
-pub struct TransactionLeaf<A: Aleo> {
+pub struct TransactionLeaf {
     /// The variant of the Merkle leaf.
-    variant: U8<A>,
+    variant: U8,
     /// The index of the Merkle leaf.
-    index: U16<A>,
+    index: U16,
     /// The ID.
-    id: Field<A>,
+    id: Field,
 }
 
-impl<A: Aleo> TransactionLeaf<A> {
+impl TransactionLeaf {
     /// Returns the variant of the Merkle leaf.
-    pub const fn variant(&self) -> &U8<A> {
+    pub const fn variant(&self) -> &U8 {
         &self.variant
     }
 
     /// Returns the index of the Merkle leaf.
-    pub const fn index(&self) -> &U16<A> {
+    pub const fn index(&self) -> &U16 {
         &self.index
     }
 
     /// Returns the ID in the Merkle leaf.
-    pub const fn id(&self) -> &Field<A> {
+    pub const fn id(&self) -> &Field {
         &self.id
     }
 }
 
-impl<A: Aleo> Inject for TransactionLeaf<A> {
-    type Primitive = console::TransactionLeaf<A::Network>;
+impl Inject for TransactionLeaf {
+    type Primitive = console::TransactionLeaf;
 
     /// Initializes a new transaction leaf circuit from a primitive.
     fn new(mode: Mode, transaction_leaf: Self::Primitive) -> Self {
@@ -55,8 +54,8 @@ impl<A: Aleo> Inject for TransactionLeaf<A> {
     }
 }
 
-impl<A: Aleo> Eject for TransactionLeaf<A> {
-    type Primitive = console::TransactionLeaf<A::Network>;
+impl Eject for TransactionLeaf {
+    type Primitive = console::TransactionLeaf;
 
     /// Ejects the mode of the transaction leaf.
     fn eject_mode(&self) -> Mode {
@@ -69,8 +68,8 @@ impl<A: Aleo> Eject for TransactionLeaf<A> {
     }
 }
 
-impl<A: Aleo> ToBits for TransactionLeaf<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for TransactionLeaf {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {

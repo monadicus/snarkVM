@@ -19,19 +19,18 @@ mod to_view_key;
 use snarkvm_circuit_types::environment::assert_scope;
 
 use crate::{ComputeKey, ViewKey};
-use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, Scalar};
 
-pub struct PrivateKey<A: Aleo> {
+pub struct PrivateKey {
     /// The signature secret key.
-    sk_sig: Scalar<A>,
+    sk_sig: Scalar,
     /// The signature secret randomizer.
-    r_sig: Scalar<A>,
+    r_sig: Scalar,
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for PrivateKey<A> {
-    type Primitive = console::PrivateKey<A::Network>;
+impl Inject for PrivateKey {
+    type Primitive = console::PrivateKey;
 
     /// Initializes an account private key from the given mode and native private key.
     fn new(mode: Mode, private_key: Self::Primitive) -> Self {
@@ -39,21 +38,21 @@ impl<A: Aleo> Inject for PrivateKey<A> {
     }
 }
 
-impl<A: Aleo> PrivateKey<A> {
+impl PrivateKey {
     /// Returns the signature secret key.
-    pub const fn sk_sig(&self) -> &Scalar<A> {
+    pub const fn sk_sig(&self) -> &Scalar {
         &self.sk_sig
     }
 
     /// Returns the signature randomizer.
-    pub const fn r_sig(&self) -> &Scalar<A> {
+    pub const fn r_sig(&self) -> &Scalar {
         &self.r_sig
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for PrivateKey<A> {
-    type Primitive = (console::Scalar<A::Network>, console::Scalar<A::Network>);
+impl Eject for PrivateKey {
+    type Primitive = (console::Scalar, console::Scalar);
 
     /// Ejects the mode of the account private key.
     fn eject_mode(&self) -> Mode {
@@ -91,7 +90,7 @@ mod tests {
             let r_sig = private_key.r_sig();
 
             Circuit::scope(format!("New {mode}"), || {
-                let candidate = PrivateKey::<Circuit>::new(mode, private_key);
+                let candidate = PrivateKey::new(mode, private_key);
                 assert_eq!(mode, candidate.eject_mode());
                 assert_eq!((sk_sig, r_sig), candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);

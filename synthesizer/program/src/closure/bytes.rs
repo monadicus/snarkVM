@@ -14,19 +14,19 @@
 
 use super::*;
 
-impl<N: Network, Instruction: InstructionTrait<N>> FromBytes for ClosureCore<N, Instruction> {
+impl<Instruction: InstructionTrait> FromBytes for ClosureCore<N, Instruction> {
     /// Reads the closure from a buffer.
     #[inline]
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the closure name.
-        let name = Identifier::<N>::read_le(&mut reader)?;
+        let name = Identifier::read_le(&mut reader)?;
 
         // Read the inputs.
         let num_inputs = u16::read_le(&mut reader)?;
         if num_inputs.is_zero() {
             return Err(error("Failed to deserialize a closure: needs at least one input".to_string()));
         }
-        if num_inputs > u16::try_from(N::MAX_INPUTS).map_err(error)? {
+        if num_inputs > u16::try_from(AleoNetwork::MAX_INPUTS).map_err(error)? {
             return Err(error(format!("Failed to deserialize a closure: too many inputs ({num_inputs})")));
         }
         let mut inputs = Vec::with_capacity(num_inputs as usize);
@@ -39,7 +39,7 @@ impl<N: Network, Instruction: InstructionTrait<N>> FromBytes for ClosureCore<N, 
         if num_instructions.is_zero() {
             return Err(error("Failed to deserialize a closure: needs at least one instruction".to_string()));
         }
-        if num_instructions > u32::try_from(N::MAX_INSTRUCTIONS).map_err(error)? {
+        if num_instructions > u32::try_from(AleoNetwork::MAX_INSTRUCTIONS).map_err(error)? {
             return Err(error(format!("Failed to deserialize a closure: too many instructions ({num_instructions})")));
         }
         let mut instructions = Vec::with_capacity(num_instructions as usize);
@@ -67,7 +67,7 @@ impl<N: Network, Instruction: InstructionTrait<N>> FromBytes for ClosureCore<N, 
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>> ToBytes for ClosureCore<N, Instruction> {
+impl<Instruction: InstructionTrait> ToBytes for ClosureCore<Instruction> {
     /// Writes the closure to a buffer.
     #[inline]
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {

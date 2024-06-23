@@ -59,11 +59,11 @@ pub struct Transition<N: Network> {
     /// The transition outputs.
     outputs: Vec<Output<N>>,
     /// The transition public key.
-    tpk: Group<N>,
+    tpk: Group,
     /// The transition commitment.
-    tcm: Field<N>,
+    tcm: Field,
     /// The transition signer commitment.
-    scm: Field<N>,
+    scm: Field,
 }
 
 impl<N: Network> Transition<N> {
@@ -74,9 +74,9 @@ impl<N: Network> Transition<N> {
         function_name: Identifier<N>,
         inputs: Vec<Input<N>>,
         outputs: Vec<Output<N>>,
-        tpk: Group<N>,
-        tcm: Field<N>,
-        scm: Field<N>,
+        tpk: Group,
+        tcm: Field,
+        scm: Field,
     ) -> Result<Self> {
         // Compute the transition ID.
         let function_tree = Self::function_tree(&inputs, &outputs)?;
@@ -292,17 +292,17 @@ impl<N: Network> Transition<N> {
     }
 
     /// Returns the transition public key.
-    pub const fn tpk(&self) -> &Group<N> {
+    pub const fn tpk(&self) -> &Group {
         &self.tpk
     }
 
     /// Returns the transition commitment.
-    pub const fn tcm(&self) -> &Field<N> {
+    pub const fn tcm(&self) -> &Field {
         &self.tcm
     }
 
     /// Returns the signer commitment.
-    pub const fn scm(&self) -> &Field<N> {
+    pub const fn scm(&self) -> &Field {
         &self.scm
     }
 }
@@ -365,7 +365,7 @@ impl<N: Network> Transition<N> {
 
 impl<N: Network> Transition<N> {
     /// Returns `true` if the transition contains the given serial number.
-    pub fn contains_serial_number(&self, serial_number: &Field<N>) -> bool {
+    pub fn contains_serial_number(&self, serial_number: &Field) -> bool {
         self.inputs.iter().any(|input| match input {
             Input::Constant(_, _) => false,
             Input::Public(_, _) => false,
@@ -376,7 +376,7 @@ impl<N: Network> Transition<N> {
     }
 
     /// Returns `true` if the transition contains the given commitment.
-    pub fn contains_commitment(&self, commitment: &Field<N>) -> bool {
+    pub fn contains_commitment(&self, commitment: &Field) -> bool {
         self.outputs.iter().any(|output| match output {
             Output::Constant(_, _) => false,
             Output::Public(_, _) => false,
@@ -390,7 +390,7 @@ impl<N: Network> Transition<N> {
 
 impl<N: Network> Transition<N> {
     /// Returns the record with the corresponding commitment, if it exists.
-    pub fn find_record(&self, commitment: &Field<N>) -> Option<&Record<N, Ciphertext<N>>> {
+    pub fn find_record(&self, commitment: &Field) -> Option<&Record<N, Ciphertext<N>>> {
         self.outputs.iter().find_map(|output| match output {
             Output::Constant(_, _) => None,
             Output::Public(_, _) => None,
@@ -407,39 +407,39 @@ impl<N: Network> Transition<N> {
     /* Input */
 
     /// Returns the input IDs.
-    pub fn input_ids(&self) -> impl '_ + ExactSizeIterator<Item = &Field<N>> {
+    pub fn input_ids(&self) -> impl '_ + ExactSizeIterator<Item = &Field> {
         self.inputs.iter().map(Input::id)
     }
 
     /// Returns an iterator over the serial numbers, for inputs that are records.
-    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field> {
         self.inputs.iter().flat_map(Input::serial_number)
     }
 
     /// Returns an iterator over the tags, for inputs that are records.
-    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field> {
         self.inputs.iter().flat_map(Input::tag)
     }
 
     /* Output */
 
     /// Returns the output IDs.
-    pub fn output_ids(&self) -> impl '_ + ExactSizeIterator<Item = &Field<N>> {
+    pub fn output_ids(&self) -> impl '_ + ExactSizeIterator<Item = &Field> {
         self.outputs.iter().map(Output::id)
     }
 
     /// Returns an iterator over the commitments, for outputs that are records.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field> {
         self.outputs.iter().flat_map(Output::commitment)
     }
 
     /// Returns an iterator over the nonces, for outputs that are records.
-    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group<N>> {
+    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group> {
         self.outputs.iter().flat_map(Output::nonce)
     }
 
     /// Returns an iterator over the output records, as a tuple of `(commitment, record)`.
-    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field<N>, &Record<N, Ciphertext<N>>)> {
+    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field, &Record<N, Ciphertext<N>>)> {
         self.outputs.iter().flat_map(Output::record)
     }
 }
@@ -453,34 +453,34 @@ impl<N: Network> Transition<N> {
     /* Input */
 
     /// Returns a consuming iterator over the serial numbers, for inputs that are records.
-    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field> {
         self.inputs.into_iter().flat_map(Input::into_serial_number)
     }
 
     /// Returns a consuming iterator over the tags, for inputs that are records.
-    pub fn into_tags(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_tags(self) -> impl Iterator<Item = Field> {
         self.inputs.into_iter().flat_map(Input::into_tag)
     }
 
     /* Output */
 
     /// Returns a consuming iterator over the commitments, for outputs that are records.
-    pub fn into_commitments(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_commitments(self) -> impl Iterator<Item = Field> {
         self.outputs.into_iter().flat_map(Output::into_commitment)
     }
 
     /// Returns a consuming iterator over the nonces, for outputs that are records.
-    pub fn into_nonces(self) -> impl Iterator<Item = Group<N>> {
+    pub fn into_nonces(self) -> impl Iterator<Item = Group> {
         self.outputs.into_iter().flat_map(Output::into_nonce)
     }
 
     /// Returns a consuming iterator over the output records, as a tuple of `(commitment, record)`.
-    pub fn into_records(self) -> impl Iterator<Item = (Field<N>, Record<N, Ciphertext<N>>)> {
+    pub fn into_records(self) -> impl Iterator<Item = (Field, Record<N, Ciphertext<N>>)> {
         self.outputs.into_iter().flat_map(Output::into_record)
     }
 
     /// Returns the transition public key, and consumes `self`.
-    pub fn into_tpk(self) -> Group<N> {
+    pub fn into_tpk(self) -> Group {
         self.tpk
     }
 }

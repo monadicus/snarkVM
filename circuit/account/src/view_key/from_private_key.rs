@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<A: Aleo> ViewKey<A> {
+impl ViewKey {
     /// Returns the account view key for this account private key.
-    pub fn from_private_key(private_key: &PrivateKey<A>) -> Self {
+    pub fn from_private_key(private_key: &PrivateKey) -> Self {
         // Derive the compute key.
         let compute_key = private_key.to_compute_key();
         // Compute view_key := sk_sig + r_sig + sk_prf.
@@ -45,7 +45,7 @@ mod tests {
             let (private_key, _compute_key, view_key, _address) = generate_account()?;
 
             // Initialize the private key.
-            let private_key = PrivateKey::<Circuit>::new(mode, private_key);
+            let private_key = PrivateKey::new(mode, private_key);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = ViewKey::from_private_key(&private_key);

@@ -18,9 +18,9 @@ use console::{
     program::Register,
 };
 
-pub trait InstructionTrait<N: Network>: Clone + Parser + FromBytes + ToBytes {
+pub trait InstructionTrait: Clone + Parser + FromBytes + ToBytes {
     /// Returns the destination registers of the instruction.
-    fn destinations(&self) -> Vec<Register<N>>;
+    fn destinations(&self) -> Vec<Register>;
     /// Returns `true` if the given name is a reserved opcode.
     fn is_reserved_opcode(name: &str) -> bool;
 }

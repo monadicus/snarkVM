@@ -19,7 +19,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     pub fn check_transaction_basic<R: CryptoRng + Rng>(
         &self,
         transaction: &Transaction<N>,
-        rejected_id: Option<Field<N>>,
+        rejected_id: Option<Field>,
         rng: &mut R,
     ) -> Result<()> {
         self.vm().check_transaction(transaction, rejected_id, rng)
@@ -28,7 +28,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     /// Checks that the given list of transactions are well-formed and unique.
     pub fn check_transactions_basic<R: CryptoRng + Rng>(
         &self,
-        transactions: &[(&Transaction<N>, Option<Field<N>>)],
+        transactions: &[(&Transaction<N>, Option<Field>)],
         rng: &mut R,
     ) -> Result<()> {
         self.vm().check_transactions(transactions, rng)

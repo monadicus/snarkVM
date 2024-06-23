@@ -24,21 +24,28 @@ use snarkvm_circuit_types::environment::{assert_count, assert_output_mode, asser
 
 use crate::PrivateKey;
 use snarkvm_circuit_network::Aleo;
-use snarkvm_circuit_types::{environment::prelude::*, Address, Boolean, Field, Group, Scalar};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Address,
+    Boolean,
+    Field,
+    Group,
+    Scalar,
+};
 
 #[derive(Clone)]
-pub struct ComputeKey<A: Aleo> {
+pub struct ComputeKey {
     /// The signature public key `pk_sig` := G^sk_sig.
-    pk_sig: Group<A>,
+    pk_sig: Group,
     /// The signature public randomizer `pr_sig` := G^r_sig.
-    pr_sig: Group<A>,
+    pr_sig: Group,
     /// The PRF secret key `sk_prf` := RO(G^sk_sig || G^r_sig).
-    sk_prf: Scalar<A>,
+    sk_prf: Scalar,
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for ComputeKey<A> {
-    type Primitive = console::ComputeKey<A::Network>;
+impl Inject for ComputeKey {
+    type Primitive = console::ComputeKey;
 
     /// Initializes an account compute key from the given mode and native compute key.
     fn new(mode: Mode, compute_key: Self::Primitive) -> Self {
@@ -51,26 +58,26 @@ impl<A: Aleo> Inject for ComputeKey<A> {
     }
 }
 
-impl<A: Aleo> ComputeKey<A> {
+impl ComputeKey {
     /// Returns the signature public key.
-    pub const fn pk_sig(&self) -> &Group<A> {
+    pub const fn pk_sig(&self) -> &Group {
         &self.pk_sig
     }
 
     /// Returns the signature public randomizer.
-    pub const fn pr_sig(&self) -> &Group<A> {
+    pub const fn pr_sig(&self) -> &Group {
         &self.pr_sig
     }
 
     /// Returns the PRF secret key.
-    pub const fn sk_prf(&self) -> &Scalar<A> {
+    pub const fn sk_prf(&self) -> &Scalar {
         &self.sk_prf
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for ComputeKey<A> {
-    type Primitive = console::ComputeKey<A::Network>;
+impl Eject for ComputeKey {
+    type Primitive = console::ComputeKey;
 
     /// Ejects the mode of the compute key.
     fn eject_mode(&self) -> Mode {
@@ -81,7 +88,7 @@ impl<A: Aleo> Eject for ComputeKey<A> {
     fn eject_value(&self) -> Self::Primitive {
         match Self::Primitive::try_from((&self.pk_sig, &self.pr_sig).eject_value()) {
             Ok(compute_key) => compute_key,
-            Err(error) => A::halt(format!("Failed to eject the compute key: {error}")),
+            Err(error) => Circuit::halt(format!("Failed to eject the compute key: {error}")),
         }
     }
 }
@@ -107,7 +114,7 @@ pub(crate) mod tests {
             let (_private_key, compute_key, _view_key, _address) = generate_account()?;
 
             Circuit::scope(format!("New {mode}"), || {
-                let candidate = ComputeKey::<Circuit>::new(mode, compute_key);
+                let candidate = ComputeKey::new(mode, compute_key);
                 match mode.is_constant() {
                     true => assert_eq!(Mode::Constant, candidate.eject_mode()),
                     false => assert_eq!(Mode::Private, candidate.eject_mode()),

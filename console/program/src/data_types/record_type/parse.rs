@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<()> {
-        let expected = RecordType::<CurrentNetwork> {
+        let expected = RecordType {
             name: Identifier::from_str("message")?,
             owner: PublicOrPrivate::Private,
             entries: IndexMap::from_iter(vec![(
@@ -149,7 +149,7 @@ mod tests {
             )]),
         };
 
-        let (remainder, candidate) = RecordType::<CurrentNetwork>::parse(
+        let (remainder, candidate) = RecordType::parse(
             r"
 record message:
     owner as address.private;
@@ -164,80 +164,78 @@ record message:
     #[test]
     fn test_parse_fails() {
         // Must be non-empty.
-        assert!(RecordType::<CurrentNetwork>::parse("").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("record message:").is_err());
+        assert!(RecordType::parse("").is_err());
+        assert!(RecordType::parse("record message:").is_err());
 
         // Invalid characters.
-        assert!(RecordType::<CurrentNetwork>::parse("{}").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("_").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("__").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("___").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("-").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("--").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("---").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("*").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("**").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("***").is_err());
+        assert!(RecordType::parse("{}").is_err());
+        assert!(RecordType::parse("_").is_err());
+        assert!(RecordType::parse("__").is_err());
+        assert!(RecordType::parse("___").is_err());
+        assert!(RecordType::parse("-").is_err());
+        assert!(RecordType::parse("--").is_err());
+        assert!(RecordType::parse("---").is_err());
+        assert!(RecordType::parse("*").is_err());
+        assert!(RecordType::parse("**").is_err());
+        assert!(RecordType::parse("***").is_err());
 
         // Must not start with a number.
-        assert!(RecordType::<CurrentNetwork>::parse("1").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("2").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("3").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("12").is_err());
-        assert!(RecordType::<CurrentNetwork>::parse("111").is_err());
+        assert!(RecordType::parse("1").is_err());
+        assert!(RecordType::parse("2").is_err());
+        assert!(RecordType::parse("3").is_err());
+        assert!(RecordType::parse("1foo").is_err());
+        assert!(RecordType::parse("12").is_err());
+        assert!(RecordType::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let record =
-            RecordType::<CurrentNetwork>::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
+        let record = RecordType::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(record.is_err());
     }
 
     #[test]
     fn test_display() {
         let expected = "record message:\n    owner as address.private;\n    first as field.private;\n    second as field.constant;";
-        let message = RecordType::<CurrentNetwork>::parse(expected).unwrap().1;
+        let message = RecordType::parse(expected).unwrap().1;
         assert_eq!(expected, format!("{message}"));
     }
 
     #[test]
     fn test_display_fails() {
         // Duplicate identifier.
-        let candidate = RecordType::<CurrentNetwork>::from_str(
+        let candidate = RecordType::from_str(
             "record message:\n    owner as address.private;\n    first as field.public;\n    first as field.constant;",
         );
         assert!(candidate.is_err());
 
         // Visibility is missing in entry.
-        let candidate = RecordType::<CurrentNetwork>::from_str(
+        let candidate = RecordType::from_str(
             "record message:\n    owner as address.private;\n    first as field;\n    first as field.private;",
         );
         assert!(candidate.is_err());
 
         // Attempted to store another record inside.
-        let candidate = RecordType::<CurrentNetwork>::from_str(
-            "record message:\n    owner as address.private;\n    first as token.record;",
-        );
+        let candidate =
+            RecordType::from_str("record message:\n    owner as address.private;\n    first as token.record;");
         assert!(candidate.is_err());
     }
 
     #[test]
     fn test_parse_max_members() {
         let mut string = "record message:\n    owner as address.private;\n".to_string();
-        for i in 0..CurrentNetwork::MAX_DATA_ENTRIES {
+        for i in 0..AleoNetwork::MAX_DATA_ENTRIES {
             string += &format!("    member_{i} as field.private;\n");
         }
-        let candidate = RecordType::<CurrentNetwork>::parse(&string);
+        let candidate = RecordType::parse(&string);
         assert!(candidate.is_ok());
     }
 
     #[test]
     fn test_parse_too_many_members() {
         let mut string = "record message:\n    owner as address.private;\n".to_string();
-        for i in 0..=CurrentNetwork::MAX_DATA_ENTRIES {
+        for i in 0..=AleoNetwork::MAX_DATA_ENTRIES {
             string += &format!("    member_{i} as field.private;\n");
         }
-        let candidate = RecordType::<CurrentNetwork>::parse(&string);
+        let candidate = RecordType::parse(&string);
         assert!(candidate.is_err());
     }
 }

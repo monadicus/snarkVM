@@ -14,25 +14,25 @@
 
 use super::*;
 
-impl<A: Aleo> ToBits for Literal<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for Literal {
+    type Boolean = Boolean;
 
     /// Returns the little-endian bits of the literal.
-    fn write_bits_le(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_le(&self, vec: &mut Vec<Boolean>) {
         (&self).write_bits_le(vec);
     }
 
     /// Returns the big-endian bits of the literal.
-    fn write_bits_be(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_be(&self, vec: &mut Vec<Boolean>) {
         (&self).write_bits_be(vec);
     }
 }
 
-impl<A: Aleo> ToBits for &Literal<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for &Literal {
+    type Boolean = Boolean;
 
     /// Returns the little-endian bits of the literal.
-    fn write_bits_le(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_le(&self, vec: &mut Vec<Boolean>) {
         match self {
             Literal::Address(literal) => literal.write_bits_le(vec),
             Literal::Boolean(literal) => literal.write_bits_le(vec),
@@ -55,7 +55,7 @@ impl<A: Aleo> ToBits for &Literal<A> {
     }
 
     /// Returns the big-endian bits of the literal.
-    fn write_bits_be(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_be(&self, vec: &mut Vec<Boolean>) {
         match self {
             Literal::Address(literal) => literal.write_bits_be(vec),
             Literal::Boolean(literal) => literal.write_bits_be(vec),

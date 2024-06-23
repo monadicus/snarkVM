@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> Ternary for Signature<A> {
-    type Boolean = Boolean<A>;
-    type Output = Signature<A>;
+impl Ternary for Signature {
+    type Boolean = Boolean;
+    type Output = Signature;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.
     fn ternary(condition: &Self::Boolean, first: &Self, second: &Self) -> Self::Output {
@@ -28,7 +30,7 @@ impl<A: Aleo> Ternary for Signature<A> {
     }
 }
 
-impl<A: Aleo> Metrics<dyn Ternary<Boolean = Boolean<A>, Output = Signature<A>>> for Signature<A> {
+impl Metrics<dyn Ternary<Boolean = Boolean, Output = Signature>> for Signature {
     type Case = (Mode, Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -41,8 +43,8 @@ impl<A: Aleo> Metrics<dyn Ternary<Boolean = Boolean<A>, Output = Signature<A>>> 
     }
 }
 
-impl<A: Aleo> OutputMode<dyn Ternary<Boolean = Boolean<A>, Output = Self>> for Signature<A> {
-    type Case = (CircuitType<Boolean<A>>, Mode, Mode);
+impl OutputMode<dyn Ternary<Boolean = Boolean, Output = Self>> for Signature {
+    type Case = (CircuitType<Boolean>, Mode, Mode);
 
     fn output_mode(parameter: &Self::Case) -> Mode {
         match parameter.0.mode().is_constant() {
@@ -51,7 +53,7 @@ impl<A: Aleo> OutputMode<dyn Ternary<Boolean = Boolean<A>, Output = Self>> for S
                     true => parameter.1,
                     false => parameter.2,
                 },
-                _ => A::halt("The constant condition is required to determine output mode."),
+                _ => Circuit::halt("The constant condition is required to determine output mode."),
             },
             false => Mode::Private,
         }
@@ -64,13 +66,7 @@ mod tests {
     use crate::Circuit;
     use console::{TestRng, Uniform};
 
-    fn check_ternary(
-        name: &str,
-        expected: console::Signature<<Circuit as Environment>::Network>,
-        condition: Boolean<Circuit>,
-        a: Signature<Circuit>,
-        b: Signature<Circuit>,
-    ) {
+    fn check_ternary(name: &str, expected: console::Signature, condition: Boolean, a: Signature, b: Signature) {
         Circuit::scope(name, || {
             let case = format!("({} ? {} : {})", condition.eject_value(), a.eject_value(), b.eject_value());
             let candidate = Signature::ternary(&condition, &a, &b);
@@ -97,86 +93,86 @@ mod tests {
 
         // false ? Constant : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("false ? Constant : Constant", expected, condition, a, b);
 
         // false ? Constant : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Constant : Public", expected, condition, a, b);
 
         // false ? Public : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("false ? Public : Constant", expected, condition, a, b);
 
         // false ? Public : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Public : Public", expected, condition, a, b);
 
         // false ? Public : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("false ? Public : Private", expected, condition, a, b);
 
         // false ? Private : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("false ? Private : Private", expected, condition, a, b);
 
         // true ? Constant : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("true ? Constant : Constant", expected, condition, a, b);
 
         // true ? Constant : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Constant : Public", expected, condition, a, b);
 
         // true ? Public : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("true ? Public : Constant", expected, condition, a, b);
 
         // true ? Public : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Public : Public", expected, condition, a, b);
 
         // true ? Public : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("true ? Public : Private", expected, condition, a, b);
 
         // true ? Private : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("true ? Private : Private", expected, condition, a, b);
     }
 
@@ -197,16 +193,16 @@ mod tests {
 
         // false ? Constant : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("false ? Constant : Constant", expected, condition, a, b);
 
         // true ? Constant : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("true ? Constant : Constant", expected, condition, a, b);
     }
 
@@ -227,30 +223,30 @@ mod tests {
 
         // false ? Constant : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Constant : Public", expected, condition, a, b);
 
         // false ? Public : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("false ? Public : Constant", expected, condition, a, b);
 
         // true ? Constant : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Constant : Public", expected, condition, a, b);
 
         // true ? Public : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("true ? Public : Constant", expected, condition, a, b);
     }
 
@@ -271,16 +267,16 @@ mod tests {
 
         // false ? Constant : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("false ? Constant : Constant", expected, condition, a, b);
 
         // true ? Constant : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("true ? Constant : Constant", expected, condition, a, b);
     }
 
@@ -301,30 +297,30 @@ mod tests {
 
         // false ? Constant : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Constant : Public", expected, condition, a, b);
 
         // false ? Public : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("false ? Public : Constant", expected, condition, a, b);
 
         // true ? Constant : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = Signature::<Circuit>::new(Mode::Constant, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = Signature::new(Mode::Constant, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Constant : Public", expected, condition, a, b);
 
         // true ? Public : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Constant, second);
         check_ternary("true ? Public : Constant", expected, condition, a, b);
     }
 
@@ -345,58 +341,58 @@ mod tests {
 
         // false ? Public : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Public : Public", expected, condition, a, b);
 
         // false ? Public : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("false ? Public : Private", expected, condition, a, b);
 
         // false ? Private : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Private : Public", expected, condition, a, b);
 
         // false ? Private : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("false ? Private : Private", expected, condition, a, b);
 
         // true ? Public : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Public : Public", expected, condition, a, b);
 
         // true ? Public : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("true ? Public : Private", expected, condition, a, b);
 
         // true ? Private : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Private : Public", expected, condition, a, b);
 
         // true ? Private : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("true ? Private : Private", expected, condition, a, b);
     }
 
@@ -417,58 +413,58 @@ mod tests {
 
         // false ? Public : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Public : Public", expected, condition, a, b);
 
         // false ? Public : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("false ? Public : Private", expected, condition, a, b);
 
         // false ? Private : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("false ? Private : Public", expected, condition, a, b);
 
         // false ? Private : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("false ? Private : Private", expected, condition, a, b);
 
         // true ? Public : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Public : Public", expected, condition, a, b);
 
         // true ? Public : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = Signature::<Circuit>::new(Mode::Public, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = Signature::new(Mode::Public, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("true ? Public : Private", expected, condition, a, b);
 
         // true ? Private : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Public, second);
         check_ternary("true ? Private : Public", expected, condition, a, b);
 
         // true ? Private : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = Signature::<Circuit>::new(Mode::Private, first);
-        let b = Signature::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = Signature::new(Mode::Private, first);
+        let b = Signature::new(Mode::Private, second);
         check_ternary("true ? Private : Private", expected, condition, a, b);
     }
 }

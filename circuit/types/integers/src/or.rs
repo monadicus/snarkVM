@@ -14,54 +14,54 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> BitOr<Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitOr<Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self OR other)`.
-    fn bitor(self, other: Integer<E, I>) -> Self::Output {
+    fn bitor(self, other: Integer<I>) -> Self::Output {
         self | &other
     }
 }
 
-impl<E: Environment, I: IntegerType> BitOr<Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitOr<Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self OR other)`.
-    fn bitor(self, other: Integer<E, I>) -> Self::Output {
+    fn bitor(self, other: Integer<I>) -> Self::Output {
         self | &other
     }
 }
 
-impl<E: Environment, I: IntegerType> BitOr<&Integer<E, I>> for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitOr<&Integer<I>> for Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self OR other)`.
-    fn bitor(self, other: &Integer<E, I>) -> Self::Output {
+    fn bitor(self, other: &Integer<I>) -> Self::Output {
         &self | other
     }
 }
 
-impl<E: Environment, I: IntegerType> BitOr<&Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitOr<&Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self OR other)`.
-    fn bitor(self, other: &Integer<E, I>) -> Self::Output {
+    fn bitor(self, other: &Integer<I>) -> Self::Output {
         let mut output = self.clone();
         output |= other;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType> BitOrAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitOrAssign<Integer<I>> for Integer<I> {
     /// Sets `self` as `(self OR other)`.
-    fn bitor_assign(&mut self, other: Integer<E, I>) {
+    fn bitor_assign(&mut self, other: Integer<I>) {
         *self |= &other;
     }
 }
 
-impl<E: Environment, I: IntegerType> BitOrAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitOrAssign<&Integer<I>> for Integer<I> {
     /// Sets `self` as `(self OR other)`.
-    fn bitor_assign(&mut self, other: &Integer<E, I>) {
+    fn bitor_assign(&mut self, other: &Integer<I>) {
         // Stores the bitwise OR of `self` and `other` in `self`.
         *self = Self {
             bits_le: self.bits_le.iter().zip_eq(other.bits_le.iter()).map(|(a, b)| a | b).collect(),
@@ -70,7 +70,7 @@ impl<E: Environment, I: IntegerType> BitOrAssign<&Integer<E, I>> for Integer<E, 
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn BitOr<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn BitOr<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -81,8 +81,8 @@ impl<E: Environment, I: IntegerType> Metrics<dyn BitOr<Integer<E, I>, Output = I
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn BitOr<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
-    type Case = (CircuitType<Integer<E, I>>, CircuitType<Integer<E, I>>);
+impl<I: IntegerType> OutputMode<dyn BitOr<Integer<I>, Output = Integer<I>>> for Integer<I> {
+    type Case = (CircuitType<Integer<I>>, CircuitType<Integer<I>>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match ((case.0.mode(), &case.0), (case.1.mode(), &case.1)) {
@@ -99,7 +99,9 @@ impl<E: Environment, I: IntegerType> OutputMode<dyn BitOr<Integer<E, I>, Output 
                         false => mode,
                     }
                 }
-                _ => E::halt(format!("The constant is required to determine the output mode of Constant OR {mode}")),
+                _ => Circuit::halt(format!(
+                    "The constant is required to determine the output mode of Constant OR {mode}"
+                )),
             },
             (_, _) => Mode::Private,
         }
@@ -118,12 +120,12 @@ mod tests {
     #[allow(clippy::needless_borrow)]
     fn check_or<I: IntegerType + BitOr<Output = I>>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
+        let a = Integer::<I>::new(mode_a, first);
         let b = Integer::new(mode_b, second);
         let expected = first | second;
         Circuit::scope(name, || {
@@ -169,8 +171,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("BitOr: ({first} | {second})");
                 check_or::<I>(&name, first, second, mode_a, mode_b);

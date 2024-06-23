@@ -105,7 +105,7 @@ pub fn sample_outputs() -> Vec<(<CurrentNetwork as Network>::TransitionID, Outpu
     // Sample a random record.
     let randomizer = Uniform::rand(rng);
     let nonce = CurrentNetwork::g_scalar_multiply(&randomizer);
-    let record = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::from_str(
+    let record = Record::<Plaintext>::from_str(
         &format!("{{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: {nonce}.public }}"),
     ).unwrap();
     let record_ciphertext = record.encrypt(randomizer).unwrap();
@@ -216,7 +216,7 @@ pub fn sample_fee_private_hardcoded(rng: &mut TestRng) -> Fee<CurrentNetwork> {
 }
 
 /// Samples a random private fee.
-pub fn sample_fee_private(deployment_or_execution_id: Field<CurrentNetwork>, rng: &mut TestRng) -> Fee<CurrentNetwork> {
+pub fn sample_fee_private(deployment_or_execution_id: Field, rng: &mut TestRng) -> Fee<CurrentNetwork> {
     // Sample the genesis block, transaction, and private key.
     let (block, transaction, private_key) = crate::sample_genesis_block_and_components(rng);
     // Retrieve a credits record.
@@ -274,7 +274,7 @@ pub fn sample_fee_public_hardcoded(rng: &mut TestRng) -> Fee<CurrentNetwork> {
 }
 
 /// Samples a random public fee.
-pub fn sample_fee_public(deployment_or_execution_id: Field<CurrentNetwork>, rng: &mut TestRng) -> Fee<CurrentNetwork> {
+pub fn sample_fee_public(deployment_or_execution_id: Field, rng: &mut TestRng) -> Fee<CurrentNetwork> {
     // Sample the genesis block, transaction, and private key.
     let (block, _, private_key) = crate::sample_genesis_block_and_components(rng);
     // Sample a base fee in microcredits.
@@ -499,7 +499,7 @@ fn sample_genesis_block_and_components_raw(
 ) -> (Block<CurrentNetwork>, Transaction<CurrentNetwork>, PrivateKey<CurrentNetwork>) {
     // Sample the genesis private key.
     let private_key = PrivateKey::new(rng).unwrap();
-    let address = Address::<CurrentNetwork>::try_from(private_key).unwrap();
+    let address = Address::try_from(private_key).unwrap();
 
     // Prepare the locator.
     let locator = ("credits.aleo", "transfer_public_to_private");
@@ -540,7 +540,7 @@ fn sample_genesis_block_and_components_raw(
     // Prepare the block header.
     let header = Header::genesis(&ratifications, &transactions, vec![]).unwrap();
     // Prepare the previous block hash.
-    let previous_hash = <CurrentNetwork as Network>::BlockHash::default();
+    let previous_hash = BlockHash::default();
 
     // Construct the block.
     let block = Block::new_beacon(

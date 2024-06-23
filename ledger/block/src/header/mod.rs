@@ -36,15 +36,15 @@ pub struct Header<N: Network> {
     /// The Merkle root representing the blocks in the ledger up to the previous block.
     previous_state_root: N::StateRoot,
     /// The Merkle root representing the transactions in the block.
-    transactions_root: Field<N>,
+    transactions_root: Field,
     /// The Merkle root representing the on-chain finalize including the current block.
-    finalize_root: Field<N>,
+    finalize_root: Field,
     /// The Merkle root representing the ratifications in the block.
-    ratifications_root: Field<N>,
+    ratifications_root: Field,
     /// The solutions root of the puzzle.
-    solutions_root: Field<N>,
+    solutions_root: Field,
     /// The subdag root of the authority.
-    subdag_root: Field<N>,
+    subdag_root: Field,
     /// The metadata of the block.
     metadata: Metadata<N>,
 }
@@ -53,11 +53,11 @@ impl<N: Network> Header<N> {
     /// Initializes a new block header with the given inputs.
     pub fn from(
         previous_state_root: N::StateRoot,
-        transactions_root: Field<N>,
-        finalize_root: Field<N>,
-        ratifications_root: Field<N>,
-        solutions_root: Field<N>,
-        subdag_root: Field<N>,
+        transactions_root: Field,
+        finalize_root: Field,
+        ratifications_root: Field,
+        solutions_root: Field,
+        subdag_root: Field,
         metadata: Metadata<N>,
     ) -> Result<Self> {
         // Construct a new block header.
@@ -102,27 +102,27 @@ impl<N: Network> Header<N> {
     }
 
     /// Returns the transactions root in the block header.
-    pub const fn transactions_root(&self) -> Field<N> {
+    pub const fn transactions_root(&self) -> Field {
         self.transactions_root
     }
 
     /// Returns the finalize root in the block header.
-    pub const fn finalize_root(&self) -> Field<N> {
+    pub const fn finalize_root(&self) -> Field {
         self.finalize_root
     }
 
     /// Returns the ratifications root in the block header.
-    pub const fn ratifications_root(&self) -> Field<N> {
+    pub const fn ratifications_root(&self) -> Field {
         self.ratifications_root
     }
 
     /// Returns the solutions root in the block header.
-    pub const fn solutions_root(&self) -> Field<N> {
+    pub const fn solutions_root(&self) -> Field {
         self.solutions_root
     }
 
     /// Returns the subdag root in the block header.
-    pub const fn subdag_root(&self) -> Field<N> {
+    pub const fn subdag_root(&self) -> Field {
         self.subdag_root
     }
 

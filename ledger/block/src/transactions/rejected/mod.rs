@@ -73,7 +73,7 @@ impl<N: Network> Rejected<N> {
     }
 
     /// Returns the rejected ID.
-    pub fn to_id(&self) -> Result<Field<N>> {
+    pub fn to_id(&self) -> Result<Field> {
         match self {
             Self::Deployment(_, deployment) => deployment.to_deployment_id(),
             Self::Execution(execution) => execution.to_execution_id(),
@@ -83,7 +83,7 @@ impl<N: Network> Rejected<N> {
     /// Returns the unconfirmed transaction ID, which is defined as the transaction ID prior to confirmation.
     /// When a transaction is rejected, its fee transition is used to construct the confirmed transaction ID,
     /// changing the original transaction ID.
-    pub fn to_unconfirmed_id(&self, fee: &Option<Fee<N>>) -> Result<Field<N>> {
+    pub fn to_unconfirmed_id(&self, fee: &Option<Fee<N>>) -> Result<Field> {
         match self {
             Self::Deployment(_, deployment) => Ok(*Transaction::deployment_tree(deployment, fee.as_ref())?.root()),
             Self::Execution(execution) => Ok(*Transaction::execution_tree(execution, fee)?.root()),

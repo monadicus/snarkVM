@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Neg for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Neg for Integer<I> {
+    type Output = Integer<I>;
 
     /// Performs the unary `-` operation.
     fn neg(self) -> Self::Output {
@@ -23,8 +23,8 @@ impl<E: Environment, I: IntegerType> Neg for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Neg for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Neg for &Integer<I> {
+    type Output = Integer<I>;
 
     /// Performs the unary `-` operation.
     fn neg(self) -> Self::Output {
@@ -32,17 +32,17 @@ impl<E: Environment, I: IntegerType> Neg for &Integer<E, I> {
             // Note: This addition must be checked as `-Integer::MIN` is an invalid operation.
             true => Integer::one().add_checked(&!self),
             // Note: `halt` is necessary since negation is not defined for unsigned integers.
-            false => E::halt("Attempted to negate an unsigned integer"),
+            false => Circuit::halt("Attempted to negate an unsigned integer"),
         }
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Neg<Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Neg<Output = Integer<I>>> for Integer<I> {
     type Case = Mode;
 
     fn count(case: &Self::Case) -> Count {
         match I::is_signed() {
-            false => E::halt("Unsigned integers cannot be negated"),
+            false => Circuit::halt("Unsigned integers cannot be negated"),
             true => match case {
                 Mode::Constant => Count::is(2 * I::BITS, 0, 0, 0),
                 _ => Count::is(I::BITS, 0, I::BITS + 2, I::BITS + 4),
@@ -51,7 +51,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn Neg<Output = Integer<E, I>>> fo
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Neg<Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Neg<Output = Integer<I>>> for Integer<I> {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -73,12 +73,8 @@ mod tests {
 
     const ITERATIONS: u64 = 128;
 
-    fn check_neg<I: IntegerType + UnwindSafe + Neg<Output = I>>(
-        name: &str,
-        value: console::Integer<<Circuit as Environment>::Network, I>,
-        mode: Mode,
-    ) {
-        let a = Integer::<Circuit, I>::new(mode, value);
+    fn check_neg<I: IntegerType + UnwindSafe + Neg<Output = I>>(name: &str, value: console::Integer<I>, mode: Mode) {
+        let a = Integer::<I>::new(mode, value);
         match value.checked_neg() {
             Some(expected) => Circuit::scope(name, || {
                 let candidate = a.neg();
@@ -88,7 +84,7 @@ mod tests {
                 assert_output_mode!(Neg(Integer<I>) => Integer<I>, &mode, candidate);
             }),
             None => match mode {
-                Mode::Constant => check_unary_operation_halts(a, |a: Integer<Circuit, I>| a.neg()),
+                Mode::Constant => check_unary_operation_halts(a, |a: Integer<I>| a.neg()),
                 _ => Circuit::scope(name, || {
                     let _candidate = a.neg();
                     assert_count_fails!(Neg(Integer<I>) => Integer<I>, &mode);
@@ -113,7 +109,7 @@ mod tests {
     }
 
     fn assert_unsigned_neg_halts<I: IntegerType + UnwindSafe>(mode: Mode) {
-        let candidate = Integer::<Circuit, I>::new(mode, Uniform::rand(&mut TestRng::default()));
+        let candidate = Integer::<I>::new(mode, Uniform::rand(&mut TestRng::default()));
         let operation = std::panic::catch_unwind(|| candidate.neg());
         assert!(operation.is_err());
     }
@@ -123,7 +119,7 @@ mod tests {
         RangeInclusive<I>: Iterator<Item = I>,
     {
         for value in I::MIN..=I::MAX {
-            let value = console::Integer::<_, I>::new(value);
+            let value = console::Integer::<I>::new(value);
 
             let name = format!("Neg: {mode}");
             check_neg::<I>(&name, value, mode);

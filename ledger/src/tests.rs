@@ -43,7 +43,7 @@ fn test_load() {
     let rng = &mut TestRng::default();
 
     // Sample the genesis private key.
-    let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let private_key = PrivateKey::new(rng).unwrap();
     // Initialize the store.
     let store = ConsensusStore::<_, ConsensusMemory<_>>::open(None).unwrap();
     // Create a genesis block.
@@ -82,7 +82,7 @@ fn test_state_path() {
     let rng = &mut TestRng::default();
 
     // Initialize the ledger.
-    let ledger = crate::test_helpers::sample_ledger(PrivateKey::<CurrentNetwork>::new(rng).unwrap(), rng);
+    let ledger = crate::test_helpers::sample_ledger(PrivateKey::new(rng).unwrap(), rng);
     // Retrieve the genesis block.
     let block = ledger.get_block(0).unwrap();
 
@@ -504,9 +504,9 @@ fn test_bond_and_unbond_validator() {
     let crate::test_helpers::TestEnv { ledger, private_key, .. } = crate::test_helpers::sample_test_env(rng);
 
     // Sample new account for the new committee member.
-    let new_member_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let new_member_private_key = PrivateKey::new(rng).unwrap();
     let new_member_address = Address::try_from(&new_member_private_key).unwrap();
-    let new_member_withdrawal_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let new_member_withdrawal_private_key = PrivateKey::new(rng).unwrap();
     let new_member_withdrawal_address = Address::try_from(&new_member_withdrawal_private_key).unwrap();
 
     // Fund the new committee member and their withdrawwal address.
@@ -653,11 +653,11 @@ fn test_aborted_transaction_indexing() {
     let crate::test_helpers::TestEnv { ledger, private_key, .. } = crate::test_helpers::sample_test_env(rng);
 
     // Sample a recipient account.
-    let recipient_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let recipient_private_key = PrivateKey::new(rng).unwrap();
     let recipient_address = Address::try_from(&recipient_private_key).unwrap();
 
     // Sample another recipient account.
-    let recipient_private_key_2 = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let recipient_private_key_2 = PrivateKey::new(rng).unwrap();
     let recipient_address_2 = Address::try_from(&recipient_private_key_2).unwrap();
 
     // Fund a new address.
@@ -1789,7 +1789,7 @@ fn test_max_committee_limit_with_bonds() {
     // Construct the validators, one less than the maximum committee size.
     let validators = (0..Committee::<CurrentNetwork>::MAX_COMMITTEE_SIZE - 1)
         .map(|_| {
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+            let private_key = PrivateKey::new(rng).unwrap();
             let amount = MIN_VALIDATOR_STAKE;
             let is_open = true;
             (private_key, (amount, is_open))
@@ -1808,13 +1808,13 @@ fn test_max_committee_limit_with_bonds() {
     }
 
     // Initialize two new validators.
-    let first_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let first_private_key = PrivateKey::new(rng).unwrap();
     let first_address = Address::try_from(&first_private_key).unwrap();
-    let first_withdrawal_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let first_withdrawal_private_key = PrivateKey::new(rng).unwrap();
     let first_withdrawal_address = Address::try_from(&first_withdrawal_private_key).unwrap();
-    let second_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let second_private_key = PrivateKey::new(rng).unwrap();
     let second_address = Address::try_from(&second_private_key).unwrap();
-    let second_withdrawal_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let second_withdrawal_private_key = PrivateKey::new(rng).unwrap();
     let second_withdrawal_address = Address::try_from(&second_withdrawal_private_key).unwrap();
 
     // Construct the public balances, allocating the remaining supply to the first validator and two new validators.
@@ -2101,9 +2101,9 @@ fn test_transaction_ordering() {
     };
 
     // Sample multiple private keys and addresses.
-    let private_key_2 = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let private_key_2 = PrivateKey::new(rng).unwrap();
     let address_2 = Address::try_from(&private_key_2).unwrap();
-    let private_key_3 = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+    let private_key_3 = PrivateKey::new(rng).unwrap();
     let address_3 = Address::try_from(&private_key_3).unwrap();
 
     // Fund a new address.

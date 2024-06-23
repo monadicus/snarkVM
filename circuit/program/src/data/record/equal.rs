@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo, Private: Visibility<A>> Equal<Self> for Record<A, Private> {
-    type Output = Boolean<A>;
+impl<Private: Visibility> Equal<Self> for Record<Private> {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     ///
@@ -59,11 +59,8 @@ mod tests {
     use super::*;
     use crate::Circuit;
 
-    fn sample_record(mode: Mode) -> Record<Circuit, Plaintext<Circuit>> {
-        let record = console::Record::<
-            <Circuit as Environment>::Network,
-            console::Plaintext<<Circuit as Environment>::Network>,
-        >::from_str(
+    fn sample_record(mode: Mode) -> Record<Plaintext> {
+        let record = console::Record::<console::Plaintext>::from_str(
             r"{
     owner: aleo14tlamssdmg3d0p5zmljma573jghe2q9n6wz29qf36re2glcedcpqfg4add.private,
     a: true.private,
@@ -81,11 +78,8 @@ mod tests {
         Record::new(mode, record)
     }
 
-    fn sample_mismatched_record(mode: Mode) -> Record<Circuit, Plaintext<Circuit>> {
-        let record = console::Record::<
-            <Circuit as Environment>::Network,
-            console::Plaintext<<Circuit as Environment>::Network>,
-        >::from_str(
+    fn sample_mismatched_record(mode: Mode) -> Record<Plaintext> {
+        let record = console::Record::<console::Plaintext>::from_str(
             r"{
     owner: aleo14tlamssdmg3d0p5zmljma573jghe2q9n6wz29qf36re2glcedcpqfg4add.private,
     a: true.public,

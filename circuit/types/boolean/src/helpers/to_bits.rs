@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for Boolean<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for Boolean {
+    type Boolean = Boolean;
 
     /// Outputs `self` as a single-element vector.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -28,8 +28,8 @@ impl<E: Environment> ToBits for Boolean<E> {
     }
 }
 
-impl<E: Environment> ToBits for &Boolean<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for &Boolean {
+    type Boolean = Boolean;
 
     /// Outputs `self` as a single-element vector.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -47,7 +47,7 @@ mod tests {
     use super::*;
     use snarkvm_circuit_environment::Circuit;
 
-    fn check_to_bits_le(name: &str, expected: &[bool], candidate: &Boolean<Circuit>) {
+    fn check_to_bits_le(name: &str, expected: &[bool], candidate: &Boolean) {
         Circuit::scope(name, || {
             let candidate = candidate.to_bits_le();
             assert_eq!(1, candidate.len());
@@ -58,7 +58,7 @@ mod tests {
         });
     }
 
-    fn check_to_bits_be(name: &str, expected: &[bool], candidate: Boolean<Circuit>) {
+    fn check_to_bits_be(name: &str, expected: &[bool], candidate: Boolean) {
         Circuit::scope(name, || {
             let candidate = candidate.to_bits_be();
             assert_eq!(1, candidate.len());
@@ -71,33 +71,33 @@ mod tests {
 
     #[test]
     fn test_to_bits_constant() {
-        let candidate = Boolean::<Circuit>::new(Mode::Constant, true);
+        let candidate = Boolean::new(Mode::Constant, true);
         check_to_bits_le("Constant", &[true], &candidate);
         check_to_bits_be("Constant", &[true], candidate);
 
-        let candidate = Boolean::<Circuit>::new(Mode::Constant, false);
+        let candidate = Boolean::new(Mode::Constant, false);
         check_to_bits_le("Constant", &[false], &candidate);
         check_to_bits_be("Constant", &[false], candidate);
     }
 
     #[test]
     fn test_to_bits_public() {
-        let candidate = Boolean::<Circuit>::new(Mode::Public, true);
+        let candidate = Boolean::new(Mode::Public, true);
         check_to_bits_le("Public", &[true], &candidate);
         check_to_bits_be("Public", &[true], candidate);
 
-        let candidate = Boolean::<Circuit>::new(Mode::Public, false);
+        let candidate = Boolean::new(Mode::Public, false);
         check_to_bits_le("Public", &[false], &candidate);
         check_to_bits_be("Public", &[false], candidate);
     }
 
     #[test]
     fn test_to_bits_private() {
-        let candidate = Boolean::<Circuit>::new(Mode::Private, true);
+        let candidate = Boolean::new(Mode::Private, true);
         check_to_bits_le("Private", &[true], &candidate);
         check_to_bits_be("Private", &[true], candidate);
 
-        let candidate = Boolean::<Circuit>::new(Mode::Private, false);
+        let candidate = Boolean::new(Mode::Private, false);
         check_to_bits_le("Private", &[false], &candidate);
         check_to_bits_be("Private", &[false], candidate);
     }

@@ -226,7 +226,7 @@ mod tests {
   arguments: []
 }";
         let (remainder, candidate) =
-            Future::<CurrentNetwork>::parse("{ program_id: credits.aleo, function_name: transfer, arguments: [] }")?;
+            Future::parse("{ program_id: credits.aleo, function_name: transfer, arguments: [] }")?;
         assert!(remainder.is_empty());
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -240,7 +240,7 @@ mod tests {
     100000000u64
   ]
 }";
-        let (remainder, candidate) = Future::<CurrentNetwork>::parse(
+        let (remainder, candidate) = Future::parse(
             "{ program_id: credits.aleo, function_name: transfer_public_to_private, arguments: [ aleo1g8qul5a44vk22u9uuvaewdcjw4v6xg8wx0llru39nnjn7eu08yrscxe4e2, 100000000u64 ] }",
         )?;
         assert!(remainder.is_empty());

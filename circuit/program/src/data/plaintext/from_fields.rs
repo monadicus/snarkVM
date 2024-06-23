@@ -12,36 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+use snarkvm_circuit_network::AleoV0;
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> From<Vec<Field<A>>> for Plaintext<A> {
+impl From<Vec<Field>> for Plaintext {
     /// Initializes a plaintext from a list of base field elements.
-    fn from(fields: Vec<Field<A>>) -> Self {
+    fn from(fields: Vec<Field>) -> Self {
         Self::from_fields(&fields)
     }
 }
 
-impl<A: Aleo> From<&[Field<A>]> for Plaintext<A> {
+impl From<&[Field]> for Plaintext {
     /// Initializes a plaintext from a list of base field elements.
-    fn from(fields: &[Field<A>]) -> Self {
+    fn from(fields: &[Field]) -> Self {
         Self::from_fields(fields)
     }
 }
 
-impl<A: Aleo> FromFields for Plaintext<A> {
-    type Field = Field<A>;
+impl FromFields for Plaintext {
+    type Field = Field;
 
     /// Initializes a plaintext from a list of base field elements.
     fn from_fields(fields: &[Self::Field]) -> Self {
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        if fields.len() > A::MAX_DATA_SIZE_IN_FIELDS as usize {
-            A::halt("Plaintext exceeds maximum allowed size")
+        if fields.len() > AleoV0::MAX_DATA_SIZE_IN_FIELDS as usize {
+            Circuit::halt("Plaintext exceeds maximum allowed size")
         }
 
         // Unpack the field elements into little-endian bits, and reverse the list for popping the terminus bit off.
         let mut bits_le = fields
             .iter()
-            .flat_map(|field| field.to_bits_le().into_iter().take(A::BaseField::size_in_data_bits()))
+            .flat_map(|field| field.to_bits_le().into_iter().take(ConsoleField::size_in_data_bits()))
             .rev();
         // Remove the terminus bit that was added during encoding.
         for boolean in bits_le.by_ref() {

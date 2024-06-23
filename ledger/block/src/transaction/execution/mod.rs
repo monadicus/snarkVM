@@ -68,7 +68,7 @@ impl<N: Network> Execution<N> {
     }
 
     /// Returns the execution ID.
-    pub fn to_execution_id(&self) -> Result<Field<N>> {
+    pub fn to_execution_id(&self) -> Result<Field> {
         Ok(*Transaction::execution_tree(self, &None)?.root())
     }
 }
@@ -138,7 +138,7 @@ impl<N: Network> Execution<N> {
     }
 
     /// Returns an iterator over the commitments.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transitions.values().flat_map(Transition::commitments)
     }
 }

@@ -106,13 +106,12 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample the state path.
-            let expected =
-                crate::state_path::test_helpers::sample_global_state_path::<CurrentNetwork>(None, &mut rng).unwrap();
+            let expected = crate::state_path::test_helpers::sample_global_state_path(None, &mut rng).unwrap();
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le().unwrap();
             assert_eq!(expected, StatePath::read_le(&expected_bytes[..]).unwrap());
-            assert!(StatePath::<CurrentNetwork>::read_le(&expected_bytes[1..]).is_err());
+            assert!(StatePath::read_le(&expected_bytes[1..]).is_err());
         }
     }
 }

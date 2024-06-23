@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<A: Aleo> Record<A, Plaintext<A>> {
+impl Record<Plaintext> {
     /// Returns the entry from the given path.
-    pub fn find<A0: Into<Access<A>> + Clone + Debug>(&self, path: &[A0]) -> Result<Entry<A, Plaintext<A>>> {
+    pub fn find<A0: Into<Access> + Clone + Debug>(&self, path: &[A0]) -> Result<Entry<Plaintext>> {
         // If the path is of length one, check if the path is requesting the `owner`.
         if path.len() == 1 && path[0].clone().into() == Access::Member(Identifier::from_str("owner")?) {
             return Ok(self.owner.to_entry());

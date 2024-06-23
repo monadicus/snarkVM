@@ -407,7 +407,7 @@ function compute:
                 // Initialize the RNG.
                 let rng = &mut TestRng::default();
                 // Initialize a new caller account.
-                let caller_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+                let caller_private_key = PrivateKey::new(rng).unwrap();
 
                 // Initialize a new block store.
                 let block_store = BlockStore::<CurrentNetwork, BlockMemory<_>>::open(None).unwrap();

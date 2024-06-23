@@ -38,15 +38,15 @@ pub struct TransitionDB<N: Network> {
     /// The transition output store.
     output_store: OutputStore<N, OutputDB<N>>,
     /// The transition public keys.
-    tpk_map: DataMap<N::TransitionID, Group<N>>,
+    tpk_map: DataMap<N::TransitionID, Group>,
     /// The reverse `tpk` map.
-    reverse_tpk_map: DataMap<Group<N>, N::TransitionID>,
+    reverse_tpk_map: DataMap<Group, N::TransitionID>,
     /// The transition commitments.
-    tcm_map: DataMap<N::TransitionID, Field<N>>,
+    tcm_map: DataMap<N::TransitionID, Field>,
     /// The reverse `tcm` map.
-    reverse_tcm_map: DataMap<Field<N>, N::TransitionID>,
+    reverse_tcm_map: DataMap<Field, N::TransitionID>,
     /// The signer commitments.
-    scm_map: DataMap<N::TransitionID, Field<N>>,
+    scm_map: DataMap<N::TransitionID, Field>,
 }
 
 #[rustfmt::skip]
@@ -54,11 +54,11 @@ impl<N: Network> TransitionStorage<N> for TransitionDB<N> {
     type LocatorMap = DataMap<N::TransitionID, (ProgramID<N>, Identifier<N>)>;
     type InputStorage = InputDB<N>;
     type OutputStorage = OutputDB<N>;
-    type TPKMap = DataMap<N::TransitionID, Group<N>>;
-    type ReverseTPKMap = DataMap<Group<N>, N::TransitionID>;
-    type TCMMap = DataMap<N::TransitionID, Field<N>>;
-    type ReverseTCMMap = DataMap<Field<N>, N::TransitionID>;
-    type SCMMap = DataMap<N::TransitionID, Field<N>>;
+    type TPKMap = DataMap<N::TransitionID, Group>;
+    type ReverseTPKMap = DataMap<Group, N::TransitionID>;
+    type TCMMap = DataMap<N::TransitionID, Field>;
+    type ReverseTCMMap = DataMap<Field, N::TransitionID>;
+    type SCMMap = DataMap<N::TransitionID, Field>;
 
     /// Initializes the transition storage.
     fn open<S: Clone + Into<StorageMode>>(storage: S) -> Result<Self> {
@@ -119,35 +119,35 @@ impl<N: Network> TransitionStorage<N> for TransitionDB<N> {
 #[derive(Clone)]
 pub struct InputDB<N: Network> {
     /// The mapping of `transition ID` to `input IDs`.
-    id_map: DataMap<N::TransitionID, Vec<Field<N>>>,
+    id_map: DataMap<N::TransitionID, Vec<Field>>,
     /// The mapping of `input ID` to `transition ID`.
-    reverse_id_map: DataMap<Field<N>, N::TransitionID>,
+    reverse_id_map: DataMap<Field, N::TransitionID>,
     /// The mapping of `plaintext hash` to `(optional) plaintext`.
-    constant: DataMap<Field<N>, Option<Plaintext<N>>>,
+    constant: DataMap<Field, Option<Plaintext<N>>>,
     /// The mapping of `plaintext hash` to `(optional) plaintext`.
-    public: DataMap<Field<N>, Option<Plaintext<N>>>,
+    public: DataMap<Field, Option<Plaintext<N>>>,
     /// The mapping of `ciphertext hash` to `(optional) ciphertext`.
-    private: DataMap<Field<N>, Option<Ciphertext<N>>>,
+    private: DataMap<Field, Option<Ciphertext<N>>>,
     /// The mapping of `serial number` to `tag`.
-    record: DataMap<Field<N>, Field<N>>,
+    record: DataMap<Field, Field>,
     /// The mapping of `record tag` to `serial number`.
-    record_tag: DataMap<Field<N>, Field<N>>,
+    record_tag: DataMap<Field, Field>,
     /// The mapping of `external commitment` to `()`. Note: This is **not** the record commitment.
-    external_record: DataMap<Field<N>, ()>,
+    external_record: DataMap<Field, ()>,
     /// The storage mode.
     storage_mode: StorageMode,
 }
 
 #[rustfmt::skip]
 impl<N: Network> InputStorage<N> for InputDB<N> {
-    type IDMap = DataMap<N::TransitionID, Vec<Field<N>>>;
-    type ReverseIDMap = DataMap<Field<N>, N::TransitionID>;
-    type ConstantMap = DataMap<Field<N>, Option<Plaintext<N>>>;
-    type PublicMap = DataMap<Field<N>, Option<Plaintext<N>>>;
-    type PrivateMap = DataMap<Field<N>, Option<Ciphertext<N>>>;
-    type RecordMap = DataMap<Field<N>, Field<N>>;
-    type RecordTagMap = DataMap<Field<N>, Field<N>>;
-    type ExternalRecordMap = DataMap<Field<N>, ()>;
+    type IDMap = DataMap<N::TransitionID, Vec<Field>>;
+    type ReverseIDMap = DataMap<Field, N::TransitionID>;
+    type ConstantMap = DataMap<Field, Option<Plaintext<N>>>;
+    type PublicMap = DataMap<Field, Option<Plaintext<N>>>;
+    type PrivateMap = DataMap<Field, Option<Ciphertext<N>>>;
+    type RecordMap = DataMap<Field, Field>;
+    type RecordTagMap = DataMap<Field, Field>;
+    type ExternalRecordMap = DataMap<Field, ()>;
 
     /// Initializes the transition input storage.
     fn open<S: Clone + Into<StorageMode>>(storage: S) -> Result<Self> {
@@ -215,38 +215,38 @@ impl<N: Network> InputStorage<N> for InputDB<N> {
 #[allow(clippy::type_complexity)]
 pub struct OutputDB<N: Network> {
     /// The mapping of `transition ID` to `output IDs`.
-    id_map: DataMap<N::TransitionID, Vec<Field<N>>>,
+    id_map: DataMap<N::TransitionID, Vec<Field>>,
     /// The mapping of `output ID` to `transition ID`.
-    reverse_id_map: DataMap<Field<N>, N::TransitionID>,
+    reverse_id_map: DataMap<Field, N::TransitionID>,
     /// The mapping of `plaintext hash` to `(optional) plaintext`.
-    constant: DataMap<Field<N>, Option<Plaintext<N>>>,
+    constant: DataMap<Field, Option<Plaintext<N>>>,
     /// The mapping of `plaintext hash` to `(optional) plaintext`.
-    public: DataMap<Field<N>, Option<Plaintext<N>>>,
+    public: DataMap<Field, Option<Plaintext<N>>>,
     /// The mapping of `ciphertext hash` to `(optional) ciphertext`.
-    private: DataMap<Field<N>, Option<Ciphertext<N>>>,
+    private: DataMap<Field, Option<Ciphertext<N>>>,
     /// The mapping of `commitment` to `(checksum, (optional) record ciphertext)`.
-    record: DataMap<Field<N>, (Field<N>, Option<Record<N, Ciphertext<N>>>)>,
+    record: DataMap<Field, (Field, Option<Record<N, Ciphertext<N>>>)>,
     /// The mapping of `record nonce` to `commitment`.
-    record_nonce: DataMap<Group<N>, Field<N>>,
+    record_nonce: DataMap<Group, Field>,
     /// The mapping of `external commitment` to `()`. Note: This is **not** the record commitment.
-    external_record: DataMap<Field<N>, ()>,
+    external_record: DataMap<Field, ()>,
     /// The mapping of `future hash` to `(optional) future`.
-    future: DataMap<Field<N>, Option<Future<N>>>,
+    future: DataMap<Field, Option<Future<N>>>,
     /// The storage mode.
     storage_mode: StorageMode,
 }
 
 #[rustfmt::skip]
 impl<N: Network> OutputStorage<N> for OutputDB<N> {
-    type IDMap = DataMap<N::TransitionID, Vec<Field<N>>>;
-    type ReverseIDMap = DataMap<Field<N>, N::TransitionID>;
-    type ConstantMap = DataMap<Field<N>, Option<Plaintext<N>>>;
-    type PublicMap = DataMap<Field<N>, Option<Plaintext<N>>>;
-    type PrivateMap = DataMap<Field<N>, Option<Ciphertext<N>>>;
-    type RecordMap = DataMap<Field<N>, (Field<N>, Option<Record<N, Ciphertext<N>>>)>;
-    type RecordNonceMap = DataMap<Group<N>, Field<N>>;
-    type ExternalRecordMap = DataMap<Field<N>, ()>;
-    type FutureMap = DataMap<Field<N>, Option<Future<N>>>;
+    type IDMap = DataMap<N::TransitionID, Vec<Field>>;
+    type ReverseIDMap = DataMap<Field, N::TransitionID>;
+    type ConstantMap = DataMap<Field, Option<Plaintext<N>>>;
+    type PublicMap = DataMap<Field, Option<Plaintext<N>>>;
+    type PrivateMap = DataMap<Field, Option<Ciphertext<N>>>;
+    type RecordMap = DataMap<Field, (Field, Option<Record<N, Ciphertext<N>>>)>;
+    type RecordNonceMap = DataMap<Group, Field>;
+    type ExternalRecordMap = DataMap<Field, ()>;
+    type FutureMap = DataMap<Field, Option<Future<N>>>;
 
     /// Initializes the transition output storage.
     fn open<S: Clone + Into<StorageMode>>(storage: S) -> Result<Self> {

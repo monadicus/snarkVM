@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> ToBits for Record<A, Plaintext<A>> {
-    type Boolean = Boolean<A>;
+impl ToBits for Record<Plaintext> {
+    type Boolean = Boolean;
 
     /// Returns this data as a list of **little-endian** bits.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -50,8 +50,8 @@ impl<A: Aleo> ToBits for Record<A, Plaintext<A>> {
     }
 }
 
-impl<A: Aleo> ToBits for Record<A, Ciphertext<A>> {
-    type Boolean = Boolean<A>;
+impl ToBits for Record<Ciphertext> {
+    type Boolean = Boolean;
 
     /// Returns this data as a list of **little-endian** bits.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {

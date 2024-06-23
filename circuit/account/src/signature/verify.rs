@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> Signature<A> {
+impl Signature {
     /// Returns `true` if the signature is valid for the given `address` and `message`.
-    pub fn verify(&self, address: &Address<A>, message: &[Field<A>]) -> Boolean<A> {
+    pub fn verify(&self, address: &Address, message: &[Field]) -> Boolean {
         // Retrieve pk_sig.
         let pk_sig = self.compute_key.pk_sig();
         // Retrieve pr_sig.
         let pr_sig = self.compute_key.pr_sig();
 
         // Compute `g_nonce` := (response * G) + (challenge * pk_sig).
-        let g_nonce = A::g_scalar_multiply(&self.response) + (pk_sig * &self.challenge);
+        let g_nonce = AleoV0::g_scalar_multiply(&self.response) + (pk_sig * &self.challenge);
 
         // Construct the hash input as (nonce * G, pk_sig, pr_sig, address, message).
         let mut preimage = Vec::with_capacity(4 + message.len());
@@ -32,7 +34,7 @@ impl<A: Aleo> Signature<A> {
         preimage.extend_from_slice(message);
 
         // Compute the candidate verifier challenge.
-        let candidate_challenge = A::hash_to_scalar_psd8(&preimage);
+        let candidate_challenge = AleoV0::hash_to_scalar_psd8(&preimage);
         // Compute the candidate address.
         let candidate_address = self.compute_key.to_address();
 
@@ -70,7 +72,7 @@ pub(crate) mod tests {
             let signature = console::Signature::sign(&private_key, &message.eject_value(), rng)?;
 
             // Initialize the signature and address.
-            let signature = Signature::<Circuit>::new(mode, signature);
+            let signature = Signature::new(mode, signature);
             let address = Address::new(mode, address);
 
             Circuit::scope(&format!("{mode} {i}"), || {
@@ -110,7 +112,7 @@ pub(crate) mod tests {
             let signature = console::Signature::sign(&private_key, &message.eject_value(), rng)?;
 
             // Initialize the signature and address.
-            let signature = Signature::<Circuit>::new(mode, signature);
+            let signature = Signature::new(mode, signature);
             let address = Address::new(mode, address);
 
             Circuit::scope(&format!("{mode} {i}"), || {

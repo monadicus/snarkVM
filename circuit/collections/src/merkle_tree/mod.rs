@@ -20,18 +20,23 @@ mod verify;
 #[cfg(all(test, console))]
 use snarkvm_circuit_types::environment::assert_scope;
 
-use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, U64};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Boolean,
+    Field,
+    U64,
+};
 
-pub struct MerklePath<E: Environment, const DEPTH: u8> {
+pub struct MerklePath<const DEPTH: u8> {
     /// The leaf index for the path.
-    leaf_index: U64<E>,
+    leaf_index: U64,
     /// The `siblings` contains a list of sibling hashes from the leaf to the root.
-    siblings: Vec<Field<E>>,
+    siblings: Vec<Field>,
 }
 
 #[cfg(console)]
-impl<E: Environment, const DEPTH: u8> Inject for MerklePath<E, DEPTH> {
-    type Primitive = console::merkle_tree::MerklePath<E::Network, DEPTH>;
+impl<const DEPTH: u8> Inject for MerklePath<DEPTH> {
+    type Primitive = console::merkle_tree::MerklePath<DEPTH>;
 
     /// Initializes a Merkle path from the given mode and native Merkle path.
     fn new(mode: Mode, merkle_path: Self::Primitive) -> Self {
@@ -43,14 +48,14 @@ impl<E: Environment, const DEPTH: u8> Inject for MerklePath<E, DEPTH> {
         match siblings.len() == DEPTH as usize {
             // Return the Merkle path.
             true => Self { leaf_index, siblings },
-            false => E::halt("Merkle path is not the correct depth"),
+            false => Circuit::halt("Merkle path is not the correct depth"),
         }
     }
 }
 
 #[cfg(console)]
-impl<E: Environment, const DEPTH: u8> Eject for MerklePath<E, DEPTH> {
-    type Primitive = console::merkle_tree::MerklePath<E::Network, DEPTH>;
+impl<const DEPTH: u8> Eject for MerklePath<DEPTH> {
+    type Primitive = console::merkle_tree::MerklePath<DEPTH>;
 
     /// Ejects the mode of the Merkle path.
     fn eject_mode(&self) -> Mode {
@@ -61,7 +66,7 @@ impl<E: Environment, const DEPTH: u8> Eject for MerklePath<E, DEPTH> {
     fn eject_value(&self) -> Self::Primitive {
         match Self::Primitive::try_from((&self.leaf_index, &self.siblings).eject_value()) {
             Ok(merkle_path) => merkle_path,
-            Err(error) => E::halt(format!("Failed to eject the Merkle path: {error}")),
+            Err(error) => Circuit::halt(format!("Failed to eject the Merkle path: {error}")),
         }
     }
 }
@@ -85,11 +90,8 @@ mod tests {
     ) -> Result<()> {
         let mut rng = TestRng::default();
 
-        let mut create_leaves = |num_leaves| {
-            (0..num_leaves)
-                .map(|_| console::Field::<<Circuit as Environment>::Network>::rand(&mut rng).to_bits_le())
-                .collect::<Vec<_>>()
-        };
+        let mut create_leaves =
+            |num_leaves| (0..num_leaves).map(|_| console::Field::rand(&mut rng).to_bits_le()).collect::<Vec<_>>();
 
         for i in 0..ITERATIONS {
             // Determine the number of leaves.
@@ -97,19 +99,17 @@ mod tests {
             // Compute the leaves.
             let leaves = create_leaves(num_leaves);
             // Compute the Merkle tree.
-            let merkle_tree = <<Circuit as Environment>::Network as snarkvm_console_network::Network>::merkle_tree_bhp::<
-                DEPTH,
-            >(&leaves)?;
+            let merkle_tree = snarkvm_console_network::AleoNetwork::merkle_tree_bhp::<DEPTH>(&leaves)?;
 
             for (index, leaf) in leaves.iter().enumerate() {
                 // Compute the Merkle path.
                 let merkle_path = merkle_tree.prove(index, leaf)?;
 
                 // // Initialize the Merkle leaf.
-                // let leaf: Vec<Boolean<_>> = Inject::new(mode, leaf.clone());
+                // let leaf: Vec<Boolean> = Inject::new(mode, leaf.clone());
 
                 Circuit::scope(format!("New {mode}"), || {
-                    let candidate = MerklePath::<Circuit, DEPTH>::new(mode, merkle_path.clone());
+                    let candidate = MerklePath::<DEPTH>::new(mode, merkle_path.clone());
                     assert_eq!(merkle_path, candidate.eject_value());
                     assert_scope!(num_constants, num_public, num_private, num_constraints);
                 });

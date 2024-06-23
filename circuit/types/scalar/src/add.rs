@@ -12,50 +12,52 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleScalar;
+
 use super::*;
 
-impl<E: Environment> Add<Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Add<Scalar> for Scalar {
+    type Output = Scalar;
 
-    fn add(self, other: Scalar<E>) -> Self::Output {
+    fn add(self, other: Scalar) -> Self::Output {
         self + &other
     }
 }
 
-impl<E: Environment> Add<Scalar<E>> for &Scalar<E> {
-    type Output = Scalar<E>;
+impl Add<Scalar> for &Scalar {
+    type Output = Scalar;
 
-    fn add(self, other: Scalar<E>) -> Self::Output {
+    fn add(self, other: Scalar) -> Self::Output {
         self + &other
     }
 }
 
-impl<E: Environment> Add<&Scalar<E>> for Scalar<E> {
-    type Output = Scalar<E>;
+impl Add<&Scalar> for Scalar {
+    type Output = Scalar;
 
-    fn add(self, other: &Scalar<E>) -> Self::Output {
+    fn add(self, other: &Scalar) -> Self::Output {
         &self + other
     }
 }
 
-impl<E: Environment> Add<&Scalar<E>> for &Scalar<E> {
-    type Output = Scalar<E>;
+impl Add<&Scalar> for &Scalar {
+    type Output = Scalar;
 
-    fn add(self, other: &Scalar<E>) -> Self::Output {
+    fn add(self, other: &Scalar) -> Self::Output {
         let mut result = self.clone();
         result += other;
         result
     }
 }
 
-impl<E: Environment> AddAssign<Scalar<E>> for Scalar<E> {
-    fn add_assign(&mut self, other: Scalar<E>) {
+impl AddAssign<Scalar> for Scalar {
+    fn add_assign(&mut self, other: Scalar) {
         *self += &other;
     }
 }
 
-impl<E: Environment> AddAssign<&Scalar<E>> for Scalar<E> {
-    fn add_assign(&mut self, other: &Scalar<E>) {
+impl AddAssign<&Scalar> for Scalar {
+    fn add_assign(&mut self, other: &Scalar) {
         // Determine the variable mode.
         if self.is_constant() && other.is_constant() {
             // Compute the sum and set the new constant in `self`.
@@ -68,7 +70,7 @@ impl<E: Environment> AddAssign<&Scalar<E>> for Scalar<E> {
 
             // Extract the scalar field bits from the field element, with a carry bit.
             // (For advanced users) This operation saves us 2 private variables and 2 constraints.
-            let bits_le = sum.to_lower_bits_le(E::ScalarField::size_in_bits() + 1);
+            let bits_le = sum.to_lower_bits_le(ConsoleScalar::size_in_bits() + 1);
 
             // Recover the sanitized (truncated) sum on the base field.
             // (For advanced users) This operation saves us 2 private variables and 2 constraints.
@@ -80,16 +82,16 @@ impl<E: Environment> AddAssign<&Scalar<E>> for Scalar<E> {
             // compute the difference between the sum and modulus. This is safe as the scalar field modulus
             // is less that the base field modulus, and thus will always fit in a base field element.
             let modulus =
-                Field::constant(match console::FromBits::from_bits_le(&E::ScalarField::modulus().to_bits_le()) {
+                Field::constant(match console::FromBits::from_bits_le(&ConsoleScalar::modulus().to_bits_le()) {
                     Ok(modulus) => modulus,
-                    Err(error) => E::halt(format!("Failed to retrieve the scalar modulus as bytes: {error}")),
+                    Err(error) => Circuit::halt(format!("Failed to retrieve the scalar modulus as bytes: {error}")),
                 });
 
             // Determine the wrapping sum, by computing the difference between the sum and modulus, if `sum` < `modulus`.
             let wrapping_sum = Ternary::ternary(&sum.is_less_than(&modulus), &sum, &(&sum - &modulus));
 
             // Retrieve the bits of the wrapping sum.
-            let bits_le = wrapping_sum.to_lower_bits_le(console::Scalar::<E::Network>::size_in_bits());
+            let bits_le = wrapping_sum.to_lower_bits_le(console::Scalar::size_in_bits());
 
             // Set the sum of `self` and `other`, in `self`.
             *self = Scalar { field: wrapping_sum, bits_le: OnceCell::with_value(bits_le) };
@@ -97,7 +99,7 @@ impl<E: Environment> AddAssign<&Scalar<E>> for Scalar<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn Add<Scalar<E>, Output = Scalar<E>>> for Scalar<E> {
+impl Metrics<dyn Add<Scalar, Output = Scalar>> for Scalar {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -108,7 +110,7 @@ impl<E: Environment> Metrics<dyn Add<Scalar<E>, Output = Scalar<E>>> for Scalar<
     }
 }
 
-impl<E: Environment> OutputMode<dyn Add<Scalar<E>, Output = Scalar<E>>> for Scalar<E> {
+impl OutputMode<dyn Add<Scalar, Output = Scalar>> for Scalar {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -129,13 +131,13 @@ mod tests {
     #[rustfmt::skip]
     fn check_add(
         name: &str,
-        first: console::Scalar<<Circuit as Environment>::Network>,
-        second: console::Scalar<<Circuit as Environment>::Network>,
+        first: console::Scalar,
+        second: console::Scalar,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Scalar::<Circuit>::new(mode_a, first);
-        let b = Scalar::<Circuit>::new(mode_b, second);
+        let a = Scalar::new(mode_a, first);
+        let b = Scalar::new(mode_b, second);
         let case = format!("({} + {})", a.eject_value(), b.eject_value());
         let expected = first + second;
 

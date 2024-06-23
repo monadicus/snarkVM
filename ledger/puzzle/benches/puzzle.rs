@@ -27,7 +27,7 @@ use snarkvm_ledger_puzzle_epoch::MerklePuzzle;
 use criterion::Criterion;
 use rand::{self, thread_rng, CryptoRng, RngCore};
 
-fn sample_address_and_counter(rng: &mut (impl CryptoRng + RngCore)) -> (Address<MainnetV0>, u64) {
+fn sample_address_and_counter(rng: &mut (impl CryptoRng + RngCore)) -> (Address, u64) {
     let private_key = PrivateKey::new(rng).unwrap();
     let address = Address::try_from(private_key).unwrap();
     let counter = rng.next_u64();

@@ -288,14 +288,14 @@ mod tests {
     use snarkvm_curves::bls12_377::Fr;
 
     /// Compute 2^EXPONENT - 1, in a purposefully constraint-inefficient manner for testing.
-    fn create_example_circuit<E: Environment>() -> Field<E> {
-        let one = snarkvm_console_types::Field::<E::Network>::one();
+    fn create_example_circuit<E: Environment>() -> Field {
+        let one = snarkvm_console_types::Field::one();
         let two = one + one;
 
         const EXPONENT: u64 = 64;
 
         // Compute 2^EXPONENT - 1, in a purposefully constraint-inefficient manner for testing.
-        let mut candidate = Field::<E>::new(Mode::Public, one);
+        let mut candidate = Field::new(Mode::Public, one);
         let mut accumulator = Field::new(Mode::Private, two);
         for _ in 0..EXPONENT {
             candidate += &accumulator;

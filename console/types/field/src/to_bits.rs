@@ -29,9 +29,6 @@ impl ToBits for Field {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 
@@ -41,10 +38,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let field: Field<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let field: Field = Uniform::rand(&mut rng);
 
             let candidate = field.to_bits_le();
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Field::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*field).to_bits_le().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);
@@ -58,10 +55,10 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let field: Field<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let field: Field = Uniform::rand(&mut rng);
 
             let candidate = field.to_bits_be();
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), candidate.len());
+            assert_eq!(Field::size_in_bits(), candidate.len());
 
             for (expected, candidate) in (*field).to_bits_be().iter().zip_eq(&candidate) {
                 assert_eq!(expected, candidate);

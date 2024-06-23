@@ -20,9 +20,9 @@ impl Parser for PlaintextType {
     fn parse(string: &str) -> ParserResult<Self> {
         // Parse to determine the plaintext type (order matters).
         alt((
-            map(ArrayType::parse, |type_| Self::Array(type_)),
-            map(Identifier::parse, |identifier| Self::Struct(identifier)),
-            map(LiteralType::parse, |type_| Self::Literal(type_)),
+            map(ArrayType::parse, Self::Array),
+            map(Identifier::parse, Self::Struct),
+            map(LiteralType::parse, Self::Literal),
         ))(string)
     }
 }
@@ -74,25 +74,16 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<()> {
-        assert_eq!(
-            PlaintextType::parse("field"),
-            Ok(("", PlaintextType::<CurrentNetwork>::Literal(LiteralType::Field)))
-        );
-        assert_eq!(
-            PlaintextType::parse("signature"),
-            Ok(("", PlaintextType::<CurrentNetwork>::Literal(LiteralType::Signature)))
-        );
-        assert_eq!(
-            PlaintextType::parse("foo"),
-            Ok(("", PlaintextType::<CurrentNetwork>::Struct(Identifier::from_str("foo")?)))
-        );
+        assert_eq!(PlaintextType::parse("field"), Ok(("", PlaintextType::Literal(LiteralType::Field))));
+        assert_eq!(PlaintextType::parse("signature"), Ok(("", PlaintextType::Literal(LiteralType::Signature))));
+        assert_eq!(PlaintextType::parse("foo"), Ok(("", PlaintextType::Struct(Identifier::from_str("foo")?))));
         assert_eq!(
             PlaintextType::parse("u8jdsklaj"),
-            Ok(("", PlaintextType::<CurrentNetwork>::Struct(Identifier::from_str("u8jdsklaj")?)))
+            Ok(("", PlaintextType::Struct(Identifier::from_str("u8jdsklaj")?)))
         );
         assert_eq!(
             PlaintextType::parse("[field; 1u32]"),
-            Ok(("", PlaintextType::<CurrentNetwork>::Array(ArrayType::from_str("[field; 1u32]")?)))
+            Ok(("", PlaintextType::Array(ArrayType::from_str("[field; 1u32]")?)))
         );
         Ok(())
     }
@@ -100,74 +91,54 @@ mod tests {
     #[test]
     fn test_parse_fails() -> Result<()> {
         // Literal type must not contain visibility.
-        assert_eq!(
-            Ok((".constant", PlaintextType::<CurrentNetwork>::from_str("field")?)),
-            PlaintextType::<CurrentNetwork>::parse("field.constant")
-        );
-        assert_eq!(
-            Ok((".public", PlaintextType::<CurrentNetwork>::from_str("field")?)),
-            PlaintextType::<CurrentNetwork>::parse("field.public")
-        );
-        assert_eq!(
-            Ok((".private", PlaintextType::<CurrentNetwork>::from_str("field")?)),
-            PlaintextType::<CurrentNetwork>::parse("field.private")
-        );
+        assert_eq!(Ok((".constant", PlaintextType::from_str("field")?)), PlaintextType::parse("field.constant"));
+        assert_eq!(Ok((".public", PlaintextType::from_str("field")?)), PlaintextType::parse("field.public"));
+        assert_eq!(Ok((".private", PlaintextType::from_str("field")?)), PlaintextType::parse("field.private"));
 
         // Struct type must not contain visibility.
-        assert_eq!(
-            Ok((".constant", Identifier::<CurrentNetwork>::from_str("foo")?)),
-            Identifier::<CurrentNetwork>::parse("foo.constant")
-        );
-        assert_eq!(
-            Ok((".public", Identifier::<CurrentNetwork>::from_str("foo")?)),
-            Identifier::<CurrentNetwork>::parse("foo.public")
-        );
-        assert_eq!(
-            Ok((".private", Identifier::<CurrentNetwork>::from_str("foo")?)),
-            Identifier::<CurrentNetwork>::parse("foo.private")
-        );
+        assert_eq!(Ok((".constant", Identifier::from_str("foo")?)), Identifier::parse("foo.constant"));
+        assert_eq!(Ok((".public", Identifier::from_str("foo")?)), Identifier::parse("foo.public"));
+        assert_eq!(Ok((".private", Identifier::from_str("foo")?)), Identifier::parse("foo.private"));
 
         // Array type must not contain visibility.
         assert_eq!(
-            Ok((".constant", PlaintextType::<CurrentNetwork>::from_str("[field; 1u32]")?)),
-            PlaintextType::<CurrentNetwork>::parse("[field; 1u32].constant")
+            Ok((".constant", PlaintextType::from_str("[field; 1u32]")?)),
+            PlaintextType::parse("[field; 1u32].constant")
         );
         assert_eq!(
-            Ok((".public", PlaintextType::<CurrentNetwork>::from_str("[field; 1u32]")?)),
-            PlaintextType::<CurrentNetwork>::parse("[field; 1u32].public")
+            Ok((".public", PlaintextType::from_str("[field; 1u32]")?)),
+            PlaintextType::parse("[field; 1u32].public")
         );
         assert_eq!(
-            Ok((".private", PlaintextType::<CurrentNetwork>::from_str("[field; 1u32]")?)),
-            PlaintextType::<CurrentNetwork>::parse("[field; 1u32].private")
+            Ok((".private", PlaintextType::from_str("[field; 1u32]")?)),
+            PlaintextType::parse("[field; 1u32].private")
         );
 
         // Must be non-empty.
-        assert!(PlaintextType::<CurrentNetwork>::parse("").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("{}").is_err());
+        assert!(PlaintextType::parse("").is_err());
+        assert!(PlaintextType::parse("{}").is_err());
 
         // Invalid characters.
-        assert!(PlaintextType::<CurrentNetwork>::parse("_").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("__").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("___").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("-").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("--").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("---").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("*").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("**").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("***").is_err());
+        assert!(PlaintextType::parse("_").is_err());
+        assert!(PlaintextType::parse("__").is_err());
+        assert!(PlaintextType::parse("___").is_err());
+        assert!(PlaintextType::parse("-").is_err());
+        assert!(PlaintextType::parse("--").is_err());
+        assert!(PlaintextType::parse("---").is_err());
+        assert!(PlaintextType::parse("*").is_err());
+        assert!(PlaintextType::parse("**").is_err());
+        assert!(PlaintextType::parse("***").is_err());
 
         // Must not start with a number.
-        assert!(PlaintextType::<CurrentNetwork>::parse("1").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("2").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("3").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("12").is_err());
-        assert!(PlaintextType::<CurrentNetwork>::parse("111").is_err());
+        assert!(PlaintextType::parse("1").is_err());
+        assert!(PlaintextType::parse("2").is_err());
+        assert!(PlaintextType::parse("3").is_err());
+        assert!(PlaintextType::parse("1foo").is_err());
+        assert!(PlaintextType::parse("12").is_err());
+        assert!(PlaintextType::parse("111").is_err());
 
         // Struct types must fit within the data capacity of a base field element.
-        let struct_ = PlaintextType::<CurrentNetwork>::parse(
-            "foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy",
-        );
+        let struct_ = PlaintextType::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(struct_.is_err());
 
         Ok(())
@@ -175,15 +146,12 @@ mod tests {
 
     #[test]
     fn test_display() -> Result<()> {
-        assert_eq!(PlaintextType::<CurrentNetwork>::Literal(LiteralType::Boolean).to_string(), "boolean");
-        assert_eq!(PlaintextType::<CurrentNetwork>::Literal(LiteralType::Field).to_string(), "field");
-        assert_eq!(PlaintextType::<CurrentNetwork>::Literal(LiteralType::Signature).to_string(), "signature");
-        assert_eq!(PlaintextType::<CurrentNetwork>::Struct(Identifier::from_str("foo")?).to_string(), "foo");
-        assert_eq!(PlaintextType::<CurrentNetwork>::Struct(Identifier::from_str("bar")?).to_string(), "bar");
-        assert_eq!(
-            PlaintextType::<CurrentNetwork>::Array(ArrayType::from_str("[field; 8u32]")?).to_string(),
-            "[field; 8u32]"
-        );
+        assert_eq!(PlaintextType::Literal(LiteralType::Boolean).to_string(), "boolean");
+        assert_eq!(PlaintextType::Literal(LiteralType::Field).to_string(), "field");
+        assert_eq!(PlaintextType::Literal(LiteralType::Signature).to_string(), "signature");
+        assert_eq!(PlaintextType::Struct(Identifier::from_str("foo")?).to_string(), "foo");
+        assert_eq!(PlaintextType::Struct(Identifier::from_str("bar")?).to_string(), "bar");
+        assert_eq!(PlaintextType::Array(ArrayType::from_str("[field; 8u32]")?).to_string(), "[field; 8u32]");
         Ok(())
     }
 }

@@ -14,25 +14,25 @@
 
 use super::*;
 
-impl<E: Environment> From<Address<E>> for Field<E> {
+impl From<Address> for Field {
     /// Returns the **x-coordinate** of the affine group element in the address.
-    fn from(value: Address<E>) -> Self {
+    fn from(value: Address) -> Self {
         value.to_field()
     }
 }
 
-impl<E: Environment> From<&Address<E>> for Field<E> {
+impl From<&Address> for Field {
     /// Returns the **x-coordinate** of the affine group element in the address.
-    fn from(value: &Address<E>) -> Self {
+    fn from(value: &Address) -> Self {
         value.to_field()
     }
 }
 
-impl<E: Environment> ToField for Address<E> {
-    type Field = Field<E>;
+impl ToField for Address {
+    type Field = Field;
 
     /// Returns the **x-coordinate** of the affine group element in the address.
-    fn to_field(&self) -> Field<E> {
+    fn to_field(&self) -> Field {
         self.0.to_x_coordinate()
     }
 }
@@ -50,7 +50,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Address::<Circuit>::from_group(Group::new(mode, expected));
+            let candidate = Address::from_group(Group::new(mode, expected));
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_field();

@@ -24,12 +24,13 @@ use indexmap::IndexMap;
 #[derive(Clone, Eq, PartialEq)]
 pub struct PuzzleSolutions<N: Network> {
     /// The solutions for the puzzle.
-    solutions: IndexMap<SolutionID<N>, Solution<N>>,
+    solutions: IndexMap<SolutionID, Solution>,
+    phantom: std::marker::PhantomData<N>,
 }
 
 impl<N: Network> PuzzleSolutions<N> {
     /// Initializes a new instance of the solutions.
-    pub fn new(solutions: Vec<Solution<N>>) -> Result<Self> {
+    pub fn new(solutions: Vec<Solution>) -> Result<Self> {
         // Ensure the solutions are not empty.
         ensure!(!solutions.is_empty(), "There are no solutions to verify for the puzzle");
         // Ensure the number of solutions does not exceed `MAX_SOLUTIONS`.
@@ -41,11 +42,14 @@ impl<N: Network> PuzzleSolutions<N> {
             bail!("The solutions contain duplicate solution IDs");
         }
         // Return the solutions.
-        Ok(Self { solutions: solutions.into_iter().map(|solution| (solution.id(), solution)).collect() })
+        Ok(Self {
+            solutions: solutions.into_iter().map(|solution| (solution.id(), solution)).collect(),
+            phantom: std::marker::PhantomData,
+        })
     }
 
     /// Returns the solution IDs.
-    pub fn solution_ids(&self) -> impl '_ + Iterator<Item = &SolutionID<N>> {
+    pub fn solution_ids(&self) -> impl '_ + Iterator<Item = &SolutionID> {
         self.solutions.keys()
     }
 
@@ -60,23 +64,23 @@ impl<N: Network> PuzzleSolutions<N> {
     }
 
     /// Returns the solution for the given solution ID.
-    pub fn get_solution(&self, solution_id: &SolutionID<N>) -> Option<&Solution<N>> {
+    pub fn get_solution(&self, solution_id: &SolutionID) -> Option<&Solution> {
         self.solutions.get(solution_id)
     }
 
     /// Returns the accumulator challenge point.
-    pub fn to_accumulator_point(&self) -> Result<Field<N>> {
+    pub fn to_accumulator_point(&self) -> Result<Field> {
         // Encode the solution IDs as field elements.
         let mut preimage = self.solution_ids().map(|id| Field::from_u64(**id)).collect::<Vec<_>>();
         // Pad the preimage to the required length.
         preimage.resize(N::MAX_SOLUTIONS, Field::zero());
         // Hash the preimage to obtain the accumulator point.
-        N::hash_psd8(&preimage)
+        AleoNetwork::hash_psd8(&preimage)
     }
 }
 
 impl<N: Network> Deref for PuzzleSolutions<N> {
-    type Target = IndexMap<SolutionID<N>, Solution<N>>;
+    type Target = IndexMap<SolutionID, Solution>;
 
     fn deref(&self) -> &Self::Target {
         &self.solutions
@@ -101,7 +105,7 @@ mod tests {
         // Sample a new solutions.
         let mut solutions = vec![];
         for _ in 0..num_solutions {
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+            let private_key = PrivateKey::new(rng).unwrap();
             let address = Address::try_from(private_key).unwrap();
 
             let partial_solution = PartialSolution::new(rng.gen(), address, u64::rand(rng)).unwrap();

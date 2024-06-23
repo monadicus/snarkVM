@@ -23,22 +23,22 @@ use crate::Hash;
 use snarkvm_circuit_types::{environment::prelude::*, Boolean, U64};
 
 /// The Keccak-224 hash function.
-pub type Keccak224<E> = Keccak<E, { KeccakType::Keccak as u8 }, 224>;
+pub type Keccak224 = Keccak<{ KeccakType::Keccak as u8 }, 224>;
 /// The Keccak-256 hash function.
-pub type Keccak256<E> = Keccak<E, { KeccakType::Keccak as u8 }, 256>;
+pub type Keccak256 = Keccak<{ KeccakType::Keccak as u8 }, 256>;
 /// The Keccak-384 hash function.
-pub type Keccak384<E> = Keccak<E, { KeccakType::Keccak as u8 }, 384>;
+pub type Keccak384 = Keccak<{ KeccakType::Keccak as u8 }, 384>;
 /// The Keccak-512 hash function.
-pub type Keccak512<E> = Keccak<E, { KeccakType::Keccak as u8 }, 512>;
+pub type Keccak512 = Keccak<{ KeccakType::Keccak as u8 }, 512>;
 
 /// The SHA3-224 hash function.
-pub type Sha3_224<E> = Keccak<E, { KeccakType::Sha3 as u8 }, 224>;
+pub type Sha3_224 = Keccak<{ KeccakType::Sha3 as u8 }, 224>;
 /// The SHA3-256 hash function.
-pub type Sha3_256<E> = Keccak<E, { KeccakType::Sha3 as u8 }, 256>;
+pub type Sha3_256 = Keccak<{ KeccakType::Sha3 as u8 }, 256>;
 /// The SHA3-384 hash function.
-pub type Sha3_384<E> = Keccak<E, { KeccakType::Sha3 as u8 }, 384>;
+pub type Sha3_384 = Keccak<{ KeccakType::Sha3 as u8 }, 384>;
 /// The SHA3-512 hash function.
-pub type Sha3_512<E> = Keccak<E, { KeccakType::Sha3 as u8 }, 512>;
+pub type Sha3_512 = Keccak<{ KeccakType::Sha3 as u8 }, 512>;
 
 /// A helper to specify the hash type.
 enum KeccakType {
@@ -74,15 +74,15 @@ const PERMUTATION_WIDTH: usize = 1600;
 ///
 /// In addition, the capacity is defined as `c := b - r`.
 #[derive(Clone, Debug, Default)]
-pub struct Keccak<E: Environment, const TYPE: u8, const VARIANT: usize> {
+pub struct Keccak<const TYPE: u8, const VARIANT: usize> {
     /// The round constants `RC[t] ∈ GF(2)` are defined as the
     /// output of a linear feedback shift register (LFSR).
-    round_constants: Vec<U64<E>>,
+    round_constants: Vec<U64>,
     /// Precomputations for the ρ step.
     rotl: [usize; MODULO * MODULO],
 }
 
-impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIANT> {
+impl<const TYPE: u8, const VARIANT: usize> Keccak<TYPE, VARIANT> {
     /// Initializes a new Keccak hash function.
     pub fn new() -> Self {
         Self {
@@ -92,7 +92,7 @@ impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIA
     }
 }
 
-impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIANT> {
+impl<const TYPE: u8, const VARIANT: usize> Keccak<TYPE, VARIANT> {
     /// The values `ROUND_CONSTANTS[t] ∈ GF(2)` are defined as the
     /// output of a binary linear feedback shift register (LFSR):
     /// ```text

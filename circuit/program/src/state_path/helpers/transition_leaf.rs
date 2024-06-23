@@ -12,45 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, U8};
 
 #[derive(Clone)]
-pub struct TransitionLeaf<A: Aleo> {
+pub struct TransitionLeaf {
     /// The version of the Merkle leaf.
-    version: U8<A>,
+    version: U8,
     /// The index of the Merkle leaf.
-    index: U8<A>,
+    index: U8,
     /// The variant of the Merkle leaf.
-    variant: U8<A>,
+    variant: U8,
     /// The ID.
-    id: Field<A>,
+    id: Field,
 }
 
-impl<A: Aleo> TransitionLeaf<A> {
+impl TransitionLeaf {
     /// Returns the version of the Merkle leaf.
-    pub const fn version(&self) -> &U8<A> {
+    pub const fn version(&self) -> &U8 {
         &self.version
     }
 
     /// Returns the index of the Merkle leaf.
-    pub const fn index(&self) -> &U8<A> {
+    pub const fn index(&self) -> &U8 {
         &self.index
     }
 
     /// Returns the variant of the Merkle leaf.
-    pub const fn variant(&self) -> &U8<A> {
+    pub const fn variant(&self) -> &U8 {
         &self.variant
     }
 
     /// Returns the ID in the Merkle leaf.
-    pub const fn id(&self) -> &Field<A> {
+    pub const fn id(&self) -> &Field {
         &self.id
     }
 }
 
-impl<A: Aleo> Inject for TransitionLeaf<A> {
-    type Primitive = console::TransitionLeaf<A::Network>;
+impl Inject for TransitionLeaf {
+    type Primitive = console::TransitionLeaf;
 
     /// Initializes a new transition leaf circuit from a primitive.
     fn new(mode: Mode, transition_leaf: Self::Primitive) -> Self {
@@ -63,8 +62,8 @@ impl<A: Aleo> Inject for TransitionLeaf<A> {
     }
 }
 
-impl<A: Aleo> Eject for TransitionLeaf<A> {
-    type Primitive = console::TransitionLeaf<A::Network>;
+impl Eject for TransitionLeaf {
+    type Primitive = console::TransitionLeaf;
 
     /// Ejects the mode of the transition leaf.
     fn eject_mode(&self) -> Mode {
@@ -82,8 +81,8 @@ impl<A: Aleo> Eject for TransitionLeaf<A> {
     }
 }
 
-impl<A: Aleo> ToBits for TransitionLeaf<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for TransitionLeaf {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {

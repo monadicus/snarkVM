@@ -30,31 +30,31 @@ use console::{
 use indexmap::IndexSet;
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct ClosureCore<N: Network, Instruction: InstructionTrait<N>> {
+pub struct ClosureCore<Instruction: InstructionTrait> {
     /// The name of the closure.
-    name: Identifier<N>,
+    name: Identifier,
     /// The input statements, added in order of the input registers.
     /// Input assignments are ensured to match the ordering of the input statements.
-    inputs: IndexSet<Input<N>>,
+    inputs: IndexSet<Input>,
     /// The instructions, in order of execution.
     instructions: Vec<Instruction>,
     /// The output statements, in order of the desired output.
-    outputs: IndexSet<Output<N>>,
+    outputs: IndexSet<Output>,
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>> ClosureCore<N, Instruction> {
+impl<Instruction: InstructionTrait> ClosureCore<N, Instruction> {
     /// Initializes a new closure with the given name.
-    pub fn new(name: Identifier<N>) -> Self {
+    pub fn new(name: Identifier) -> Self {
         Self { name, inputs: IndexSet::new(), instructions: Vec::new(), outputs: IndexSet::new() }
     }
 
     /// Returns the name of the closure.
-    pub const fn name(&self) -> &Identifier<N> {
+    pub const fn name(&self) -> &Identifier {
         &self.name
     }
 
     /// Returns the closure inputs.
-    pub const fn inputs(&self) -> &IndexSet<Input<N>> {
+    pub const fn inputs(&self) -> &IndexSet<Input> {
         &self.inputs
     }
 
@@ -64,12 +64,12 @@ impl<N: Network, Instruction: InstructionTrait<N>> ClosureCore<N, Instruction> {
     }
 
     /// Returns the closure outputs.
-    pub const fn outputs(&self) -> &IndexSet<Output<N>> {
+    pub const fn outputs(&self) -> &IndexSet<Output> {
         &self.outputs
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>> ClosureCore<N, Instruction> {
+impl<Instruction: InstructionTrait> ClosureCore<N, Instruction> {
     /// Adds the input statement to the closure.
     ///
     /// # Errors
@@ -77,13 +77,13 @@ impl<N: Network, Instruction: InstructionTrait<N>> ClosureCore<N, Instruction> {
     /// This method will halt if the maximum number of inputs has been reached.
     /// This method will halt if the input statement was previously added.
     #[inline]
-    fn add_input(&mut self, input: Input<N>) -> Result<()> {
+    fn add_input(&mut self, input: Input) -> Result<()> {
         // Ensure there are no instructions or output statements in memory.
         ensure!(self.instructions.is_empty(), "Cannot add inputs after instructions have been added");
         ensure!(self.outputs.is_empty(), "Cannot add inputs after outputs have been added");
 
         // Ensure the maximum number of inputs has not been exceeded.
-        ensure!(self.inputs.len() < N::MAX_INPUTS, "Cannot add more than {} inputs", N::MAX_INPUTS);
+        ensure!(self.inputs.len() < AleoNetwork::MAX_INPUTS, "Cannot add more than {} inputs", AleoNetwork::MAX_INPUTS);
         // Ensure the input statement was not previously added.
         ensure!(!self.inputs.contains(&input), "Cannot add duplicate input statement");
 
@@ -107,9 +107,9 @@ impl<N: Network, Instruction: InstructionTrait<N>> ClosureCore<N, Instruction> {
 
         // Ensure the maximum number of instructions has not been exceeded.
         ensure!(
-            self.instructions.len() < N::MAX_INSTRUCTIONS,
+            self.instructions.len() < AleoNetwork::MAX_INSTRUCTIONS,
             "Cannot add more than {} instructions",
-            N::MAX_INSTRUCTIONS
+            AleoNetwork::MAX_INSTRUCTIONS
         );
 
         // Ensure the destination register is a locator.
@@ -127,9 +127,13 @@ impl<N: Network, Instruction: InstructionTrait<N>> ClosureCore<N, Instruction> {
     /// # Errors
     /// This method will halt if the maximum number of outputs has been reached.
     #[inline]
-    fn add_output(&mut self, output: Output<N>) -> Result<()> {
+    fn add_output(&mut self, output: Output) -> Result<()> {
         // Ensure the maximum number of outputs has not been exceeded.
-        ensure!(self.outputs.len() < N::MAX_OUTPUTS, "Cannot add more than {} outputs", N::MAX_OUTPUTS);
+        ensure!(
+            self.outputs.len() < AleoNetwork::MAX_OUTPUTS,
+            "Cannot add more than {} outputs",
+            AleoNetwork::MAX_OUTPUTS
+        );
 
         // Ensure the closure output register is not a record.
         ensure!(!matches!(output.register_type(), RegisterType::Record(..)), "Output register cannot be a record");
@@ -140,7 +144,7 @@ impl<N: Network, Instruction: InstructionTrait<N>> ClosureCore<N, Instruction> {
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>> TypeName for ClosureCore<N, Instruction> {
+impl<Instruction: InstructionTrait> TypeName for ClosureCore<N, Instruction> {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {

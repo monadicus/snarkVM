@@ -47,7 +47,7 @@ impl BlockRange {
 
 impl BlockRange {
     /// Returns a unique field element encoding of the block range.
-    pub fn to_fields<N: Network>(&self) -> Result<Vec<Field<N>>> {
+    pub fn to_fields<N: Network>(&self) -> Result<Vec<Field>> {
         match self {
             BlockRange::Range(range) => {
                 Ok(vec![Field::from_u8(0), Field::from_u32(range.start), Field::from_u32(range.end)])

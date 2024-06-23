@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> ToField for Identifier<A> {
-    type Field = Field<A>;
+impl ToField for Identifier {
+    type Field = Field;
 
     /// Returns the identifier as a base field element.
     fn to_field(&self) -> Self::Field {

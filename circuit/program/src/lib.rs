@@ -40,8 +40,8 @@ pub use state_path::*;
 use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, Boolean};
 
-pub trait Visibility<A: Aleo>:
-    Equal<Self, Output = <Self as ToBits>::Boolean> + ToBits<Boolean = Boolean<A>> + FromBits + ToFields + FromFields
+pub trait Visibility:
+    Equal<Self, Output = <Self as ToBits>::Boolean> + ToBits<Boolean = Boolean> + FromBits + ToFields + FromFields
 {
     /// Returns the number of field elements to encode `self`.
     fn size_in_fields(&self) -> u16;

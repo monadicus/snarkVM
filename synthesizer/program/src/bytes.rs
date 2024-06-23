@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> FromBytes
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> FromBytes
     for ProgramCore<N, Instruction, Command>
 {
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
@@ -64,7 +64,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fro
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> ToBytes
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> ToBytes
     for ProgramCore<N, Instruction, Command>
 {
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {

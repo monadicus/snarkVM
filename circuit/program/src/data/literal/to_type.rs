@@ -15,7 +15,7 @@
 use super::*;
 
 #[cfg(console)]
-impl<A: Aleo> Literal<A> {
+impl Literal {
     /// Returns the type name of the literal.
     pub fn to_type(&self) -> console::LiteralType {
         match self {

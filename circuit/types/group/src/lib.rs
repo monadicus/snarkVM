@@ -26,26 +26,26 @@ pub mod neg;
 pub mod sub;
 pub mod ternary;
 
+use console::{ConsoleAffine, ConsoleField, ConsoleScalar, CONSOLE_EDWARDS_A, CONSOLE_EDWARDS_D};
 #[cfg(test)]
 use console::{TestRng, Uniform};
 #[cfg(test)]
 use snarkvm_circuit_environment::{assert_count, assert_output_mode, assert_scope, count, output_mode};
 
-use console::AffineCurve;
-use snarkvm_circuit_environment::prelude::*;
+use snarkvm_circuit_environment::{prelude::*, Circuit};
 use snarkvm_circuit_types_boolean::Boolean;
 use snarkvm_circuit_types_field::Field;
 use snarkvm_circuit_types_scalar::Scalar;
 
 #[derive(Clone)]
-pub struct Group<E: Environment> {
-    x: Field<E>,
-    y: Field<E>,
+pub struct Group {
+    x: Field,
+    y: Field,
 }
 
-impl<E: Environment> GroupTrait<Scalar<E>> for Group<E> {}
+impl GroupTrait<Scalar> for Group {}
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Returns the generator of the prime-order subgroup.
     pub fn generator() -> Self {
         Group::constant(console::Group::generator())
@@ -53,8 +53,8 @@ impl<E: Environment> Group<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> Inject for Group<E> {
-    type Primitive = console::Group<E::Network>;
+impl Inject for Group {
+    type Primitive = console::Group;
 
     /// Initializes a new affine group element.
     ///
@@ -73,14 +73,14 @@ impl<E: Environment> Inject for Group<E> {
     }
 }
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Enforces that `self` is on the curve.
     ///
     /// Ensure ax^2 + y^2 = 1 + dx^2y^2
     /// by checking that y^2 * (dx^2 - 1) = (ax^2 - 1)
     pub fn enforce_on_curve(&self) {
-        let a = Field::constant(console::Field::new(E::EDWARDS_A));
-        let d = Field::constant(console::Field::new(E::EDWARDS_D));
+        let a = Field::constant(console::Field::new(CONSOLE_EDWARDS_A));
+        let d = Field::constant(console::Field::new(CONSOLE_EDWARDS_D));
 
         let x2 = self.x.square();
         let y2 = self.y.square();
@@ -90,11 +90,11 @@ impl<E: Environment> Group<E> {
         let third = (a * x2) - Field::one();
 
         // Ensure y^2 * (dx^2 - 1) = (ax^2 - 1).
-        E::enforce(|| (first, second, third));
+        Circuit::enforce(|| (first, second, third));
     }
 }
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Enforces that `self` is on the curve and in the largest prime-order subgroup.
     pub fn enforce_in_group(&self) {
         let self_witness = self.eject_value();
@@ -119,7 +119,7 @@ impl<E: Environment> Group<E> {
         point.enforce_on_curve();
 
         // (For advanced users) The cofactor for this curve is `4`. Thus doubling is used to be performant.
-        debug_assert!(E::Affine::cofactor().len() == 1 && E::Affine::cofactor()[0] == 4);
+        debug_assert!(ConsoleAffine::cofactor().len() == 1 && ConsoleAffine::cofactor()[0] == 4);
 
         // Double the point on the curve.
         // This introduces two new R1CS variables for the doubled point.
@@ -132,9 +132,9 @@ impl<E: Environment> Group<E> {
 
     /// Returns a `Boolean` indicating if `self` is in the largest prime-order subgroup,
     /// assuming that `self` is on the curve.
-    pub fn is_in_group(&self) -> Boolean<E> {
+    pub fn is_in_group(&self) -> Boolean {
         // Initialize the order of the subgroup as a bits.
-        let order = E::ScalarField::modulus();
+        let order = ConsoleScalar::modulus();
         let order_bits_be = order.to_bits_be();
         let mut order_bits_be_constants = Vec::with_capacity(order_bits_be.len());
         for bit in order_bits_be.iter() {
@@ -148,8 +148,8 @@ impl<E: Environment> Group<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> Eject for Group<E> {
-    type Primitive = console::Group<E::Network>;
+impl Eject for Group {
+    type Primitive = console::Group;
 
     /// Ejects the mode of the group element.
     fn eject_mode(&self) -> Mode {
@@ -163,7 +163,7 @@ impl<E: Environment> Eject for Group<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> Parser for Group<E> {
+impl Parser for Group {
     /// Parses a string into a group circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -180,7 +180,7 @@ impl<E: Environment> Parser for Group<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> FromStr for Group<E> {
+impl FromStr for Group {
     type Err = Error;
 
     /// Parses a string into a group circuit.
@@ -199,36 +199,36 @@ impl<E: Environment> FromStr for Group<E> {
 }
 
 #[cfg(console)]
-impl<E: Environment> TypeName for Group<E> {
+impl TypeName for Group {
     /// Returns the type name of the circuit as a string.
     #[inline]
     fn type_name() -> &'static str {
-        console::Group::<E::Network>::type_name()
+        console::Group::type_name()
     }
 }
 
 #[cfg(console)]
-impl<E: Environment> Debug for Group<E> {
+impl Debug for Group {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<E: Environment> Display for Group<E> {
+impl Display for Group {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}.{}", self.eject_value(), self.eject_mode())
     }
 }
 
-impl<E: Environment> From<Group<E>> for LinearCombination<E::BaseField> {
-    fn from(group: Group<E>) -> Self {
+impl From<Group> for LinearCombination<ConsoleField> {
+    fn from(group: Group) -> Self {
         From::from(&group)
     }
 }
 
-impl<E: Environment> From<&Group<E>> for LinearCombination<E::BaseField> {
-    fn from(group: &Group<E>) -> Self {
+impl From<&Group> for LinearCombination<ConsoleField> {
+    fn from(group: &Group) -> Self {
         group.to_x_coordinate().into()
     }
 }
@@ -243,10 +243,10 @@ mod tests {
     const ITERATIONS: u64 = 128;
 
     /// Attempts to construct an affine group element from the given x-coordinate and mode.
-    fn check_display(mode: Mode, point: console::Group<<Circuit as Environment>::Network>) {
+    fn check_display(mode: Mode, point: console::Group) {
         let x = *point.to_x_coordinate();
-        let candidate = Group::<Circuit>::new(mode, point);
-        assert_eq!(format!("{x}{}.{mode}", Group::<Circuit>::type_name()), format!("{candidate}"));
+        let candidate = Group::new(mode, point);
+        assert_eq!(format!("{x}{}.{mode}", Group::type_name()), format!("{candidate}"));
     }
 
     #[test]
@@ -259,7 +259,7 @@ mod tests {
             let point = Uniform::rand(&mut rng);
 
             Circuit::scope(&format!("Constant {i}"), || {
-                let affine = Group::<Circuit>::new(Mode::Constant, point);
+                let affine = Group::new(Mode::Constant, point);
                 assert_eq!(point, affine.eject_value());
                 assert_scope!(10, 0, 0, 0);
             });
@@ -271,7 +271,7 @@ mod tests {
             let point = Uniform::rand(&mut rng);
 
             Circuit::scope(&format!("Public {i}"), || {
-                let affine = Group::<Circuit>::new(Mode::Public, point);
+                let affine = Group::new(Mode::Public, point);
                 assert_eq!(point, affine.eject_value());
                 assert_scope!(4, 2, 12, 13);
             });
@@ -283,7 +283,7 @@ mod tests {
             let point = Uniform::rand(&mut rng);
 
             Circuit::scope(&format!("Private {i}"), || {
-                let affine = Group::<Circuit>::new(Mode::Private, point);
+                let affine = Group::new(Mode::Private, point);
                 assert_eq!(point, affine.eject_value());
                 assert_scope!(4, 0, 14, 13);
             });
@@ -309,77 +309,77 @@ mod tests {
 
     #[test]
     fn test_display_zero() {
-        let zero = console::Group::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Group::zero();
 
         // Constant
-        let candidate = Group::<Circuit>::new(Mode::Constant, zero);
+        let candidate = Group::new(Mode::Constant, zero);
         assert_eq!("0group.constant", &format!("{candidate}"));
 
         // Public
-        let candidate = Group::<Circuit>::new(Mode::Public, zero);
+        let candidate = Group::new(Mode::Public, zero);
         assert_eq!("0group.public", &format!("{candidate}"));
 
         // Private
-        let candidate = Group::<Circuit>::new(Mode::Private, zero);
+        let candidate = Group::new(Mode::Private, zero);
         assert_eq!("0group.private", &format!("{candidate}"));
     }
 
     #[rustfmt::skip]
     #[test]
     fn test_parser() {
-        type Primitive = console::Group<<Circuit as Environment>::Network>;
+        type Primitive = console::Group;
 
         // Constant
 
-        let (_, candidate) = Group::<Circuit>::parse("2group").unwrap();
+        let (_, candidate) = Group::parse("2group").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_constant());
 
-        let (_, candidate) = Group::<Circuit>::parse("2_group").unwrap();
+        let (_, candidate) = Group::parse("2_group").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_constant());
 
-        let (_, candidate) = Group::<Circuit>::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group", ).unwrap();
+        let (_, candidate) = Group::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group", ).unwrap();
         assert_eq!(Primitive::from_str("6124867906909631996143302210721132142811046555821040573308695429164760783231group").unwrap(), candidate.eject_value());
         assert!(candidate.is_constant());
 
-        let (_, candidate) = Group::<Circuit>::parse("2group.constant").unwrap();
+        let (_, candidate) = Group::parse("2group.constant").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_constant());
 
-        let (_, candidate) = Group::<Circuit>::parse("2_group.constant").unwrap();
+        let (_, candidate) = Group::parse("2_group.constant").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_constant());
 
-        let (_, candidate) = Group::<Circuit>::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group.constant", ).unwrap();
+        let (_, candidate) = Group::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group.constant", ).unwrap();
         assert_eq!(Primitive::from_str("6124867906909631996143302210721132142811046555821040573308695429164760783231group").unwrap(), candidate.eject_value());
         assert!(candidate.is_constant());
 
         // Public
 
-        let (_, candidate) = Group::<Circuit>::parse("2group.public").unwrap();
+        let (_, candidate) = Group::parse("2group.public").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_public());
 
-        let (_, candidate) = Group::<Circuit>::parse("2_group.public").unwrap();
+        let (_, candidate) = Group::parse("2_group.public").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_public());
 
-        let (_, candidate) = Group::<Circuit>::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group.public", ).unwrap();
+        let (_, candidate) = Group::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group.public", ).unwrap();
         assert_eq!(Primitive::from_str("6124867906909631996143302210721132142811046555821040573308695429164760783231group").unwrap(), candidate.eject_value());
         assert!(candidate.is_public());
 
         // Private
 
-        let (_, candidate) = Group::<Circuit>::parse("2group.private").unwrap();
+        let (_, candidate) = Group::parse("2group.private").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_private());
 
-        let (_, candidate) = Group::<Circuit>::parse("2_group.private").unwrap();
+        let (_, candidate) = Group::parse("2_group.private").unwrap();
         assert_eq!(Primitive::from_str("2group").unwrap(), candidate.eject_value());
         assert!(candidate.is_private());
 
-        let (_, candidate) = Group::<Circuit>::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group.private", ).unwrap();
+        let (_, candidate) = Group::parse("6124_8679069_09631996143302_21072113214281104_6555821040_573308695_4291647607832_31_group.private", ).unwrap();
         assert_eq!(Primitive::from_str("6124867906909631996143302210721132142811046555821040573308695429164760783231group").unwrap(), candidate.eject_value());
         assert!(candidate.is_private());
 
@@ -390,9 +390,9 @@ mod tests {
         for mode in [Mode::Constant, Mode::Public, Mode::Private] {
             for _ in 0..ITERATIONS {
                 let point = Uniform::rand(&mut rng);
-                let expected = Group::<Circuit>::new(mode, point);
+                let expected = Group::new(mode, point);
 
-                let (_, candidate) = Group::<Circuit>::parse(&format!("{expected}")).unwrap();
+                let (_, candidate) = Group::parse(&format!("{expected}")).unwrap();
                 assert_eq!(expected.eject_value(), candidate.eject_value());
                 assert_eq!(mode, candidate.eject_mode());
             }
@@ -401,7 +401,7 @@ mod tests {
 
     #[test]
     fn test_is_in_group() {
-        type PrimitiveField = console::Field<<Circuit as Environment>::Network>;
+        type PrimitiveField = console::Field;
 
         // First test the points that have low order.
 
@@ -413,8 +413,8 @@ mod tests {
         let q2x_string = "8444461749428370423367920132324624489117748830232680209268551413295902359552field";
 
         // (0,1) is in the large prime subgroup.
-        let y1: Field<Circuit> = Field::new(Mode::Public, PrimitiveField::from_str("1field").unwrap());
-        let group0 = Group::<Circuit>::from_xy_coordinates_unchecked(Field::zero(), y1);
+        let y1: Field = Field::new(Mode::Public, PrimitiveField::from_str("1field").unwrap());
+        let group0 = Group::from_xy_coordinates_unchecked(Field::zero(), y1);
         Circuit::scope("group0", || {
             let group0_is_in_group = group0.is_in_group();
             assert!(group0_is_in_group.eject_value());
@@ -424,8 +424,8 @@ mod tests {
 
         // The other three low order points are on the curve but not in the large prime subgroup.
         // Make sure is_in_group returns false for these.
-        let minus1: Field<Circuit> = Field::new(Mode::Public, PrimitiveField::from_str(minus1_string).unwrap());
-        let half0 = Group::<Circuit>::from_xy_coordinates_unchecked(Field::zero(), minus1);
+        let minus1: Field = Field::new(Mode::Public, PrimitiveField::from_str(minus1_string).unwrap());
+        let half0 = Group::from_xy_coordinates_unchecked(Field::zero(), minus1);
         Circuit::scope("half0", || {
             let half0_is_not_in_group = !half0.is_in_group();
             assert!(half0_is_not_in_group.eject_value());
@@ -433,8 +433,8 @@ mod tests {
         });
         Circuit::reset();
 
-        let q1x: Field<Circuit> = Field::new(Mode::Public, PrimitiveField::from_str(q1x_string).unwrap());
-        let quarter1 = Group::<Circuit>::from_xy_coordinates_unchecked(q1x, Field::zero());
+        let q1x: Field = Field::new(Mode::Public, PrimitiveField::from_str(q1x_string).unwrap());
+        let quarter1 = Group::from_xy_coordinates_unchecked(q1x, Field::zero());
         Circuit::scope("quarter1", || {
             let quarter1_is_not_in_group = !quarter1.is_in_group();
             assert!(quarter1_is_not_in_group.eject_value());
@@ -442,8 +442,8 @@ mod tests {
         });
         Circuit::reset();
 
-        let q2x: Field<Circuit> = Field::new(Mode::Public, PrimitiveField::from_str(q2x_string).unwrap());
-        let quarter2 = Group::<Circuit>::from_xy_coordinates_unchecked(q2x, Field::zero());
+        let q2x: Field = Field::new(Mode::Public, PrimitiveField::from_str(q2x_string).unwrap());
+        let quarter2 = Group::from_xy_coordinates_unchecked(q2x, Field::zero());
         Circuit::scope("quarter2", || {
             let quarter2_is_not_in_group = !quarter2.is_in_group();
             assert!(quarter2_is_not_in_group.eject_value());
@@ -456,13 +456,13 @@ mod tests {
 
             for i in 0..ITERATIONS {
                 // Sample a random element.
-                let point: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+                let point: console::Group = Uniform::rand(&mut rng);
 
                 // Inject the x-coordinate.
                 let x_coordinate = Field::new(mode, point.to_x_coordinate());
 
                 // Initialize the group element.
-                let element = Group::<Circuit>::from_x_coordinate(x_coordinate);
+                let element = Group::from_x_coordinate(x_coordinate);
 
                 Circuit::scope(format!("{mode} {i}"), || {
                     let is_in_group = element.is_in_group();

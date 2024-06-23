@@ -30,7 +30,7 @@ use indexmap::IndexMap;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Restrictions<N: Network> {
     /// The restrictions ID, for the current state of the `Restrictions` list.
-    restrictions_id: Field<N>,
+    restrictions_id: Field,
     /// The set of program IDs that are restricted from being executed.
     /// e.g. `restricted.aleo` => `..` (all blocks)
     /// e.g. `restricted.aleo` => `10..` (from block 10 onwards)
@@ -88,7 +88,7 @@ impl<N: Network> Restrictions<N> {
 
 impl<N: Network> Restrictions<N> {
     /// Returns the restrictions ID, for the current state of the `Restrictions` list.
-    pub const fn restrictions_id(&self) -> Field<N> {
+    pub const fn restrictions_id(&self) -> Field {
         self.restrictions_id
     }
 
@@ -217,7 +217,7 @@ impl<N: Network> Restrictions<N> {
         programs: &IndexMap<ProgramID<N>, BlockRange>,
         functions: &IndexMap<Locator<N>, BlockRange>,
         arguments: &IndexMap<Locator<N>, IndexMap<ArgumentLocator, IndexMap<Literal<N>, BlockRange>>>,
-    ) -> Result<Field<N>> {
+    ) -> Result<Field> {
         // Prepare the preimage data.
         let mut preimage = Vec::new();
 

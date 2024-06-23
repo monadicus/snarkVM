@@ -14,56 +14,56 @@
 
 use super::*;
 
-impl<E: Environment> SquareRoot for Field<E> {
+impl SquareRoot for Field {
     type Output = Self;
 
     /// Returns the square root of `self`.
     /// If there are two square roots, the bitwise lesser one is returned.
     /// If there are no square roots, zero is returned.
     fn square_root(&self) -> Self::Output {
-        let square_root: Field<E> = witness!(|self| match self.square_root() {
+        let square_root: Field = witness!(|self| match self.square_root() {
             Ok(square_root) => square_root,
             _ => console::Field::zero(),
         });
 
         // Ensure `square_root` * `square_root` == `self`.
-        E::enforce(|| (&square_root, &square_root, self));
+        Circuit::enforce(|| (&square_root, &square_root, self));
 
         // Define the MODULUS_MINUS_ONE_DIV_TWO as a constant.
-        let modulus_minus_one_div_two = match E::BaseField::from_bigint(E::BaseField::modulus_minus_one_div_two()) {
+        let modulus_minus_one_div_two = match ConsoleField::from_bigint(ConsoleField::modulus_minus_one_div_two()) {
             Some(modulus_minus_one_div_two) => Field::constant(console::Field::new(modulus_minus_one_div_two)),
-            None => E::halt("Failed to initialize MODULUS_MINUS_ONE_DIV_TWO as a constant"),
+            None => Circuit::halt("Failed to initialize MODULUS_MINUS_ONE_DIV_TWO as a constant"),
         };
 
         // Ensure that `square_root` is less than or equal to (MODULUS - 1) / 2.
         // This ensures that the resulting square root is unique.
         let is_less_than_or_equal = square_root.is_less_than_or_equal(&modulus_minus_one_div_two);
-        E::assert(is_less_than_or_equal);
+        Circuit::assert(is_less_than_or_equal);
 
         square_root
     }
 }
 
-impl<E: Environment> Field<E> {
+impl Field {
     /// Returns the square root of `self`, where the least significant bit of the square root is zero.
     pub fn even_square_root(&self) -> Self {
-        let square_root: Field<E> = witness!(|self| match self.even_square_root() {
+        let square_root: Field = witness!(|self| match self.even_square_root() {
             Ok(square_root) => square_root,
             _ => console::Field::zero(),
         });
 
         // Ensure `square_root` * `square_root` == `self`.
-        E::enforce(|| (&square_root, &square_root, self));
+        Circuit::enforce(|| (&square_root, &square_root, self));
 
         // Ensure that the LSB of the square root is zero.
         // Note that this unwrap is safe since the number of bits is always greater than zero.
-        E::assert(!square_root.to_bits_be().last().unwrap());
+        Circuit::assert(!square_root.to_bits_be().last().unwrap());
 
         square_root
     }
 }
 
-impl<E: Environment> Field<E> {
+impl Field {
     /// Returns both square roots of `self` and a `Boolean` flag, which is set iff `self` is not a square.
     ///
     /// If `self` is a non-zero square,
@@ -81,11 +81,11 @@ impl<E: Environment> Field<E> {
     ///
     /// Note that the constraints do **not** impose an ordering on the two roots returned by this function;
     /// this is what the `nondeterministic` part of this function name refers to.
-    pub fn square_roots_flagged_nondeterministic(&self) -> (Self, Self, Boolean<E>) {
+    pub fn square_roots_flagged_nondeterministic(&self) -> (Self, Self, Boolean) {
         // Obtain (p-1)/2, as a constant field element.
-        let modulus_minus_one_div_two = match E::BaseField::from_bigint(E::BaseField::modulus_minus_one_div_two()) {
+        let modulus_minus_one_div_two = match ConsoleField::from_bigint(ConsoleField::modulus_minus_one_div_two()) {
             Some(modulus_minus_one_div_two) => Field::constant(console::Field::new(modulus_minus_one_div_two)),
-            None => E::halt("Failed to initialize (modulus - 1) / 2"),
+            None => Circuit::halt("Failed to initialize (modulus - 1) / 2"),
         };
 
         // Use Euler's criterion: self is a non-zero square iff self^((p-1)/2) is 1.
@@ -109,7 +109,7 @@ impl<E: Environment> Field<E> {
 
         // Enforce that the first root squared is equal to the square.
         // Note that if `self` is not a square, then `first_root` and `square` are both zero and the constraint is satisfied.
-        E::enforce(|| (&first_root, &first_root, &square));
+        Circuit::enforce(|| (&first_root, &first_root, &square));
 
         // Initialize the second root as the negation of the first root.
         let second_root = first_root.clone().neg();
@@ -122,7 +122,7 @@ impl<E: Environment> Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn SquareRoot<Output = Field<E>>> for Field<E> {
+impl Metrics<dyn SquareRoot<Output = Field>> for Field {
     type Case = Mode;
 
     fn count(case: &Self::Case) -> Count {
@@ -133,7 +133,7 @@ impl<E: Environment> Metrics<dyn SquareRoot<Output = Field<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn SquareRoot<Output = Field<E>>> for Field<E> {
+impl OutputMode<dyn SquareRoot<Output = Field>> for Field {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -154,10 +154,10 @@ mod tests {
     fn check_square_root(name: &str, mode: Mode, rng: &mut TestRng) {
         for _ in 0..ITERATIONS {
             // Sample a random element.
-            let given: console::Field<<Circuit as Environment>::Network> = Uniform::rand(rng);
+            let given: console::Field = Uniform::rand(rng);
             // Compute its square root, or skip this iteration if it does not natively exist.
             if let Ok(expected) = given.square_root() {
-                let input = Field::<Circuit>::new(mode, given);
+                let input = Field::new(mode, given);
 
                 Circuit::scope(name, || {
                     let candidate = input.square_root();
@@ -181,10 +181,10 @@ mod tests {
     ) {
         for _ in 0..ITERATIONS {
             // Sample a random element.
-            let given: console::Field<<Circuit as Environment>::Network> = Uniform::rand(rng);
+            let given: console::Field = Uniform::rand(rng);
             // Compute its square root, or skip this iteration if it does not natively exist.
             if let Ok(expected) = given.even_square_root() {
-                let input = Field::<Circuit>::new(mode, given);
+                let input = Field::new(mode, given);
 
                 Circuit::scope(name, || {
                     let candidate = input.even_square_root();
@@ -207,14 +207,14 @@ mod tests {
     ) {
         for _ in 0..ITERATIONS {
             // Sample a random element.
-            let given: console::Field<<Circuit as Environment>::Network> = Uniform::rand(rng);
+            let given: console::Field = Uniform::rand(rng);
             // Compute square roots and error flag in console-land.
             let (expected_error_flag, expected_positive_root, expected_negative_root) = match given.square_root() {
                 Ok(root) => (false, root, -root),
                 Err(_) => (true, console::Field::zero(), console::Field::zero()),
             };
             // Compute square roots and error flag in circuit-land.
-            let input = Field::<Circuit>::new(mode, given);
+            let input = Field::new(mode, given);
             Circuit::scope(name, || {
                 let (candidate_first_root, candidate_second_root, candidate_error_flag) =
                     input.square_roots_flagged_nondeterministic();

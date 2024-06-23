@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment> One for Field<E> {
-    type Boolean = Boolean<E>;
+impl One for Field {
+    type Boolean = Boolean;
 
     fn one() -> Self {
-        E::one().into()
+        Circuit::one().into()
     }
 
     fn is_one(&self) -> Self::Boolean {
@@ -26,7 +26,7 @@ impl<E: Environment> One for Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn One<Boolean = Boolean<E>>> for Field<E> {
+impl Metrics<dyn One<Boolean = Boolean>> for Field {
     type Case = ();
 
     fn count(_parameter: &Self::Case) -> Count {
@@ -34,7 +34,7 @@ impl<E: Environment> Metrics<dyn One<Boolean = Boolean<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn One<Boolean = Boolean<E>>> for Field<E> {
+impl OutputMode<dyn One<Boolean = Boolean>> for Field {
     type Case = ();
 
     fn output_mode(_input: &Self::Case) -> Mode {
@@ -49,11 +49,11 @@ mod tests {
 
     #[test]
     fn test_one() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
 
         Circuit::scope("One", || {
             assert_scope!(0, 0, 0, 0);
-            let candidate = Field::<Circuit>::one();
+            let candidate = Field::one();
             assert_eq!(one, candidate.eject_value());
             assert_count!(One<Boolean>() => Field, &());
             assert_output_mode!(One<Boolean>() => Field, &(), candidate);
@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn test_is_one() {
-        let candidate = Field::<Circuit>::one();
+        let candidate = Field::one();
         // Should equal 1.
         assert!(candidate.is_one().eject_value());
         // Should not equal 0.

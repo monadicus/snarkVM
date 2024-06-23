@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> Equal<Self> for Plaintext<A> {
-    type Output = Boolean<A>;
+impl Equal<Self> for Plaintext {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -83,8 +83,8 @@ mod tests {
     use super::*;
     use crate::Circuit;
 
-    fn sample_plaintext(mode: Mode) -> Plaintext<Circuit> {
-        let plaintext = console::Plaintext::<<Circuit as Environment>::Network>::from_str(
+    fn sample_plaintext(mode: Mode) -> Plaintext {
+        let plaintext = console::Plaintext::from_str(
             r"{
     a: true,
     b: 123456789field,
@@ -100,8 +100,8 @@ mod tests {
         Plaintext::new(mode, plaintext)
     }
 
-    fn sample_mismatched_plaintext(mode: Mode) -> Plaintext<Circuit> {
-        let plaintext = console::Plaintext::<<Circuit as Environment>::Network>::from_str(
+    fn sample_mismatched_plaintext(mode: Mode) -> Plaintext {
+        let plaintext = console::Plaintext::from_str(
             r"{
     a: false,
     b: 123456789field,

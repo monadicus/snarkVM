@@ -177,7 +177,7 @@ mod tests {
         let mut finalize = Finalize::<CurrentNetwork>::new(name);
 
         // Ensure that an input can be added.
-        let input = Input::<CurrentNetwork>::from_str("input r0 as field.public;").unwrap();
+        let input = Input::from_str("input r0 as field.public;").unwrap();
         assert!(finalize.add_input(input.clone()).is_ok());
 
         // Ensure that adding a duplicate input will fail.
@@ -185,7 +185,7 @@ mod tests {
 
         // Ensure that adding more than the maximum number of inputs will fail.
         for i in 1..CurrentNetwork::MAX_INPUTS * 2 {
-            let input = Input::<CurrentNetwork>::from_str(&format!("input r{i} as field.public;")).unwrap();
+            let input = Input::from_str(&format!("input r{i} as field.public;")).unwrap();
 
             match finalize.inputs.len() < CurrentNetwork::MAX_INPUTS {
                 true => assert!(finalize.add_input(input).is_ok()),

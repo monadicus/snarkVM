@@ -27,8 +27,8 @@ use std::collections::HashSet;
 /// This method ensures each transmission ID corresponds to its given transmission.
 /// This method guarantees that the output is 1) order-preserving, and 2) unique.
 pub fn decouple_transmissions<N: Network>(
-    transmissions: impl Iterator<Item = (TransmissionID<N>, Transmission<N>)>,
-) -> Result<(Vec<Ratify<N>>, Vec<Solution<N>>, Vec<Transaction<N>>)> {
+    transmissions: impl Iterator<Item = (TransmissionID, Transmission<N>)>,
+) -> Result<(Vec<Ratify<N>>, Vec<Solution>, Vec<Transaction<N>>)> {
     // Initialize a list for the ratifications.
     let ratifications = Vec::new();
     // Initialize a list for the solutions.

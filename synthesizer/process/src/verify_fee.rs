@@ -18,7 +18,7 @@ impl<N: Network> Process<N> {
     /// Verifies the given fee is valid.
     /// Note: This does *not* check that the global state root exists in the ledger.
     #[inline]
-    pub fn verify_fee(&self, fee: &Fee<N>, deployment_or_execution_id: Field<N>) -> Result<()> {
+    pub fn verify_fee(&self, fee: &Fee<N>, deployment_or_execution_id: Field) -> Result<()> {
         let timer = timer!("Process::verify_fee");
 
         #[cfg(debug_assertions)]
@@ -123,7 +123,7 @@ impl<N: Network> Process<N> {
         // Extend the inputs with the input IDs.
         inputs.extend(fee.inputs().iter().flat_map(|input| input.verifier_inputs()));
         // Extend the verifier inputs with the public inputs for 'self.caller'.
-        inputs.extend([*Field::<N>::one(), *parent_x, *parent_y]);
+        inputs.extend([*Field::one(), *parent_x, *parent_y]);
         // Extend the inputs with the output IDs.
         inputs.extend(fee.outputs().iter().flat_map(|output| output.verifier_inputs()));
         lap!(timer, "Construct the verifier inputs");
@@ -192,7 +192,7 @@ impl<N: Network> Process<N> {
         // Extend the inputs with the input IDs.
         inputs.extend(fee.inputs().iter().flat_map(|input| input.verifier_inputs()));
         // Extend the verifier inputs with the public inputs for 'self.caller'
-        inputs.extend([*Field::<N>::one(), *parent_x, *parent_y]);
+        inputs.extend([*Field::one(), *parent_x, *parent_y]);
         // Extend the inputs with the output IDs.
         inputs.extend(fee.outputs().iter().flat_map(|output| output.verifier_inputs()));
         lap!(timer, "Construct the verifier inputs");

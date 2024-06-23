@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo, Private: Visibility<A>> Record<A, Private> {
+impl<Private: Visibility> Record<Private> {
     /// A helper method to derive the serial number from the private key and commitment.
-    pub fn serial_number(private_key: PrivateKey<A>, commitment: Field<A>) -> Field<A> {
+    pub fn serial_number(private_key: PrivateKey, commitment: Field) -> Field {
         // Compute the generator `H` as `HashToGroup(commitment)`.
-        let h = A::hash_to_group_psd2(&[A::serial_number_domain(), commitment.clone()]);
+        let h = AleoV0::hash_to_group_psd2(&[AleoV0::serial_number_domain(), commitment.clone()]);
         // Compute `gamma` as `sk_sig * H`.
         let gamma = h * private_key.sk_sig();
         // Compute the serial number from `gamma`.
@@ -26,10 +28,11 @@ impl<A: Aleo, Private: Visibility<A>> Record<A, Private> {
     }
 
     /// A helper method to derive the serial number from the gamma and commitment.
-    pub fn serial_number_from_gamma(gamma: &Group<A>, commitment: Field<A>) -> Field<A> {
+    pub fn serial_number_from_gamma(gamma: &Group, commitment: Field) -> Field {
         // Compute `sn_nonce` as `Hash(COFACTOR * gamma)`.
-        let sn_nonce = A::hash_to_scalar_psd2(&[A::serial_number_domain(), gamma.mul_by_cofactor().to_x_coordinate()]);
+        let sn_nonce =
+            AleoV0::hash_to_scalar_psd2(&[AleoV0::serial_number_domain(), gamma.mul_by_cofactor().to_x_coordinate()]);
         // Compute `serial_number` as `Commit(commitment, sn_nonce)`.
-        A::commit_bhp512(&(A::serial_number_domain(), commitment).to_bits_le(), &sn_nonce)
+        AleoV0::commit_bhp512(&(AleoV0::serial_number_domain(), commitment).to_bits_le(), &sn_nonce)
     }
 }

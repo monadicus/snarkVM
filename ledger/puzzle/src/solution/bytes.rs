@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for Solution<N> {
+impl FromBytes for Solution {
     /// Reads the solution from the buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let partial_solution = PartialSolution::read_le(&mut reader)?;
@@ -24,7 +24,7 @@ impl<N: Network> FromBytes for Solution<N> {
     }
 }
 
-impl<N: Network> ToBytes for Solution<N> {
+impl ToBytes for Solution {
     /// Writes the solution to the buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.partial_solution.write_le(&mut writer)?;
@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn test_bytes() -> Result<()> {
         let mut rng = TestRng::default();
-        let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+        let private_key = PrivateKey::new(&mut rng)?;
         let address = Address::try_from(private_key)?;
 
         // Sample a new solution.

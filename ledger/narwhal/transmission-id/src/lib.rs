@@ -23,32 +23,32 @@ use console::{network::TRANSACTION_PREFIX, prelude::*};
 use ledger_puzzle::{SolutionID, SOLUTION_ID_PREFIX};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub enum TransmissionID<N: Network> {
+pub enum TransmissionID {
     /// A ratification.
     Ratification,
     /// A solution.
-    Solution(SolutionID<N>),
+    Solution(SolutionID),
     /// A transaction.
-    Transaction(N::TransactionID),
+    Transaction(TransactionID),
 }
 
-impl<N: Network> From<SolutionID<N>> for TransmissionID<N> {
+impl From<SolutionID> for TransmissionID {
     /// Converts the solution ID into a transmission ID.
-    fn from(solution_id: SolutionID<N>) -> Self {
+    fn from(solution_id: SolutionID) -> Self {
         Self::Solution(solution_id)
     }
 }
 
-impl<N: Network> From<&N::TransactionID> for TransmissionID<N> {
+impl From<&TransactionID> for TransmissionID {
     /// Converts the transaction ID into a transmission ID.
-    fn from(transaction_id: &N::TransactionID) -> Self {
+    fn from(transaction_id: &TransactionID) -> Self {
         Self::Transaction(*transaction_id)
     }
 }
 
-impl<N: Network> TransmissionID<N> {
+impl TransmissionID {
     /// Returns the solution ID if the transmission is a solution.
-    pub fn solution(&self) -> Option<SolutionID<N>> {
+    pub fn solution(&self) -> Option<SolutionID> {
         match self {
             Self::Solution(solution_id) => Some(*solution_id),
             _ => None,
@@ -56,7 +56,7 @@ impl<N: Network> TransmissionID<N> {
     }
 
     /// Returns the transaction ID if the transmission is a transaction.
-    pub fn transaction(&self) -> Option<N::TransactionID> {
+    pub fn transaction(&self) -> Option<TransactionID> {
         match self {
             Self::Transaction(transaction_id) => Some(*transaction_id),
             _ => None,
@@ -68,15 +68,12 @@ impl<N: Network> TransmissionID<N> {
 pub mod test_helpers {
     use super::*;
     use console::{
-        network::MainnetV0,
         prelude::{Rng, TestRng, Uniform},
         types::Field,
     };
 
-    type CurrentNetwork = MainnetV0;
-
     /// Returns a list of sample transmission IDs, sampled at random.
-    pub fn sample_transmission_ids(rng: &mut TestRng) -> Vec<TransmissionID<CurrentNetwork>> {
+    pub fn sample_transmission_ids(rng: &mut TestRng) -> Vec<TransmissionID> {
         // Initialize a sample vector.
         let mut sample = Vec::with_capacity(10);
         // Append sample solution IDs.
@@ -85,7 +82,7 @@ pub mod test_helpers {
         }
         // Append sample transaction IDs.
         for _ in 0..5 {
-            let id = TransmissionID::Transaction(<CurrentNetwork as Network>::TransactionID::from(Field::rand(rng)));
+            let id = TransmissionID::Transaction(TransactionID::from(Field::rand(rng)));
             sample.push(id);
         }
         // Return the sample vector.

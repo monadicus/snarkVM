@@ -21,20 +21,20 @@ use console::{account::Address, network::prelude::*, prelude::DeserializeExt};
 
 /// The partial solution for the puzzle from a prover.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-pub struct PartialSolution<N: Network> {
+pub struct PartialSolution {
     /// The solution ID.
-    solution_id: SolutionID<N>,
+    solution_id: SolutionID,
     /// The epoch hash.
-    epoch_hash: N::BlockHash,
+    epoch_hash: BlockHash,
     /// The address of the prover.
-    address: Address<N>,
+    address: Address,
     /// The counter for the solution.
     counter: u64,
 }
 
-impl<N: Network> PartialSolution<N> {
+impl PartialSolution {
     /// Initializes a new instance of the partial solution.
-    pub fn new(epoch_hash: N::BlockHash, address: Address<N>, counter: u64) -> Result<Self> {
+    pub fn new(epoch_hash: BlockHash, address: Address, counter: u64) -> Result<Self> {
         // Compute the solution ID.
         let solution_id = SolutionID::new(epoch_hash, address, counter)?;
         // Return the partial solution.
@@ -42,17 +42,17 @@ impl<N: Network> PartialSolution<N> {
     }
 
     /// Returns the solution ID.
-    pub const fn id(&self) -> SolutionID<N> {
+    pub const fn id(&self) -> SolutionID {
         self.solution_id
     }
 
     /// Returns the epoch hash of the solution.
-    pub const fn epoch_hash(&self) -> N::BlockHash {
+    pub const fn epoch_hash(&self) -> BlockHash {
         self.epoch_hash
     }
 
     /// Returns the address of the prover.
-    pub const fn address(&self) -> Address<N> {
+    pub const fn address(&self) -> Address {
         self.address
     }
 

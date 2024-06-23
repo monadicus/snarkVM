@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleAffine;
+
 use super::*;
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Returns the product of the group element and the cofactor.
-    pub fn mul_by_cofactor(&self) -> Group<E> {
+    pub fn mul_by_cofactor(&self) -> Group {
         // (For advanced users) The cofactor for this curve is `4`. Thus doubling is used to be performant.
         // See unit tests below, which sanity check that this condition holds.
-        debug_assert!(E::Affine::cofactor().len() == 1 && E::Affine::cofactor()[0] == 4);
+        debug_assert!(ConsoleAffine::cofactor().len() == 1 && ConsoleAffine::cofactor()[0] == 4);
 
         self.double().double()
     }
@@ -37,14 +39,14 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let expected: console::Group = Uniform::rand(&mut rng);
 
             // Multiply the point by the inverse of the cofactor.
             let input = expected.div_by_cofactor();
             assert_eq!(expected, input.mul_by_cofactor());
 
             // Initialize the input.
-            let affine = Group::<Circuit>::new(mode, input);
+            let affine = Group::new(mode, input);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = affine.mul_by_cofactor();
@@ -77,14 +79,14 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let expected: console::Group = Uniform::rand(&mut rng);
 
             // Multiply the point by the inverse of the cofactor.
             let input = expected.div_by_cofactor();
             assert_eq!(expected, input.mul_by_cofactor());
 
             // Initialize the input.
-            let affine = Group::<Circuit>::new(Mode::Private, input);
+            let affine = Group::new(Mode::Private, input);
 
             Circuit::scope(&format!("Constant {i}"), || {
                 let candidate =

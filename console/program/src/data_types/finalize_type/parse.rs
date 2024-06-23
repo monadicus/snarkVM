@@ -73,20 +73,20 @@ mod tests {
     fn test_parse() -> Result<()> {
         // Literal type.
         assert_eq!(
-            Ok(("", FinalizeType::<CurrentNetwork>::Plaintext(PlaintextType::from_str("field")?))),
-            FinalizeType::<CurrentNetwork>::parse("field.public")
+            Ok(("", FinalizeType::Plaintext(PlaintextType::from_str("field")?))),
+            FinalizeType::parse("field.public")
         );
 
         // Struct type.
         assert_eq!(
-            Ok(("", FinalizeType::<CurrentNetwork>::Plaintext(PlaintextType::from_str("signature")?))),
-            FinalizeType::<CurrentNetwork>::parse("signature.public")
+            Ok(("", FinalizeType::Plaintext(PlaintextType::from_str("signature")?))),
+            FinalizeType::parse("signature.public")
         );
 
         // Future type.
         assert_eq!(
-            Ok(("", FinalizeType::<CurrentNetwork>::Future(Locator::from_str("credits.aleo/mint_public")?))),
-            FinalizeType::<CurrentNetwork>::parse("credits.aleo/mint_public.future")
+            Ok(("", FinalizeType::Future(Locator::from_str("credits.aleo/mint_public")?))),
+            FinalizeType::parse("credits.aleo/mint_public.future")
         );
 
         Ok(())
@@ -95,32 +95,31 @@ mod tests {
     #[test]
     fn test_parse_fails() -> Result<()> {
         // Must be non-empty.
-        assert!(FinalizeType::<CurrentNetwork>::parse("").is_err());
+        assert!(FinalizeType::parse("").is_err());
 
         // Invalid characters.
-        assert!(FinalizeType::<CurrentNetwork>::parse("{}").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("_").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("__").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("___").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("-").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("--").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("---").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("*").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("**").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("***").is_err());
+        assert!(FinalizeType::parse("{}").is_err());
+        assert!(FinalizeType::parse("_").is_err());
+        assert!(FinalizeType::parse("__").is_err());
+        assert!(FinalizeType::parse("___").is_err());
+        assert!(FinalizeType::parse("-").is_err());
+        assert!(FinalizeType::parse("--").is_err());
+        assert!(FinalizeType::parse("---").is_err());
+        assert!(FinalizeType::parse("*").is_err());
+        assert!(FinalizeType::parse("**").is_err());
+        assert!(FinalizeType::parse("***").is_err());
 
         // Must not start with a number.
-        assert!(FinalizeType::<CurrentNetwork>::parse("1").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("2").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("3").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("12").is_err());
-        assert!(FinalizeType::<CurrentNetwork>::parse("111").is_err());
+        assert!(FinalizeType::parse("1").is_err());
+        assert!(FinalizeType::parse("2").is_err());
+        assert!(FinalizeType::parse("3").is_err());
+        assert!(FinalizeType::parse("1foo").is_err());
+        assert!(FinalizeType::parse("12").is_err());
+        assert!(FinalizeType::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let struct_ = FinalizeType::<CurrentNetwork>::parse(
-            "foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy.private",
-        );
+        let struct_ =
+            FinalizeType::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy.private");
         assert!(struct_.is_err());
 
         Ok(())
@@ -128,10 +127,10 @@ mod tests {
 
     #[test]
     fn test_display() -> Result<()> {
-        assert_eq!(FinalizeType::<CurrentNetwork>::from_str("field.public")?.to_string(), "field.public");
-        assert_eq!(FinalizeType::<CurrentNetwork>::from_str("signature.public")?.to_string(), "signature.public");
+        assert_eq!(FinalizeType::from_str("field.public")?.to_string(), "field.public");
+        assert_eq!(FinalizeType::from_str("signature.public")?.to_string(), "signature.public");
         assert_eq!(
-            FinalizeType::<CurrentNetwork>::from_str("credits.aleo/mint_public.future")?.to_string(),
+            FinalizeType::from_str("credits.aleo/mint_public.future")?.to_string(),
             "credits.aleo/mint_public.future"
         );
 

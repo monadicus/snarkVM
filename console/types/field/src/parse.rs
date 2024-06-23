@@ -96,10 +96,10 @@ mod tests {
         /// Attempts to construct a field from the given element,
         /// format it in display mode, and recover a field from it.
         fn check_display(element: ConsoleField) {
-            let candidate = Field::<E>::new(element);
-            assert_eq!(format!("{element}{}", Field::<E>::type_name()), format!("{candidate}"));
+            let candidate = Field::new(element);
+            assert_eq!(format!("{element}{}", Field::type_name()), format!("{candidate}"));
 
-            let candidate_recovered = Field::<E>::from_str(&format!("{candidate}")).unwrap();
+            let candidate_recovered = Field::from_str(&format!("{candidate}")).unwrap();
             assert_eq!(candidate, candidate_recovered);
         }
 

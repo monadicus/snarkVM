@@ -23,12 +23,12 @@ impl<N: Network> StackExecute<N> for Stack<N> {
     fn execute_closure<A: circuit::Aleo<Network = N>>(
         &self,
         closure: &Closure<N>,
-        inputs: &[circuit::Value<A>],
+        inputs: &[circuit::Value],
         call_stack: CallStack<N>,
-        signer: circuit::Address<A>,
-        caller: circuit::Address<A>,
-        tvk: circuit::Field<A>,
-    ) -> Result<Vec<circuit::Value<A>>> {
+        signer: circuit::Address,
+        caller: circuit::Address,
+        tvk: circuit::Field,
+    ) -> Result<Vec<circuit::Value>> {
         let timer = timer!("Stack::execute_closure");
 
         // Ensure the call stack is not `Evaluate`.
@@ -139,7 +139,7 @@ impl<N: Network> StackExecute<N> for Stack<N> {
         &self,
         mut call_stack: CallStack<N>,
         console_caller: Option<ProgramID<N>>,
-        root_tvk: Option<Field<N>>,
+        root_tvk: Option<Field>,
         rng: &mut R,
     ) -> Result<Response<N>> {
         let timer = timer!("Stack::execute_function");
@@ -214,10 +214,10 @@ impl<N: Network> StackExecute<N> for Stack<N> {
         // inject the `root_tvk` as `Mode::Private`.
         if let Some(root_tvk) = root_tvk {
             registers.set_root_tvk(root_tvk);
-            registers.set_root_tvk_circuit(circuit::Field::<A>::new(circuit::Mode::Private, root_tvk));
+            registers.set_root_tvk_circuit(circuit::Field::new(circuit::Mode::Private, root_tvk));
         } else {
             registers.set_root_tvk(*console_request.tvk());
-            registers.set_root_tvk_circuit(circuit::Field::<A>::new(circuit::Mode::Private, *console_request.tvk()));
+            registers.set_root_tvk_circuit(circuit::Field::new(circuit::Mode::Private, *console_request.tvk()));
         }
 
         let root_tvk = Some(registers.root_tvk_circuit()?);
@@ -225,7 +225,7 @@ impl<N: Network> StackExecute<N> for Stack<N> {
         use circuit::{Eject, Inject};
 
         // Inject the transition public key `tpk` as `Mode::Public`.
-        let tpk = circuit::Group::<A>::new(circuit::Mode::Public, console_request.to_tpk());
+        let tpk = circuit::Group::new(circuit::Mode::Public, console_request.to_tpk());
         // Inject the request as `Mode::Private`.
         let request = circuit::Request::new(circuit::Mode::Private, console_request.clone());
 

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> Request<A> {
+impl Request {
     /// Returns the transition public key `tpk`.
-    pub fn to_tpk(&self) -> Group<A> {
+    pub fn to_tpk(&self) -> Group {
         // Retrieve the challenge from the signature.
         let challenge = self.signature.challenge();
         // Retrieve the response from the signature.
@@ -24,6 +26,6 @@ impl<A: Aleo> Request<A> {
         // Retrieve `pk_sig` from the signature.
         let pk_sig = self.signature.compute_key().pk_sig();
         // Compute `tpk` as `(challenge * pk_sig) + (response * G)`, equivalent to `r * G`.
-        (pk_sig * challenge) + A::g_scalar_multiply(response)
+        (pk_sig * challenge) + AleoV0::g_scalar_multiply(response)
     }
 }

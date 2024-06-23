@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Returns the x-coordinate of the group element.
-    pub fn to_x_coordinate(&self) -> Field<E> {
+    pub fn to_x_coordinate(&self) -> Field {
         self.x.clone()
     }
 }
@@ -32,7 +32,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut TestRng::default());
-            let candidate = Group::<Circuit>::new(mode, expected);
+            let candidate = Group::new(mode, expected);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_x_coordinate();

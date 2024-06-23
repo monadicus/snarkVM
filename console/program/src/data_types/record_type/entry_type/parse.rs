@@ -72,32 +72,14 @@ mod tests {
     #[test]
     fn test_parse() -> Result<()> {
         // Literal type.
-        assert_eq!(
-            Ok(("", EntryType::<CurrentNetwork>::from_str("field.constant")?)),
-            EntryType::<CurrentNetwork>::parse("field.constant")
-        );
-        assert_eq!(
-            Ok(("", EntryType::<CurrentNetwork>::from_str("field.public")?)),
-            EntryType::<CurrentNetwork>::parse("field.public")
-        );
-        assert_eq!(
-            Ok(("", EntryType::<CurrentNetwork>::from_str("field.private")?)),
-            EntryType::<CurrentNetwork>::parse("field.private")
-        );
+        assert_eq!(Ok(("", EntryType::from_str("field.constant")?)), EntryType::parse("field.constant"));
+        assert_eq!(Ok(("", EntryType::from_str("field.public")?)), EntryType::parse("field.public"));
+        assert_eq!(Ok(("", EntryType::from_str("field.private")?)), EntryType::parse("field.private"));
 
         // Struct type.
-        assert_eq!(
-            Ok(("", EntryType::<CurrentNetwork>::from_str("signature.constant")?)),
-            EntryType::<CurrentNetwork>::parse("signature.constant")
-        );
-        assert_eq!(
-            Ok(("", EntryType::<CurrentNetwork>::from_str("signature.public")?)),
-            EntryType::<CurrentNetwork>::parse("signature.public")
-        );
-        assert_eq!(
-            Ok(("", EntryType::<CurrentNetwork>::from_str("signature.private")?)),
-            EntryType::<CurrentNetwork>::parse("signature.private")
-        );
+        assert_eq!(Ok(("", EntryType::from_str("signature.constant")?)), EntryType::parse("signature.constant"));
+        assert_eq!(Ok(("", EntryType::from_str("signature.public")?)), EntryType::parse("signature.public"));
+        assert_eq!(Ok(("", EntryType::from_str("signature.private")?)), EntryType::parse("signature.private"));
 
         Ok(())
     }
@@ -105,39 +87,37 @@ mod tests {
     #[test]
     fn test_parse_fails() -> Result<()> {
         // Literal type must contain visibility.
-        assert!(EntryType::<CurrentNetwork>::parse("field").is_err());
+        assert!(EntryType::parse("field").is_err());
         // Struct type must contain visibility.
-        assert!(EntryType::<CurrentNetwork>::parse("signature").is_err());
+        assert!(EntryType::parse("signature").is_err());
         // Record type must contain record keyword.
-        assert!(EntryType::<CurrentNetwork>::parse("token").is_err());
+        assert!(EntryType::parse("token").is_err());
 
         // Must be non-empty.
-        assert!(EntryType::<CurrentNetwork>::parse("").is_err());
+        assert!(EntryType::parse("").is_err());
 
         // Invalid characters.
-        assert!(EntryType::<CurrentNetwork>::parse("{}").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("_").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("__").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("___").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("-").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("--").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("---").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("*").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("**").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("***").is_err());
+        assert!(EntryType::parse("{}").is_err());
+        assert!(EntryType::parse("_").is_err());
+        assert!(EntryType::parse("__").is_err());
+        assert!(EntryType::parse("___").is_err());
+        assert!(EntryType::parse("-").is_err());
+        assert!(EntryType::parse("--").is_err());
+        assert!(EntryType::parse("---").is_err());
+        assert!(EntryType::parse("*").is_err());
+        assert!(EntryType::parse("**").is_err());
+        assert!(EntryType::parse("***").is_err());
 
         // Must not start with a number.
-        assert!(EntryType::<CurrentNetwork>::parse("1").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("2").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("3").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("12").is_err());
-        assert!(EntryType::<CurrentNetwork>::parse("111").is_err());
+        assert!(EntryType::parse("1").is_err());
+        assert!(EntryType::parse("2").is_err());
+        assert!(EntryType::parse("3").is_err());
+        assert!(EntryType::parse("1foo").is_err());
+        assert!(EntryType::parse("12").is_err());
+        assert!(EntryType::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let struct_ = EntryType::<CurrentNetwork>::parse(
-            "foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy.private",
-        );
+        let struct_ = EntryType::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy.private");
         assert!(struct_.is_err());
 
         Ok(())
@@ -145,13 +125,13 @@ mod tests {
 
     #[test]
     fn test_display() -> Result<()> {
-        assert_eq!(EntryType::<CurrentNetwork>::from_str("field.constant")?.to_string(), "field.constant");
-        assert_eq!(EntryType::<CurrentNetwork>::from_str("field.public")?.to_string(), "field.public");
-        assert_eq!(EntryType::<CurrentNetwork>::from_str("field.private")?.to_string(), "field.private");
+        assert_eq!(EntryType::from_str("field.constant")?.to_string(), "field.constant");
+        assert_eq!(EntryType::from_str("field.public")?.to_string(), "field.public");
+        assert_eq!(EntryType::from_str("field.private")?.to_string(), "field.private");
 
-        assert_eq!(EntryType::<CurrentNetwork>::from_str("signature.constant")?.to_string(), "signature.constant");
-        assert_eq!(EntryType::<CurrentNetwork>::from_str("signature.public")?.to_string(), "signature.public");
-        assert_eq!(EntryType::<CurrentNetwork>::from_str("signature.private")?.to_string(), "signature.private");
+        assert_eq!(EntryType::from_str("signature.constant")?.to_string(), "signature.constant");
+        assert_eq!(EntryType::from_str("signature.public")?.to_string(), "signature.public");
+        assert_eq!(EntryType::from_str("signature.private")?.to_string(), "signature.private");
 
         Ok(())
     }

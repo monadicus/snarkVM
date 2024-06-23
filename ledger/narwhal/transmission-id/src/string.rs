@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for TransmissionID<N> {
+impl FromStr for TransmissionID {
     type Err = Error;
 
     /// Initializes the transmission ID from a string.
@@ -23,7 +23,7 @@ impl<N: Network> FromStr for TransmissionID<N> {
             Ok(Self::Solution(SolutionID::from_str(input)?))
         } else if input.starts_with(TRANSACTION_PREFIX) {
             Ok(Self::Transaction(
-                N::TransactionID::from_str(input).map_err(|_| anyhow!("Failed to parse transaction ID: {input}"))?,
+                TransactionID::from_str(input).map_err(|_| anyhow!("Failed to parse transaction ID: {input}"))?,
             ))
         } else {
             bail!("Invalid transmission ID: {input}")
@@ -31,14 +31,14 @@ impl<N: Network> FromStr for TransmissionID<N> {
     }
 }
 
-impl<N: Network> Debug for TransmissionID<N> {
+impl Debug for TransmissionID {
     /// Prints the transmission ID as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for TransmissionID<N> {
+impl Display for TransmissionID {
     /// Prints the transmission ID as a string.
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
@@ -64,7 +64,7 @@ mod tests {
             // Check the string representation.
             let candidate = format!("{expected}");
             assert_eq!(expected, TransmissionID::from_str(&candidate).unwrap());
-            assert!(TransmissionID::<CurrentNetwork>::from_str(&candidate[1..]).is_err());
+            assert!(TransmissionID::from_str(&candidate[1..]).is_err());
         }
     }
 }

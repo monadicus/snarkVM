@@ -19,7 +19,7 @@ impl<N: Network> Stack<N> {
     #[inline]
     pub fn authorize<A: circuit::Aleo<Network = N>, R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         function_name: impl TryInto<Identifier<N>>,
         inputs: impl ExactSizeIterator<Item = impl TryInto<Value<N>>>,
         rng: &mut R,

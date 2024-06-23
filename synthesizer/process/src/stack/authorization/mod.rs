@@ -174,7 +174,7 @@ impl<N: Network> Authorization<N> {
     }
 
     /// Returns the execution ID for the authorization.
-    pub fn to_execution_id(&self) -> Result<Field<N>> {
+    pub fn to_execution_id(&self) -> Result<Field> {
         let transitions = self.transitions.read();
         if transitions.is_empty() {
             bail!("Cannot compute the execution ID for an empty authorization.");

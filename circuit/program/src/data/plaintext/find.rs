@@ -12,19 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> Plaintext<A> {
+impl Plaintext {
     /// Returns the plaintext member from the given path.
-    pub fn find<A0: Into<Access<A>> + Clone + Debug>(&self, path: &[A0]) -> Result<Plaintext<A>> {
+    pub fn find<A0: Into<Access> + Clone + Debug>(&self, path: &[A0]) -> Result<Plaintext> {
         // Ensure the path is not empty.
         if path.is_empty() {
-            A::halt("Attempted to find member with an empty path.")
+            Circuit::halt("Attempted to find member with an empty path.")
         }
 
         match self {
             // Halts if the value is not a struct or an array.
-            Self::Literal(..) => A::halt("A literal is not a struct or an array"),
+            Self::Literal(..) => Circuit::halt("A literal is not a struct or an array"),
             // Retrieve the value of the member (from the value).
             Self::Struct(..) | Self::Array(..) => {
                 // Initialize the plaintext starting from the top-level.

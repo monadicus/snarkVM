@@ -14,14 +14,14 @@
 
 use super::*;
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Parser
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Parser
     for ProgramCore<N, Instruction, Command>
 {
     /// Parses a string into a program.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
         // A helper to parse a program.
-        enum P<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> {
+        enum P<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> {
             M(Mapping<N>),
             I(StructType<N>),
             R(RecordType<N>),
@@ -99,7 +99,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Par
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> FromStr
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> FromStr
     for ProgramCore<N, Instruction, Command>
 {
     type Err = Error;
@@ -121,7 +121,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fro
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Debug
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Debug
     for ProgramCore<N, Instruction, Command>
 {
     /// Prints the program as a string.
@@ -131,7 +131,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Deb
 }
 
 #[allow(clippy::format_push_string)]
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Display
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Display
     for ProgramCore<N, Instruction, Command>
 {
     /// Prints the program as a string.

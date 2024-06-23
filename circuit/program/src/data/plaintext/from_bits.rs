@@ -12,20 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> FromBits for Plaintext<A> {
-    type Boolean = Boolean<A>;
+impl FromBits for Plaintext {
+    type Boolean = Boolean;
 
     /// Initializes a new plaintext from a list of little-endian bits *without* trailing zeros.
-    fn from_bits_le(bits_le: &[Boolean<A>]) -> Self {
+    fn from_bits_le(bits_le: &[Boolean]) -> Self {
         let bits = bits_le;
 
         // The starting index used to create subsequent subslices of the `bits` slice.
         let mut index = 0;
 
         // Helper function to get the next n bits as a slice.
-        let mut next_bits = |n: usize| -> &[Boolean<A>] {
+        let mut next_bits = |n: usize| -> &[Boolean] {
             // Safely procure a subslice with the length `n` starting at `index`.
             let subslice = bits.get(index..index + n);
             // Check if the range is within bounds.
@@ -35,7 +37,7 @@ impl<A: Aleo> FromBits for Plaintext<A> {
                 // Return the subslice.
                 next_bits
             } else {
-                A::halt("Insufficient bits.")
+                Circuit::halt("Insufficient bits.")
             }
         };
 
@@ -88,19 +90,19 @@ impl<A: Aleo> FromBits for Plaintext<A> {
         }
         // Unknown variant.
         else {
-            A::halt("Unknown plaintext variant.")
+            Circuit::halt("Unknown plaintext variant.")
         }
     }
 
     /// Initializes a new plaintext from a list of big-endian bits *without* trailing zeros.
-    fn from_bits_be(bits_be: &[Boolean<A>]) -> Self {
+    fn from_bits_be(bits_be: &[Boolean]) -> Self {
         let bits = bits_be;
 
         // The starting index used to create subsequent subslices of the `bits` slice.
         let mut index = 0;
 
         // Helper function to get the next n bits as a slice.
-        let mut next_bits = |n: usize| -> &[Boolean<A>] {
+        let mut next_bits = |n: usize| -> &[Boolean] {
             // Safely procure a subslice with the length `n` starting at `index`.
             let subslice = bits.get(index..index + n);
             // Check if the range is within bounds.
@@ -110,7 +112,7 @@ impl<A: Aleo> FromBits for Plaintext<A> {
                 // Return the subslice.
                 next_bits
             } else {
-                A::halt("Insufficient bits.")
+                Circuit::halt("Insufficient bits.")
             }
         };
 
@@ -163,7 +165,7 @@ impl<A: Aleo> FromBits for Plaintext<A> {
         }
         // Unknown variant.
         else {
-            A::halt("Unknown plaintext variant.")
+            Circuit::halt("Unknown plaintext variant.")
         }
     }
 }

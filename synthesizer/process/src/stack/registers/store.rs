@@ -73,7 +73,7 @@ impl<N: Network, A: circuit::Aleo<Network = N>> RegistersStoreCircuit<N, A> for 
         &mut self,
         stack: &(impl StackMatches<N> + StackProgram<N>),
         register: &Register<N>,
-        circuit_value: circuit::Value<A>,
+        circuit_value: circuit::Value,
     ) -> Result<()> {
         match register {
             Register::Locator(locator) => {

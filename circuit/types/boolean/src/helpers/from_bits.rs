@@ -14,15 +14,15 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Boolean<E> {
-    type Boolean = Boolean<E>;
+impl FromBits for Boolean {
+    type Boolean = Boolean;
 
     /// Returns a boolean circuit given a mode and single boolean.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
         // Ensure there is exactly one boolean in the list of booleans.
         match bits_le.len() == 1 {
             true => bits_le[0].clone(),
-            false => E::halt(format!("Attempted to instantiate a boolean with {} bits", bits_le.len())),
+            false => Circuit::halt(format!("Attempted to instantiate a boolean with {} bits", bits_le.len())),
         }
     }
 
@@ -31,7 +31,7 @@ impl<E: Environment> FromBits for Boolean<E> {
         // Ensure there is exactly one boolean in the list of booleans.
         match bits_be.len() == 1 {
             true => bits_be[0].clone(),
-            false => E::halt(format!("Attempted to instantiate a boolean with {} bits", bits_be.len())),
+            false => Circuit::halt(format!("Attempted to instantiate a boolean with {} bits", bits_be.len())),
         }
     }
 }
@@ -44,7 +44,7 @@ mod tests {
     fn check_from_bits_le(
         name: &str,
         expected: bool,
-        candidate: &Boolean<Circuit>,
+        candidate: &Boolean,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -61,7 +61,7 @@ mod tests {
     fn check_from_bits_be(
         name: &str,
         expected: bool,
-        candidate: &Boolean<Circuit>,
+        candidate: &Boolean,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -77,33 +77,33 @@ mod tests {
 
     #[test]
     fn test_from_bits_constant() {
-        let candidate = Boolean::<Circuit>::new(Mode::Constant, true);
+        let candidate = Boolean::new(Mode::Constant, true);
         check_from_bits_le("Constant", true, &candidate, 0, 0, 0, 0);
         check_from_bits_be("Constant", true, &candidate, 0, 0, 0, 0);
 
-        let candidate = Boolean::<Circuit>::new(Mode::Constant, false);
+        let candidate = Boolean::new(Mode::Constant, false);
         check_from_bits_le("Constant", false, &candidate, 0, 0, 0, 0);
         check_from_bits_be("Constant", false, &candidate, 0, 0, 0, 0);
     }
 
     #[test]
     fn test_from_bits_public() {
-        let candidate = Boolean::<Circuit>::new(Mode::Public, true);
+        let candidate = Boolean::new(Mode::Public, true);
         check_from_bits_le("Public", true, &candidate, 0, 0, 0, 0);
         check_from_bits_be("Public", true, &candidate, 0, 0, 0, 0);
 
-        let candidate = Boolean::<Circuit>::new(Mode::Public, false);
+        let candidate = Boolean::new(Mode::Public, false);
         check_from_bits_le("Public", false, &candidate, 0, 0, 0, 0);
         check_from_bits_be("Public", false, &candidate, 0, 0, 0, 0);
     }
 
     #[test]
     fn test_from_bits_private() {
-        let candidate = Boolean::<Circuit>::new(Mode::Private, true);
+        let candidate = Boolean::new(Mode::Private, true);
         check_from_bits_le("Private", true, &candidate, 0, 0, 0, 0);
         check_from_bits_be("Private", true, &candidate, 0, 0, 0, 0);
 
-        let candidate = Boolean::<Circuit>::new(Mode::Private, false);
+        let candidate = Boolean::new(Mode::Private, false);
         check_from_bits_le("Private", false, &candidate, 0, 0, 0, 0);
         check_from_bits_be("Private", false, &candidate, 0, 0, 0, 0);
     }

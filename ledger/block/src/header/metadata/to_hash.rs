@@ -16,7 +16,7 @@ use super::*;
 
 impl<N: Network> Metadata<N> {
     /// Returns the metadata hash.
-    pub fn to_hash(&self) -> Result<Field<N>> {
+    pub fn to_hash(&self) -> Result<Field> {
         // Construct the metadata bits (the last leaf in the Merkle tree).
         let metadata_bits = self.to_bits_le(); // 696 bits
         // Ensure the metadata bits is the correct size.

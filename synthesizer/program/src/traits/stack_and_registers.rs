@@ -95,7 +95,7 @@ pub trait StackProgram<N: Network> {
     /// Samples a value for the given value_type.
     fn sample_value<R: Rng + CryptoRng>(
         &self,
-        burner_address: &Address<N>,
+        burner_address: &Address,
         value_type: &ValueType<N>,
         rng: &mut R,
     ) -> Result<Value<N>>;
@@ -103,9 +103,9 @@ pub trait StackProgram<N: Network> {
     /// Returns a record for the given record name, with the given burner address and nonce.
     fn sample_record<R: Rng + CryptoRng>(
         &self,
-        burner_address: &Address<N>,
+        burner_address: &Address,
         record_name: &Identifier<N>,
-        record_nonce: Group<N>,
+        record_nonce: Group,
         rng: &mut R,
     ) -> Result<Record<N, Plaintext<N>>>;
 }
@@ -123,54 +123,54 @@ pub trait FinalizeRegistersState<N: Network> {
 
 pub trait RegistersSigner<N: Network> {
     /// Returns the transition signer.
-    fn signer(&self) -> Result<Address<N>>;
+    fn signer(&self) -> Result<Address>;
 
     /// Sets the transition signer.
-    fn set_signer(&mut self, signer: Address<N>);
+    fn set_signer(&mut self, signer: Address);
 
     /// Returns the root transition view key.
-    fn root_tvk(&self) -> Result<Field<N>>;
+    fn root_tvk(&self) -> Result<Field>;
 
     /// Sets the root transition view key.
-    fn set_root_tvk(&mut self, root_tvk: Field<N>);
+    fn set_root_tvk(&mut self, root_tvk: Field);
 
     /// Returns the transition caller.
-    fn caller(&self) -> Result<Address<N>>;
+    fn caller(&self) -> Result<Address>;
 
     /// Sets the transition caller.
-    fn set_caller(&mut self, caller: Address<N>);
+    fn set_caller(&mut self, caller: Address);
 
     /// Returns the transition view key.
-    fn tvk(&self) -> Result<Field<N>>;
+    fn tvk(&self) -> Result<Field>;
 
     /// Sets the transition view key.
-    fn set_tvk(&mut self, tvk: Field<N>);
+    fn set_tvk(&mut self, tvk: Field);
 }
 
 pub trait RegistersSignerCircuit<N: Network, A: circuit::Aleo<Network = N>> {
     /// Returns the transition signer, as a circuit.
-    fn signer_circuit(&self) -> Result<circuit::Address<A>>;
+    fn signer_circuit(&self) -> Result<circuit::Address>;
 
     /// Sets the transition signer, as a circuit.
-    fn set_signer_circuit(&mut self, signer_circuit: circuit::Address<A>);
+    fn set_signer_circuit(&mut self, signer_circuit: circuit::Address);
 
     /// Returns the root transition view key, as a circuit.
-    fn root_tvk_circuit(&self) -> Result<circuit::Field<A>>;
+    fn root_tvk_circuit(&self) -> Result<circuit::Field>;
 
     /// Sets the root transition view key, as a circuit.
-    fn set_root_tvk_circuit(&mut self, root_tvk_circuit: circuit::Field<A>);
+    fn set_root_tvk_circuit(&mut self, root_tvk_circuit: circuit::Field);
 
     /// Returns the transition caller, as a circuit.
-    fn caller_circuit(&self) -> Result<circuit::Address<A>>;
+    fn caller_circuit(&self) -> Result<circuit::Address>;
 
     /// Sets the transition caller, as a circuit.
-    fn set_caller_circuit(&mut self, caller_circuit: circuit::Address<A>);
+    fn set_caller_circuit(&mut self, caller_circuit: circuit::Address);
 
     /// Returns the transition view key, as a circuit.
-    fn tvk_circuit(&self) -> Result<circuit::Field<A>>;
+    fn tvk_circuit(&self) -> Result<circuit::Field>;
 
     /// Sets the transition view key, as a circuit.
-    fn set_tvk_circuit(&mut self, tvk_circuit: circuit::Field<A>);
+    fn set_tvk_circuit(&mut self, tvk_circuit: circuit::Field);
 }
 
 pub trait RegistersLoad<N: Network> {
@@ -233,7 +233,7 @@ pub trait RegistersLoadCircuit<N: Network, A: circuit::Aleo<Network = N>> {
         &self,
         stack: &(impl StackMatches<N> + StackProgram<N>),
         operand: &Operand<N>,
-    ) -> Result<circuit::Value<A>>;
+    ) -> Result<circuit::Value>;
 
     /// Loads the literal of a given operand.
     ///
@@ -246,7 +246,7 @@ pub trait RegistersLoadCircuit<N: Network, A: circuit::Aleo<Network = N>> {
         &self,
         stack: &(impl StackMatches<N> + StackProgram<N>),
         operand: &Operand<N>,
-    ) -> Result<circuit::Literal<A>> {
+    ) -> Result<circuit::Literal> {
         match self.load_circuit(stack, operand)? {
             circuit::Value::Plaintext(circuit::Plaintext::Literal(literal, ..)) => Ok(literal),
             circuit::Value::Plaintext(circuit::Plaintext::Struct(..))
@@ -267,7 +267,7 @@ pub trait RegistersLoadCircuit<N: Network, A: circuit::Aleo<Network = N>> {
         &self,
         stack: &(impl StackMatches<N> + StackProgram<N>),
         operand: &Operand<N>,
-    ) -> Result<circuit::Plaintext<A>> {
+    ) -> Result<circuit::Plaintext> {
         match self.load_circuit(stack, operand)? {
             circuit::Value::Plaintext(plaintext) => Ok(plaintext),
             circuit::Value::Record(..) | circuit::Value::Future(..) => bail!("Operand must be a plaintext"),
@@ -317,7 +317,7 @@ pub trait RegistersStoreCircuit<N: Network, A: circuit::Aleo<Network = N>> {
         &mut self,
         stack: &(impl StackMatches<N> + StackProgram<N>),
         register: &Register<N>,
-        stack_value: circuit::Value<A>,
+        stack_value: circuit::Value,
     ) -> Result<()>;
 
     /// Assigns the given literal to the given register, assuming the register is not already assigned.
@@ -331,7 +331,7 @@ pub trait RegistersStoreCircuit<N: Network, A: circuit::Aleo<Network = N>> {
         &mut self,
         stack: &(impl StackMatches<N> + StackProgram<N>),
         register: &Register<N>,
-        literal: circuit::Literal<A>,
+        literal: circuit::Literal,
     ) -> Result<()> {
         self.store_circuit(stack, register, circuit::Value::Plaintext(circuit::Plaintext::from(literal)))
     }

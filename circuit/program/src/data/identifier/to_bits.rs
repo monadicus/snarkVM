@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> ToBits for Identifier<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for Identifier {
+    type Boolean = Boolean;
 
     /// Returns the little-endian bits of the identifier.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -28,8 +28,8 @@ impl<A: Aleo> ToBits for Identifier<A> {
     }
 }
 
-impl<A: Aleo> ToBits for &Identifier<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for &Identifier {
+    type Boolean = Boolean;
 
     /// Returns the little-endian bits of the identifier.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -58,9 +58,9 @@ mod tests {
     fn check_to_bits_le(num_constants: u64, num_public: u64, num_private: u64, num_constraints: u64) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Initialize the console identifier.
-            let console_identifier = sample_console_identifier::<Circuit>()?;
+            let console_identifier = sample_console_identifier()?;
             // Initialize the circuit identifier.
-            let circuit_identifier = Identifier::<Circuit>::new(Mode::Constant, console_identifier);
+            let circuit_identifier = Identifier::new(Mode::Constant, console_identifier);
 
             Circuit::scope("Identifier ToBits", || {
                 let candidate = circuit_identifier.to_bits_le();
@@ -76,9 +76,9 @@ mod tests {
     fn check_to_bits_be(num_constants: u64, num_public: u64, num_private: u64, num_constraints: u64) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Initialize the console identifier.
-            let console_identifier = sample_console_identifier::<Circuit>()?;
+            let console_identifier = sample_console_identifier()?;
             // Initialize the circuit identifier.
-            let circuit_identifier = Identifier::<Circuit>::new(Mode::Constant, console_identifier);
+            let circuit_identifier = Identifier::new(Mode::Constant, console_identifier);
 
             Circuit::scope("Identifier ToBits", || {
                 let candidate = circuit_identifier.to_bits_be();

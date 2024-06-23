@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> Request<A> {
+impl Request {
     /// Returns `true` if the input IDs are derived correctly, the input records all belong to the signer,
     /// and the signature is valid.
     ///
@@ -22,16 +24,16 @@ impl<A: Aleo> Request<A> {
     ///     challenge' := HashToScalar(r * G, pk_sig, pr_sig, signer, \[tvk, tcm, function ID, input IDs\])
     pub fn verify(
         &self,
-        input_types: &[console::ValueType<A::Network>],
-        tpk: &Group<A>,
-        root_tvk: Option<Field<A>>,
-        is_root: Boolean<A>,
-    ) -> Boolean<A> {
+        input_types: &[console::ValueType],
+        tpk: &Group,
+        root_tvk: Option<Field>,
+        is_root: Boolean,
+    ) -> Boolean {
         // Compute the function ID.
         let function_id = compute_function_id(&self.network_id, &self.program_id, &self.function_name);
 
         // Compute 'is_root' as a field element.
-        let is_root = Ternary::ternary(&is_root, &Field::<A>::one(), &Field::<A>::zero());
+        let is_root = Ternary::ternary(&is_root, &Field::one(), &Field::zero());
 
         // Construct the signature message as `[tvk, tcm, function ID, input IDs]`.
         let mut message = Vec::with_capacity(3 + 4 * self.input_ids.len());
@@ -57,17 +59,17 @@ impl<A: Aleo> Request<A> {
         // Append the input elements to the message.
         match append_to_message {
             Some(append_to_message) => message.extend(append_to_message),
-            None => A::halt("Missing input elements in request verification"),
+            None => Circuit::halt("Missing input elements in request verification"),
         }
 
-        let root_tvk = root_tvk.unwrap_or(Field::<A>::new(Mode::Private, self.tvk.eject_value()));
+        let root_tvk = root_tvk.unwrap_or(Field::new(Mode::Private, self.tvk.eject_value()));
 
         // Verify the transition public key and commitments are well-formed.
         let tpk_checks = {
             // Compute the transition commitment as `Hash(tvk)`.
-            let tcm = A::hash_psd2(&[self.tvk.clone()]);
+            let tcm = AleoV0::hash_psd2(&[self.tvk.clone()]);
             // Compute the signer commitment as `Hash(signer || root_tvk)`.
-            let scm = A::hash_psd2(&[self.signer.to_field(), root_tvk]);
+            let scm = AleoV0::hash_psd2(&[self.signer.to_field(), root_tvk]);
 
             // Ensure the transition public key matches with the saved one from the signature.
             tpk.is_equal(&self.to_tpk())
@@ -92,7 +94,7 @@ impl<A: Aleo> Request<A> {
             preimage.extend_from_slice(&message);
 
             // Compute the candidate verifier challenge.
-            let candidate_challenge = A::hash_to_scalar_psd8(&preimage);
+            let candidate_challenge = AleoV0::hash_to_scalar_psd8(&preimage);
             // Compute the candidate address.
             let candidate_address = self.signature.compute_key().to_address();
 
@@ -107,18 +109,18 @@ impl<A: Aleo> Request<A> {
     /// Returns `true` if the inputs match their input IDs.
     /// Note: This method does **not** perform signature checks.
     pub fn check_input_ids<const CREATE_MESSAGE: bool>(
-        network_id: &U16<A>,
-        program_id: &ProgramID<A>,
-        function_name: &Identifier<A>,
-        input_ids: &[InputID<A>],
-        inputs: &[Value<A>],
-        input_types: &[console::ValueType<A::Network>],
-        signer: &Address<A>,
-        sk_tag: &Field<A>,
-        tvk: &Field<A>,
-        tcm: &Field<A>,
-        signature: Option<&Signature<A>>,
-    ) -> (Boolean<A>, Option<Vec<Field<A>>>) {
+        network_id: &U16,
+        program_id: &ProgramID,
+        function_name: &Identifier,
+        input_ids: &[InputID],
+        inputs: &[Value],
+        input_types: &[console::ValueType],
+        signer: &Address,
+        sk_tag: &Field,
+        tvk: &Field,
+        tcm: &Field,
+        signature: Option<&Signature>,
+    ) -> (Boolean, Option<Vec<Field>>) {
         // Ensure the signature response matches the `CREATE_MESSAGE` flag.
         match CREATE_MESSAGE {
             true => assert!(signature.is_some()),
@@ -157,10 +159,14 @@ impl<A: Aleo> Request<A> {
 
                         // Ensure the expected hash matches the computed hash.
                         match &input {
-                            Value::Plaintext(..) => input_hash.is_equal(&A::hash_psd8(&preimage)),
+                            Value::Plaintext(..) => input_hash.is_equal(&AleoV0::hash_psd8(&preimage)),
                             // Ensure the input is not a record or future.
-                            Value::Record(..) => A::halt("Expected a constant plaintext input, found a record input"),
-                            Value::Future(..) => A::halt("Expected a constant plaintext input, found a future input"),
+                            Value::Record(..) => {
+                                Circuit::halt("Expected a constant plaintext input, found a record input")
+                            }
+                            Value::Future(..) => {
+                                Circuit::halt("Expected a constant plaintext input, found a future input")
+                            }
                         }
                     }
                     // A public input is hashed (using `tcm`) to a field element.
@@ -181,10 +187,14 @@ impl<A: Aleo> Request<A> {
 
                         // Ensure the expected hash matches the computed hash.
                         match &input {
-                            Value::Plaintext(..) => input_hash.is_equal(&A::hash_psd8(&preimage)),
+                            Value::Plaintext(..) => input_hash.is_equal(&AleoV0::hash_psd8(&preimage)),
                             // Ensure the input is not a record or future.
-                            Value::Record(..) => A::halt("Expected a public plaintext input, found a record input"),
-                            Value::Future(..) => A::halt("Expected a public plaintext input, found a future input"),
+                            Value::Record(..) => {
+                                Circuit::halt("Expected a public plaintext input, found a record input")
+                            }
+                            Value::Future(..) => {
+                                Circuit::halt("Expected a public plaintext input, found a future input")
+                            }
                         }
                     }
                     // A private input is encrypted (using `tvk`) and hashed to a field element.
@@ -197,17 +207,21 @@ impl<A: Aleo> Request<A> {
                         // Prepare the index as a constant field element.
                         let input_index = Field::constant(console::Field::from_u16(index as u16));
                         // Compute the input view key as `Hash(function ID || tvk || index)`.
-                        let input_view_key = A::hash_psd4(&[function_id.clone(), tvk.clone(), input_index]);
+                        let input_view_key = AleoV0::hash_psd4(&[function_id.clone(), tvk.clone(), input_index]);
                         // Compute the ciphertext.
                         let ciphertext = match &input {
                             Value::Plaintext(plaintext) => plaintext.encrypt_symmetric(input_view_key),
                             // Ensure the input is a plaintext.
-                            Value::Record(..) => A::halt("Expected a private plaintext input, found a record input"),
-                            Value::Future(..) => A::halt("Expected a private plaintext input, found a future input"),
+                            Value::Record(..) => {
+                                Circuit::halt("Expected a private plaintext input, found a record input")
+                            }
+                            Value::Future(..) => {
+                                Circuit::halt("Expected a private plaintext input, found a future input")
+                            }
                         };
 
                         // Ensure the expected hash matches the computed hash.
-                        input_hash.is_equal(&A::hash_psd8(&ciphertext.to_fields()))
+                        input_hash.is_equal(&AleoV0::hash_psd8(&ciphertext.to_fields()))
                     }
                     // A record input is computed to its serial number.
                     InputID::Record(commitment, gamma, serial_number, tag) => {
@@ -215,29 +229,28 @@ impl<A: Aleo> Request<A> {
                         let record = match &input {
                             Value::Record(record) => record,
                             // Ensure the input is a record.
-                            Value::Plaintext(..) => A::halt("Expected a record input, found a plaintext input"),
-                            Value::Future(..) => A::halt("Expected a record input, found a future input"),
+                            Value::Plaintext(..) => Circuit::halt("Expected a record input, found a plaintext input"),
+                            Value::Future(..) => Circuit::halt("Expected a record input, found a future input"),
                         };
                         // Retrieve the record name as a `Mode::Constant`.
                         let record_name = match input_type {
                             console::ValueType::Record(record_name) => Identifier::constant(*record_name),
                             // Ensure the input is a record.
-                            _ => A::halt(format!("Expected a record input at input {index}")),
+                            _ => Circuit::halt(format!("Expected a record input at input {index}")),
                         };
                         // Compute the record commitment.
                         let candidate_commitment = record.to_commitment(program_id, &record_name);
                         // Compute the `candidate_serial_number` from `gamma`.
                         let candidate_serial_number =
-                            Record::<A, Plaintext<A>>::serial_number_from_gamma(gamma, candidate_commitment.clone());
+                            Record::<Plaintext>::serial_number_from_gamma(&*gamma, candidate_commitment.clone());
                         // Compute the tag.
-                        let candidate_tag =
-                            Record::<A, Plaintext<A>>::tag(sk_tag.clone(), candidate_commitment.clone());
+                        let candidate_tag = Record::<Plaintext>::tag(sk_tag.clone(), candidate_commitment.clone());
 
                         if CREATE_MESSAGE {
                             // Ensure the signature is declared.
                             let signature = match signature {
                                 Some(signature) => signature,
-                                None => A::halt("Missing signature in logic to check input IDs"),
+                                None => Circuit::halt("Missing signature in logic to check input IDs"),
                             };
                             // Retrieve the challenge from the signature.
                             let challenge = signature.challenge();
@@ -245,7 +258,10 @@ impl<A: Aleo> Request<A> {
                             let response = signature.response();
 
                             // Compute the generator `H` as `HashToGroup(commitment)`.
-                            let h = A::hash_to_group_psd2(&[A::serial_number_domain(), candidate_commitment.clone()]);
+                            let h = AleoV0::hash_to_group_psd2(&[
+                                AleoV0::serial_number_domain(),
+                                candidate_commitment.clone(),
+                            ]);
                             // Compute `h_r` as `(challenge * gamma) + (response * H)`, equivalent to `r * H`.
                             let h_r = (gamma.deref() * challenge) + (&h * response);
 
@@ -275,9 +291,11 @@ impl<A: Aleo> Request<A> {
                             Value::Record(record) => record,
                             // Ensure the input is a record.
                             Value::Plaintext(..) => {
-                                A::halt("Expected an external record input, found a plaintext input")
+                                Circuit::halt("Expected an external record input, found a plaintext input")
                             }
-                            Value::Future(..) => A::halt("Expected an external record input, found a future input"),
+                            Value::Future(..) => {
+                                Circuit::halt("Expected an external record input, found a future input")
+                            }
                         };
 
                         // Prepare the index as a constant field element.
@@ -290,7 +308,7 @@ impl<A: Aleo> Request<A> {
                         preimage.push(input_index);
 
                         // Ensure the expected hash matches the computed hash.
-                        input_hash.is_equal(&A::hash_psd8(&preimage))
+                        input_hash.is_equal(&AleoV0::hash_psd8(&preimage))
                     }
                 }
             })
@@ -301,7 +319,7 @@ impl<A: Aleo> Request<A> {
             true => (input_checks, Some(message)),
             false => match message.is_empty() {
                 true => (input_checks, None),
-                false => A::halt("Malformed synthesis of the logic to check input IDs"),
+                false => Circuit::halt("Malformed synthesis of the logic to check input IDs"),
             },
         }
     }
@@ -311,6 +329,7 @@ impl<A: Aleo> Request<A> {
 mod tests {
     use super::*;
     use crate::Circuit;
+    use console::Network;
     use snarkvm_utilities::TestRng;
 
     use anyhow::Result;
@@ -340,18 +359,11 @@ mod tests {
                 format!("{{ owner: {address}.private, token_amount: 100u64.private, _nonce: 0group.public }}");
 
             // Construct the inputs.
-            let input_constant =
-                console::Value::<<Circuit as Environment>::Network>::from_str("{ token_amount: 9876543210u128 }")
-                    .unwrap();
-            let input_public =
-                console::Value::<<Circuit as Environment>::Network>::from_str("{ token_amount: 9876543210u128 }")
-                    .unwrap();
-            let input_private =
-                console::Value::<<Circuit as Environment>::Network>::from_str("{ token_amount: 9876543210u128 }")
-                    .unwrap();
-            let input_record = console::Value::<<Circuit as Environment>::Network>::from_str(&record_string).unwrap();
-            let input_external_record =
-                console::Value::<<Circuit as Environment>::Network>::from_str(&record_string).unwrap();
+            let input_constant = console::Value::from_str("{ token_amount: 9876543210u128 }").unwrap();
+            let input_public = console::Value::from_str("{ token_amount: 9876543210u128 }").unwrap();
+            let input_private = console::Value::from_str("{ token_amount: 9876543210u128 }").unwrap();
+            let input_record = console::Value::from_str(&record_string).unwrap();
+            let input_external_record = console::Value::from_str(&record_string).unwrap();
             let inputs = [input_constant, input_public, input_private, input_record, input_external_record];
 
             // Construct the input types.
@@ -371,6 +383,7 @@ mod tests {
 
             // Compute the signed request.
             let request = console::Request::sign(
+                0,
                 &private_key,
                 program_id,
                 function_name,
@@ -380,11 +393,11 @@ mod tests {
                 is_root,
                 rng,
             )?;
-            assert!(request.verify(&input_types, is_root));
+            assert!(request.verify(0, &input_types, is_root));
 
             // Inject the request into a circuit.
-            let tpk = Group::<Circuit>::new(mode, request.to_tpk());
-            let request = Request::<Circuit>::new(mode, request);
+            let tpk = Group::new(mode, request.to_tpk());
+            let request = Request::new(mode, request);
             let is_root = Boolean::new(mode, is_root);
 
             Circuit::scope(format!("Request {i}"), || {

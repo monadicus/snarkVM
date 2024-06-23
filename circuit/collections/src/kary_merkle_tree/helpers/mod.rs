@@ -19,11 +19,12 @@ pub use leaf_hash::*;
 
 mod path_hash;
 pub use path_hash::*;
+use snarkvm_circuit_types::environment::Circuit;
 
 #[derive(Clone, Debug)]
-pub struct BooleanHash<E: Environment, const VARIANT: usize>(pub [Boolean<E>; VARIANT]);
+pub struct BooleanHash<const VARIANT: usize>(pub [Boolean; VARIANT]);
 
-impl<E: Environment, const VARIANT: usize> Default for BooleanHash<E, VARIANT> {
+impl<const VARIANT: usize> Default for BooleanHash<VARIANT> {
     /// Initializes a new "empty" boolean hash.
     fn default() -> Self {
         Self::new(Mode::Constant, console::kary_merkle_tree::BooleanHash::new())
@@ -31,7 +32,7 @@ impl<E: Environment, const VARIANT: usize> Default for BooleanHash<E, VARIANT> {
 }
 
 #[cfg(console)]
-impl<E: Environment, const VARIANT: usize> Inject for BooleanHash<E, VARIANT> {
+impl<const VARIANT: usize> Inject for BooleanHash<VARIANT> {
     type Primitive = console::kary_merkle_tree::BooleanHash<VARIANT>;
 
     /// Initializes a boolean hash from the given mode and native boolean hash.
@@ -42,13 +43,13 @@ impl<E: Environment, const VARIANT: usize> Inject for BooleanHash<E, VARIANT> {
         // Return the boolean hash.
         match hash.len() == VARIANT {
             true => Self(hash.try_into().unwrap()),
-            false => E::halt("Boolean hash is not the correct length"),
+            false => Circuit::halt("Boolean hash is not the correct length"),
         }
     }
 }
 
 #[cfg(console)]
-impl<E: Environment, const VARIANT: usize> Eject for BooleanHash<E, VARIANT> {
+impl<const VARIANT: usize> Eject for BooleanHash<VARIANT> {
     type Primitive = console::kary_merkle_tree::BooleanHash<VARIANT>;
 
     /// Ejects the mode of the boolean hash.
@@ -62,8 +63,8 @@ impl<E: Environment, const VARIANT: usize> Eject for BooleanHash<E, VARIANT> {
     }
 }
 
-impl<E: Environment, const VARIANT: usize> Equal<Self> for BooleanHash<E, VARIANT> {
-    type Output = Boolean<E>;
+impl<const VARIANT: usize> Equal<Self> for BooleanHash<VARIANT> {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -76,8 +77,8 @@ impl<E: Environment, const VARIANT: usize> Equal<Self> for BooleanHash<E, VARIAN
     }
 }
 
-impl<E: Environment, const VARIANT: usize> Ternary for BooleanHash<E, VARIANT> {
-    type Boolean = Boolean<E>;
+impl<const VARIANT: usize> Ternary for BooleanHash<VARIANT> {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.
@@ -90,8 +91,8 @@ impl<E: Environment, const VARIANT: usize> Ternary for BooleanHash<E, VARIANT> {
     }
 }
 
-impl<E: Environment, const VARIANT: usize> Deref for BooleanHash<E, VARIANT> {
-    type Target = [Boolean<E>; VARIANT];
+impl<const VARIANT: usize> Deref for BooleanHash<VARIANT> {
+    type Target = [Boolean; VARIANT];
 
     fn deref(&self) -> &Self::Target {
         &self.0

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Inv for Field<E> {
+impl Inv for Field {
     type Output = Self;
 
     fn inv(self) -> Self::Output {
@@ -22,16 +22,16 @@ impl<E: Environment> Inv for Field<E> {
     }
 }
 
-impl<E: Environment> Inv for &Field<E> {
-    type Output = Field<E>;
+impl Inv for &Field {
+    type Output = Field;
 
     fn inv(self) -> Self::Output {
         self.inverse()
     }
 }
 
-impl<E: Environment> Inverse for Field<E> {
-    type Output = Field<E>;
+impl Inverse for Field {
+    type Output = Field;
 
     fn inverse(&self) -> Self::Output {
         let inverse = witness!(|self| match self.inverse() {
@@ -40,13 +40,13 @@ impl<E: Environment> Inverse for Field<E> {
         });
 
         // Ensure `self` * `self^(-1)` == 1.
-        E::enforce(|| (self, &inverse, E::one()));
+        Circuit::enforce(|| (self, &inverse, Circuit::one()));
 
         inverse
     }
 }
 
-impl<E: Environment> Metrics<dyn Inverse<Output = Field<E>>> for Field<E> {
+impl Metrics<dyn Inverse<Output = Field>> for Field {
     type Case = Mode;
 
     fn count(case: &Self::Case) -> Count {
@@ -57,7 +57,7 @@ impl<E: Environment> Metrics<dyn Inverse<Output = Field<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn Inverse<Output = Field<E>>> for Field<E> {
+impl OutputMode<dyn Inverse<Output = Field>> for Field {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -78,10 +78,10 @@ mod tests {
     fn check_inverse(name: &str, mode: Mode, rng: &mut TestRng) {
         for _ in 0..ITERATIONS {
             // Sample a random element.
-            let given: console::Field<<Circuit as Environment>::Network> = Uniform::rand(rng);
+            let given: console::Field = Uniform::rand(rng);
             // Compute it's inverse, or skip this iteration if it does not natively exist.
             if let Ok(expected) = given.inverse() {
-                let candidate = Field::<Circuit>::new(mode, given);
+                let candidate = Field::new(mode, given);
 
                 Circuit::scope(name, || {
                     let result = candidate.inverse();
@@ -105,22 +105,22 @@ mod tests {
 
     #[test]
     fn test_zero_inverse_fails() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
 
-        let result = std::panic::catch_unwind(|| Field::<Circuit>::zero().inverse());
+        let result = std::panic::catch_unwind(|| Field::zero().inverse());
         assert!(result.is_err());
         Circuit::reset();
 
-        let result = std::panic::catch_unwind(|| Field::<Circuit>::new(Mode::Constant, zero).inverse());
+        let result = std::panic::catch_unwind(|| Field::new(Mode::Constant, zero).inverse());
         assert!(result.is_err());
         Circuit::reset();
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero).inverse();
+        let candidate = Field::new(Mode::Public, zero).inverse();
         assert_eq!(zero, candidate.eject_value());
         assert!(!Circuit::is_satisfied());
         Circuit::reset();
 
-        let candidate = Field::<Circuit>::new(Mode::Private, zero).inverse();
+        let candidate = Field::new(Mode::Private, zero).inverse();
         assert_eq!(zero, candidate.eject_value());
         assert!(!Circuit::is_satisfied());
         Circuit::reset();

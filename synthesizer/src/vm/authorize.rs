@@ -19,7 +19,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     #[inline]
     pub fn authorize<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         program_id: impl TryInto<ProgramID<N>>,
         function_name: impl TryInto<Identifier<N>>,
         inputs: impl IntoIterator<IntoIter = impl ExactSizeIterator<Item = impl TryInto<Value<N>>>>,
@@ -54,11 +54,11 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     #[inline]
     pub fn authorize_fee_private<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         credits: Record<N, Plaintext<N>>,
         base_fee_in_microcredits: u64,
         priority_fee_in_microcredits: u64,
-        deployment_or_execution_id: Field<N>,
+        deployment_or_execution_id: Field,
         rng: &mut R,
     ) -> Result<Authorization<N>> {
         macro_rules! logic {
@@ -69,7 +69,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
                     cast_ref!(credits as Record<$network, Plaintext<$network>>).clone(),
                     base_fee_in_microcredits,
                     priority_fee_in_microcredits,
-                    *cast_ref!(deployment_or_execution_id as Field<$network>),
+                    *cast_ref!(deployment_or_execution_id as Field),
                     rng,
                 )?;
                 // Prepare the authorization.
@@ -88,10 +88,10 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     #[inline]
     pub fn authorize_fee_public<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         base_fee_in_microcredits: u64,
         priority_fee_in_microcredits: u64,
-        deployment_or_execution_id: Field<N>,
+        deployment_or_execution_id: Field,
         rng: &mut R,
     ) -> Result<Authorization<N>> {
         macro_rules! logic {
@@ -101,7 +101,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
                     cast_ref!(&private_key as PrivateKey<$network>),
                     base_fee_in_microcredits,
                     priority_fee_in_microcredits,
-                    *cast_ref!(deployment_or_execution_id as Field<$network>),
+                    *cast_ref!(deployment_or_execution_id as Field),
                     rng,
                 )?;
                 // Prepare the authorization.
@@ -122,7 +122,7 @@ impl<N: Network, C: ConsensusStorage<N>> VM<N, C> {
     #[inline]
     fn authorize_raw<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         program_id: ProgramID<N>,
         function_name: Identifier<N>,
         inputs: Vec<Value<N>>,

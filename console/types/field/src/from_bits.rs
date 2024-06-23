@@ -74,9 +74,6 @@ impl FromBits for Field {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -85,19 +82,19 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: Field<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Field = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_le();
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Field::size_in_bits(), given_bits.len());
 
-            let candidate = Field::<CurrentEnvironment>::from_bits_le(&given_bits)?;
+            let candidate = Field::from_bits_le(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [given_bits, vec![false; i]].concat();
 
-            let candidate = Field::<CurrentEnvironment>::from_bits_le(&candidate)?;
+            let candidate = Field::from_bits_le(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), candidate.to_bits_le().len());
+            assert_eq!(Field::size_in_bits(), candidate.to_bits_le().len());
         }
         Ok(())
     }
@@ -107,19 +104,19 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: Field<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let expected: Field = Uniform::rand(&mut rng);
             let given_bits = expected.to_bits_be();
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), given_bits.len());
+            assert_eq!(Field::size_in_bits(), given_bits.len());
 
-            let candidate = Field::<CurrentEnvironment>::from_bits_be(&given_bits)?;
+            let candidate = Field::from_bits_be(&given_bits)?;
             assert_eq!(expected, candidate);
 
             // Add excess zero bits.
             let candidate = [vec![false; i], given_bits].concat();
 
-            let candidate = Field::<CurrentEnvironment>::from_bits_be(&candidate)?;
+            let candidate = Field::from_bits_be(&candidate)?;
             assert_eq!(expected, candidate);
-            assert_eq!(Field::<CurrentEnvironment>::size_in_bits(), candidate.to_bits_be().len());
+            assert_eq!(Field::size_in_bits(), candidate.to_bits_be().len());
         }
         Ok(())
     }

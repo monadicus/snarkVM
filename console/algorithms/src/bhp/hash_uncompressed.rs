@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_bhp256_input_size() -> Result<()> {
-        let bhp = BHP256::<CurrentEnvironment>::setup("BHPTest")?;
+        let bhp = BHP256::setup("BHPTest")?;
 
         let mut rng = TestRng::default();
 
@@ -91,7 +91,7 @@ mod tests {
 
     #[test]
     fn test_bhp512_input_size() -> Result<()> {
-        let bhp = BHP512::<CurrentEnvironment>::setup("BHPTest")?;
+        let bhp = BHP512::setup("BHPTest")?;
 
         let mut rng = TestRng::default();
 
@@ -104,7 +104,7 @@ mod tests {
 
     #[test]
     fn test_bhp768_input_size() -> Result<()> {
-        let bhp = BHP768::<CurrentEnvironment>::setup("BHPTest")?;
+        let bhp = BHP768::setup("BHPTest")?;
 
         let mut rng = TestRng::default();
 
@@ -117,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_bhp1024_input_size() -> Result<()> {
-        let bhp = BHP1024::<CurrentEnvironment>::setup("BHPTest")?;
+        let bhp = BHP1024::setup("BHPTest")?;
 
         let mut rng = TestRng::default();
 

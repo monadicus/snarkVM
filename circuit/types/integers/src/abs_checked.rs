@@ -14,16 +14,16 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> AbsChecked for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> AbsChecked for Integer<I> {
+    type Output = Integer<I>;
 
     fn abs_checked(self) -> Self::Output {
         (&self).abs_checked()
     }
 }
 
-impl<E: Environment, I: IntegerType> AbsChecked for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> AbsChecked for &Integer<I> {
+    type Output = Integer<I>;
 
     fn abs_checked(self) -> Self::Output {
         match I::is_signed() {
@@ -33,7 +33,7 @@ impl<E: Environment, I: IntegerType> AbsChecked for &Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn AbsChecked<Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn AbsChecked<Output = Integer<I>>> for Integer<I> {
     type Case = Mode;
 
     fn count(case: &Self::Case) -> Count {
@@ -47,7 +47,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn AbsChecked<Output = Integer<E, 
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn AbsChecked<Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn AbsChecked<Output = Integer<I>>> for Integer<I> {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -72,12 +72,8 @@ mod tests {
 
     const ITERATIONS: u64 = 128;
 
-    fn check_abs<I: IntegerType + UnwindSafe>(
-        name: &str,
-        value: console::Integer<<Circuit as Environment>::Network, I>,
-        mode: Mode,
-    ) {
-        let a = Integer::<Circuit, I>::new(mode, value);
+    fn check_abs<I: IntegerType + UnwindSafe>(name: &str, value: console::Integer<I>, mode: Mode) {
+        let a = Integer::<I>::new(mode, value);
         match value.checked_abs() {
             Some(expected) => Circuit::scope(name, || {
                 let candidate = a.abs_checked();
@@ -87,7 +83,7 @@ mod tests {
                 assert_output_mode!(AbsChecked(Integer<I>) => Integer<I>, &mode, candidate);
             }),
             None => match mode {
-                Mode::Constant => check_unary_operation_halts(a, |a: Integer<Circuit, I>| a.abs_checked()),
+                Mode::Constant => check_unary_operation_halts(a, |a: Integer<I>| a.abs_checked()),
                 _ => Circuit::scope(name, || {
                     let _candidate = a.abs_checked();
                     assert_count_fails!(AbsChecked(Integer<I>) => Integer<I>, &mode);
@@ -124,7 +120,7 @@ mod tests {
         RangeInclusive<I>: Iterator<Item = I>,
     {
         for value in I::MIN..=I::MAX {
-            let value = console::Integer::<_, I>::new(value);
+            let value = console::Integer::<I>::new(value);
 
             let name = format!("Abs: {mode}");
             check_abs::<I>(&name, value, mode);

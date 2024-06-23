@@ -14,14 +14,14 @@
 
 use super::*;
 
-impl<E: Environment> Boolean<E> {
+impl Boolean {
     /// Asserts that all bits in `bits_le` are zero.
     #[doc(hidden)]
-    pub fn assert_bits_are_zero(bits_le: &[Boolean<E>]) {
+    pub fn assert_bits_are_zero(bits_le: &[Boolean]) {
         let mut sum = Self::constant(false).0;
         for bit in bits_le {
             sum += &**bit;
         }
-        E::assert_eq(sum, E::zero());
+        Circuit::assert_eq(sum, Circuit::zero());
     }
 }

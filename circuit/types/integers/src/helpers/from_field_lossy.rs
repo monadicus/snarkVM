@@ -14,16 +14,16 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Integer<E, I> {
+impl<I: IntegerType> Integer<I> {
     /// Casts an integer from a base field, with lossy truncation.
     ///
     /// This method is commonly-used by hash-to-integer algorithms,
     /// where the hash output does not need to preserve the full base field.
-    pub fn from_field_lossy(field: &Field<E>) -> Self {
+    pub fn from_field_lossy(field: &Field) -> Self {
         // Note: We are reconstituting the integer from the base field.
         // This is safe as the number of bits in the integer is less than the base field modulus,
         // and thus will always fit within a single base field element.
-        debug_assert!(I::BITS < E::BaseField::size_in_bits() as u64);
+        debug_assert!(I::BITS < ConsoleField::size_in_bits() as u64);
 
         // Truncate the field to the size in bits of the integer.
         // Slicing here is safe as the base field is larger than the integer domain.
@@ -42,7 +42,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random integer.
             let expected = Uniform::rand(rng);
-            let candidate = Integer::<Circuit, I>::new(mode, expected).to_field();
+            let candidate = Integer::<I>::new(mode, expected).to_field();
 
             Circuit::scope(format!("{mode} {expected} {i}"), || {
                 // Perform the operation.
@@ -56,9 +56,9 @@ mod tests {
             Circuit::reset();
 
             // Sample a random field.
-            let expected = Field::<Circuit>::new(mode, Uniform::rand(rng));
+            let expected = Field::new(mode, Uniform::rand(rng));
             // Perform the operation.
-            Integer::<_, I>::from_field_lossy(&expected); // This should not fail.
+            Integer::<I>::from_field_lossy(&expected); // This should not fail.
         }
     }
 

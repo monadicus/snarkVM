@@ -24,9 +24,9 @@ pub trait QueryTrait<N: Network> {
     async fn current_state_root_async(&self) -> Result<N::StateRoot>;
 
     /// Returns a state path for the given `commitment`.
-    fn get_state_path_for_commitment(&self, commitment: &Field<N>) -> Result<StatePath<N>>;
+    fn get_state_path_for_commitment(&self, commitment: &Field) -> Result<StatePath<N>>;
 
     /// Returns a state path for the given `commitment`.
     #[cfg(feature = "async")]
-    async fn get_state_path_for_commitment_async(&self, commitment: &Field<N>) -> Result<StatePath<N>>;
+    async fn get_state_path_for_commitment_async(&self, commitment: &Field) -> Result<StatePath<N>>;
 }

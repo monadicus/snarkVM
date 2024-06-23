@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> ToField for Group<E> {
-    type Field = Field<E>;
+impl ToField for Group {
+    type Field = Field;
 
     /// Returns the group as a field element.
     fn to_field(&self) -> Self::Field {
@@ -38,7 +38,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(rng);
-            let candidate = Group::<Circuit>::new(mode, expected);
+            let candidate = Group::new(mode, expected);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_field();

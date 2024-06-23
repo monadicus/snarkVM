@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use environment::Circuit;
+
 use super::*;
 
 use std::borrow::Cow;
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed
-    for BHPHasher<E, NUM_WINDOWS, WINDOW_SIZE>
-{
-    type Input = Boolean<E>;
-    type Output = Group<E>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompressed for BHPHasher<NUM_WINDOWS, WINDOW_SIZE> {
+    type Input = Boolean;
+    type Output = Group;
 
     /// Returns the BHP hash of the given input as an affine group element.
     ///
@@ -29,7 +29,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
     fn hash_uncompressed(&self, input: &[Self::Input]) -> Self::Output {
         // Ensure the input size is at least the window size.
         if input.len() <= Self::MIN_BITS {
-            E::halt(format!("Inputs to this BHP must be greater than {} bits", Self::MIN_BITS))
+            Circuit::halt(format!("Inputs to this BHP must be greater than {} bits", Self::MIN_BITS))
         }
 
         // Ensure the input size is within the parameter size.
@@ -52,45 +52,45 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
                     Cow::Borrowed(input)
                 }
             }
-            false => E::halt(format!("Inputs to this BHP cannot exceed {} bits", Self::MAX_BITS)),
+            false => Circuit::halt(format!("Inputs to this BHP cannot exceed {} bits", Self::MAX_BITS)),
         };
 
         // Declare the 1 constant field element.
         let one = Field::one();
         // Declare the 1/2 constant field element.
-        let one_half = Field::constant(console::Field::<E::Network>::half());
+        let one_half = Field::constant(console::Field::half());
 
         // Declare the constant coefficients A and B for the Montgomery curve.
-        let coeff_a = Field::constant(console::Group::<E::Network>::MONTGOMERY_A);
-        let coeff_b = Field::constant(console::Group::<E::Network>::MONTGOMERY_B);
+        let coeff_a = Field::constant(console::Group::MONTGOMERY_A);
+        let coeff_b = Field::constant(console::Group::MONTGOMERY_B);
 
         // Implements the incomplete addition formulae of two Montgomery curve points.
-        let montgomery_add = |(this_x, this_y): (&Field<E>, &Field<E>), (that_x, that_y): (&Field<E>, &Field<E>)| {
+        let montgomery_add = |(this_x, this_y): (&Field, &Field), (that_x, that_y): (&Field, &Field)| {
             // Construct `lambda` as a witness defined as:
             // `lambda := (that_y - this_y) / (that_x - this_x)`
-            let lambda: Field<E> = witness!(|this_x, this_y, that_x, that_y| (that_y - this_y) / (that_x - this_x));
+            let lambda: Field = witness!(|this_x, this_y, that_x, that_y| (that_y - this_y) / (that_x - this_x));
 
             // Ensure `lambda` is correct by enforcing:
             // `(that_x - this_x) * lambda == (that_y - this_y)`
-            E::enforce(|| (that_x - this_x, &lambda, that_y - this_y));
+            Circuit::enforce(|| (that_x - this_x, &lambda, that_y - this_y));
 
             // Construct `sum_x` as a witness defined as:
             // `sum_x := (B * lambda^2) - A - this_x - that_x`
-            let sum_x: Field<E> = witness!(|lambda, that_x, this_x, coeff_a, coeff_b| {
+            let sum_x: Field = witness!(|lambda, that_x, this_x, coeff_a, coeff_b| {
                 coeff_b * lambda.square() - coeff_a - this_x - that_x
             });
 
             // Ensure `sum_x` is correct by enforcing:
             // `(B * lambda) * lambda == (A + this_x + that_x + sum_x)`
-            E::enforce(|| (&coeff_b * &lambda, &lambda, &coeff_a + this_x + that_x + &sum_x));
+            Circuit::enforce(|| (&coeff_b * &lambda, &lambda, &coeff_a + this_x + that_x + &sum_x));
 
             // Construct `sum_y` as a witness defined as:
             // `sum_y := -(this_y + (lambda * (this_x - sum_x)))`
-            let sum_y: Field<E> = witness!(|lambda, sum_x, this_x, this_y| -(this_y + (lambda * (sum_x - this_x))));
+            let sum_y: Field = witness!(|lambda, sum_x, this_x, this_y| -(this_y + (lambda * (sum_x - this_x))));
 
             // Ensure `sum_y` is correct by enforcing:
             // `(this_x - sum_x) * lambda == (this_y + sum_y)`
-            E::enforce(|| (this_x - &sum_x, &lambda, this_y + &sum_y));
+            Circuit::enforce(|| (this_x - &sum_x, &lambda, this_y + &sum_y));
 
             (sum_x, sum_y)
         };
@@ -119,7 +119,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
                     let bit_0_and_1 = Field::from_boolean(&(&chunk_bits[0] & &chunk_bits[1])); // 1 constraint
 
                     // Compute the x-coordinate of the Montgomery curve point.
-                    let montgomery_x: Field<E> = &x_bases[0]
+                    let montgomery_x: Field = &x_bases[0]
                         + &bit_0 * (&x_bases[1] - &x_bases[0])
                         + &bit_1 * (&x_bases[2] - &x_bases[0])
                         + &bit_0_and_1 * (&x_bases[3] - &x_bases[2] - &x_bases[1] + &x_bases[0]);
@@ -127,7 +127,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
                     // Compute the y-coordinate of the Montgomery curve point.
                     let montgomery_y = {
                         // Compute the y-coordinate of the Montgomery curve point, without any negation.
-                        let y: Field<E> = &y_bases[0]
+                        let y: Field = &y_bases[0]
                             + bit_0 * (&y_bases[1] - &y_bases[0])
                             + bit_1 * (&y_bases[2] - &y_bases[0])
                             + bit_0_and_1 * (&y_bases[3] - &y_bases[2] - &y_bases[1] + &y_bases[0]);
@@ -136,14 +136,14 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
                         //
                         // Instead of using `Field::ternary`, we create a witness & custom constraint to reduce
                         // the number of nonzero entries in the circuit, improving setup & proving time for Varuna.
-                        let montgomery_y: Field<E> = witness!(|chunk_bits, y| if chunk_bits[2] { -y } else { y });
+                        let montgomery_y: Field = witness!(|chunk_bits, y| if chunk_bits[2] { -y } else { y });
 
                         // Ensure the conditional negation of `witness_y` is correct as follows (1 constraint):
                         //     `(bit_2 - 1/2) * (-2 * y) == montgomery_y`
                         // which is equivalent to:
                         //     if `bit_2 == 0`, then `montgomery_y = -1/2 * -2 * y = y`
                         //     if `bit_2 == 1`, then `montgomery_y = 1/2 * -2 * y = -y`
-                        E::enforce(|| (-y.double(), bit_2 - &one_half, &montgomery_y)); // 1 constraint
+                        Circuit::enforce(|| (-y.double(), bit_2 - &one_half, &montgomery_y)); // 1 constraint
 
                         montgomery_y
                     };
@@ -170,7 +170,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> HashUncompres
                         let edwards_y = (sum_x - &one).div_unchecked(&(sum_x + &one)); // 1 constraint (numerator & denominator are never both 0)
                         Group::from_xy_coordinates_unchecked(edwards_x, edwards_y) // 0 constraints (this is safe)
                     }
-                    None => E::halt("Invalid iteration of BHP detected, a window was not evaluated"),
+                    None => Circuit::halt("Invalid iteration of BHP detected, a window was not evaluated"),
                 }
             })
             .fold(Group::zero(), |acc, group| acc + group) // 6 constraints
@@ -199,14 +199,11 @@ mod tests {
         use console::HashUncompressed as H;
 
         // Initialize the native BHP hasher.
-        let native =
-            console::bhp::hasher::BHPHasher::<<Circuit as Environment>::Network, NUM_WINDOWS, WINDOW_SIZE>::setup(
-                MESSAGE,
-            )?;
+        let native = console::bhp::hasher::BHPHasher::<NUM_WINDOWS, WINDOW_SIZE>::setup(MESSAGE)?;
 
         // Initialize the circuit BHP hasher.
-        let primitive = console::BHP::<<Circuit as Environment>::Network, NUM_WINDOWS, WINDOW_SIZE>::setup(MESSAGE)?;
-        let circuit = BHPHasher::<Circuit, NUM_WINDOWS, WINDOW_SIZE>::new(Mode::Constant, primitive);
+        let primitive = console::BHP::<NUM_WINDOWS, WINDOW_SIZE>::setup(MESSAGE)?;
+        let circuit = BHPHasher::<NUM_WINDOWS, WINDOW_SIZE>::new(Mode::Constant, primitive);
         // Determine the number of inputs.
         let num_input_bits = NUM_WINDOWS as usize * WINDOW_SIZE as usize * BHP_CHUNK_SIZE;
 
@@ -218,7 +215,7 @@ mod tests {
             // Compute the expected hash.
             let expected = native.hash_uncompressed(&input).expect("Failed to hash native input");
             // Prepare the circuit input.
-            let circuit_input: Vec<Boolean<_>> = Inject::new(mode, input);
+            let circuit_input: Vec<Boolean> = Inject::new(mode, input);
 
             Circuit::scope(format!("BHP {mode} {i}"), || {
                 // Perform the hash operation.

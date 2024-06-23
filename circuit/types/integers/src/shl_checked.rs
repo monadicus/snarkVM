@@ -14,65 +14,65 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Shl<Integer<E, M>> for Integer<E, I> {
+impl<I: IntegerType, M: Magnitude> Shl<Integer<M>> for Integer<I> {
     type Output = Self;
 
-    fn shl(self, rhs: Integer<E, M>) -> Self::Output {
+    fn shl(self, rhs: Integer<M>) -> Self::Output {
         self << &rhs
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Shl<Integer<E, M>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType, M: Magnitude> Shl<Integer<M>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn shl(self, rhs: Integer<E, M>) -> Self::Output {
+    fn shl(self, rhs: Integer<M>) -> Self::Output {
         self << &rhs
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Shl<&Integer<E, M>> for Integer<E, I> {
+impl<I: IntegerType, M: Magnitude> Shl<&Integer<M>> for Integer<I> {
     type Output = Self;
 
-    fn shl(self, rhs: &Integer<E, M>) -> Self::Output {
+    fn shl(self, rhs: &Integer<M>) -> Self::Output {
         &self << rhs
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Shl<&Integer<E, M>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType, M: Magnitude> Shl<&Integer<M>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn shl(self, rhs: &Integer<E, M>) -> Self::Output {
+    fn shl(self, rhs: &Integer<M>) -> Self::Output {
         let mut output = self.clone();
         output <<= rhs;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> ShlAssign<Integer<E, M>> for Integer<E, I> {
-    fn shl_assign(&mut self, rhs: Integer<E, M>) {
+impl<I: IntegerType, M: Magnitude> ShlAssign<Integer<M>> for Integer<I> {
+    fn shl_assign(&mut self, rhs: Integer<M>) {
         *self <<= &rhs
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> ShlAssign<&Integer<E, M>> for Integer<E, I> {
-    fn shl_assign(&mut self, rhs: &Integer<E, M>) {
+impl<I: IntegerType, M: Magnitude> ShlAssign<&Integer<M>> for Integer<I> {
+    fn shl_assign(&mut self, rhs: &Integer<M>) {
         // Stores the result of `self` << `other` in `self`.
         *self = self.shl_checked(rhs);
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> ShlChecked<Integer<E, M>> for Integer<E, I> {
+impl<I: IntegerType, M: Magnitude> ShlChecked<Integer<M>> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn shl_checked(&self, rhs: &Integer<E, M>) -> Self::Output {
+    fn shl_checked(&self, rhs: &Integer<M>) -> Self::Output {
         // Retrieve the index for the first upper bit from the RHS that we mask.
         let first_upper_bit_index = I::BITS.trailing_zeros() as usize;
         // Initialize a constant `two`.
         let two = Self::one() + Self::one();
         match I::is_signed() {
             true => {
-                if 3 * I::BITS < E::BaseField::size_in_data_bits() as u64 {
+                if 3 * I::BITS < ConsoleField::size_in_data_bits() as u64 {
                     // Enforce that the upper bits of `rhs` are all zero.
                     Boolean::assert_bits_are_zero(&rhs.bits_le[first_upper_bit_index..]);
 
@@ -81,7 +81,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShlChecked<Integer<E, M>> for
                     bits_le.resize(2 * I::BITS as usize, self.msb().clone());
 
                     // Calculate the result directly in the field.
-                    // Since 2^{rhs} < Integer::MAX and 3 * I::BITS is less than E::BaseField::size in data bits,
+                    // Since 2^{rhs} < Integer::MAX and 3 * I::BITS is less than ConsoleField::size in data bits,
                     // we know that the operation will not overflow the field modulus.
                     let mut result = Field::from_bits_le(&bits_le);
                     for (i, bit) in rhs.bits_le[..first_upper_bit_index].iter().enumerate() {
@@ -99,7 +99,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShlChecked<Integer<E, M>> for
                     let result = Self { bits_le: lower_bits_le.to_vec(), phantom: Default::default() };
                     // Ensure that the sign of the first I::BITS upper bits match the sign of the result.
                     for bit in &upper_bits_le[..(I::BITS as usize)] {
-                        E::assert_eq(bit, result.msb());
+                        Circuit::assert_eq(bit, result.msb());
                     }
                     // Return the result.
                     result
@@ -124,12 +124,12 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShlChecked<Integer<E, M>> for
                 }
             }
             false => {
-                if 2 * I::BITS < E::BaseField::size_in_data_bits() as u64 {
+                if 2 * I::BITS < ConsoleField::size_in_data_bits() as u64 {
                     // Enforce that the upper bits of `rhs` are all zero.
                     Boolean::assert_bits_are_zero(&rhs.bits_le[first_upper_bit_index..]);
 
                     // Calculate the result directly in the field.
-                    // Since 2^{rhs} < Integer::MAX and 2 * I::BITS is less than E::BaseField::size in data bits,
+                    // Since 2^{rhs} < Integer::MAX and 2 * I::BITS is less than ConsoleField::size in data bits,
                     // we know that the operation will not overflow Integer::MAX or the field modulus.
                     let mut result = self.to_field();
                     for (i, bit) in rhs.bits_le[..first_upper_bit_index].iter().enumerate() {
@@ -156,48 +156,44 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShlChecked<Integer<E, M>> for
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Shl<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Shl<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
-        <Self as Metrics<dyn DivChecked<Integer<E, I>, Output = Integer<E, I>>>>::count(case)
+        <Self as Metrics<dyn DivChecked<Integer<I>, Output = Integer<I>>>>::count(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Shl<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Shl<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
-        <Self as OutputMode<dyn DivChecked<Integer<E, I>, Output = Integer<E, I>>>>::output_mode(case)
+        <Self as OutputMode<dyn DivChecked<Integer<I>, Output = Integer<I>>>>::output_mode(case)
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Metrics<dyn ShlChecked<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType, M: Magnitude> Metrics<dyn ShlChecked<Integer<M>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode, bool, bool);
 
     fn count(case: &Self::Case) -> Count {
         // A quick hack that matches `(u8 -> 0, u16 -> 1, u32 -> 2, u64 -> 3, u128 -> 4)`.
         let index = |num_bits: u64| match [8, 16, 32, 64, 128].iter().position(|&bits| bits == num_bits) {
             Some(index) => index as u64,
-            None => E::halt(format!("Integer of {num_bits} bits is not supported")),
+            None => Circuit::halt(format!("Integer of {num_bits} bits is not supported")),
         };
 
         match (case.0, case.1) {
             (Mode::Constant, Mode::Constant) => Count::is(I::BITS, 0, 0, 0),
             (_, Mode::Constant) => Count::is(0, 0, 0, 0),
             (Mode::Constant, _) | (_, _) => {
-                let wrapped_count = count!(Integer<E, I>, ShlWrapped<Integer<E, M>, Output=Integer<E, I>>, case);
+                let wrapped_count = count!(Integer<I>, ShlWrapped<Integer<M>, Output = Integer<I>>, case);
                 wrapped_count + Count::is(0, 0, M::BITS - 4 - index(I::BITS), M::BITS - 3 - index(I::BITS))
             }
         }
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> OutputMode<dyn ShlChecked<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType, M: Magnitude> OutputMode<dyn ShlChecked<Integer<M>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -222,13 +218,13 @@ mod tests {
 
     fn check_shl<I: IntegerType + RefUnwindSafe, M: Magnitude + RefUnwindSafe + TryFrom<u64>>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, M>,
+        first: console::Integer<I>,
+        second: console::Integer<M>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, M>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<M>::new(mode_b, second);
 
         match first.checked_shl(&second.to_u32().unwrap()) {
             Some(expected) => Circuit::scope(name, || {
@@ -304,8 +300,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in M::MIN..=M::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, M>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<M>::new(second);
 
                 let name = format!("Shl: ({first} << {second})");
                 check_shl::<I, M>(&name, first, second, mode_a, mode_b);

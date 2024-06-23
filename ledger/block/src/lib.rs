@@ -62,9 +62,9 @@ use ledger_puzzle::{PuzzleSolutions, Solution, SolutionID};
 #[derive(Clone, PartialEq, Eq)]
 pub struct Block<N: Network> {
     /// The hash of this block.
-    block_hash: N::BlockHash,
+    block_hash: BlockHash,
     /// The hash of the previous block.
-    previous_hash: N::BlockHash,
+    previous_hash: BlockHash,
     /// The header of this block.
     header: Header<N>,
     /// The authority for this block.
@@ -74,25 +74,25 @@ pub struct Block<N: Network> {
     /// The solutions in the block.
     solutions: Solutions<N>,
     /// The aborted solution IDs in this block.
-    aborted_solution_ids: Vec<SolutionID<N>>,
+    aborted_solution_ids: Vec<SolutionID>,
     /// The transactions in this block.
     transactions: Transactions<N>,
     /// The aborted transaction IDs in this block.
-    aborted_transaction_ids: Vec<N::TransactionID>,
+    aborted_transaction_ids: Vec<TransactionID>,
 }
 
 impl<N: Network> Block<N> {
     /// Initializes a new beacon block from the given previous block hash, block header,
     /// ratifications, solutions, transactions, and aborted transaction IDs.
     pub fn new_beacon<R: Rng + CryptoRng>(
-        private_key: &PrivateKey<N>,
-        previous_hash: N::BlockHash,
+        private_key: &PrivateKey,
+        previous_hash: BlockHash,
         header: Header<N>,
         ratifications: Ratifications<N>,
         solutions: Solutions<N>,
-        aborted_solution_ids: Vec<SolutionID<N>>,
+        aborted_solution_ids: Vec<SolutionID>,
         transactions: Transactions<N>,
-        aborted_transaction_ids: Vec<N::TransactionID>,
+        aborted_transaction_ids: Vec<TransactionID>,
         rng: &mut R,
     ) -> Result<Self> {
         // Compute the block hash.
@@ -115,14 +115,14 @@ impl<N: Network> Block<N> {
     /// Initializes a new quorum block from the given previous block hash, block header,
     /// subdag, ratifications, solutions, transactions, and aborted transaction IDs.
     pub fn new_quorum(
-        previous_hash: N::BlockHash,
+        previous_hash: BlockHash,
         header: Header<N>,
         subdag: Subdag<N>,
         ratifications: Ratifications<N>,
         solutions: Solutions<N>,
-        aborted_solution_ids: Vec<SolutionID<N>>,
+        aborted_solution_ids: Vec<SolutionID>,
         transactions: Transactions<N>,
-        aborted_transaction_ids: Vec<N::TransactionID>,
+        aborted_transaction_ids: Vec<TransactionID>,
     ) -> Result<Self> {
         // Construct the beacon authority.
         let authority = Authority::new_quorum(subdag);
@@ -142,14 +142,14 @@ impl<N: Network> Block<N> {
     /// Initializes a new block from the given previous block hash, block header,
     /// authority, ratifications, solutions, transactions, and aborted transaction IDs.
     pub fn from(
-        previous_hash: N::BlockHash,
+        previous_hash: BlockHash,
         header: Header<N>,
         authority: Authority<N>,
         ratifications: Ratifications<N>,
         solutions: Solutions<N>,
-        aborted_solution_ids: Vec<SolutionID<N>>,
+        aborted_solution_ids: Vec<SolutionID>,
         transactions: Transactions<N>,
-        aborted_transaction_ids: Vec<N::TransactionID>,
+        aborted_transaction_ids: Vec<TransactionID>,
     ) -> Result<Self> {
         // Ensure the number of aborted solutions IDs is within the allowed range.
         if aborted_solution_ids.len() > Solutions::<N>::MAX_ABORTED_SOLUTIONS {
@@ -205,7 +205,7 @@ impl<N: Network> Block<N> {
 
         // Ensure that the subdag root matches the authority.
         let subdag_root = match &authority {
-            Authority::Beacon(_) => Field::<N>::zero(),
+            Authority::Beacon(_) => Field::zero(),
             Authority::Quorum(subdag) => subdag.to_subdag_root()?,
         };
         if header.subdag_root() != subdag_root {
@@ -229,15 +229,15 @@ impl<N: Network> Block<N> {
     /// Initializes a new block from the given block hash, previous block hash, block header,
     /// authority, ratifications, solutions, transactions, and aborted transaction IDs.
     pub fn from_unchecked(
-        block_hash: N::BlockHash,
-        previous_hash: N::BlockHash,
+        block_hash: BlockHash,
+        previous_hash: BlockHash,
         header: Header<N>,
         authority: Authority<N>,
         ratifications: Ratifications<N>,
         solutions: Solutions<N>,
-        aborted_solution_ids: Vec<SolutionID<N>>,
+        aborted_solution_ids: Vec<SolutionID>,
         transactions: Transactions<N>,
-        aborted_transaction_ids: Vec<N::TransactionID>,
+        aborted_transaction_ids: Vec<TransactionID>,
     ) -> Result<Self> {
         // Return the block.
         Ok(Self {
@@ -256,12 +256,12 @@ impl<N: Network> Block<N> {
 
 impl<N: Network> Block<N> {
     /// Returns the block hash.
-    pub const fn hash(&self) -> N::BlockHash {
+    pub const fn hash(&self) -> BlockHash {
         self.block_hash
     }
 
     /// Returns the previous block hash.
-    pub const fn previous_hash(&self) -> N::BlockHash {
+    pub const fn previous_hash(&self) -> BlockHash {
         self.previous_hash
     }
 
@@ -281,7 +281,7 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns the aborted solution IDs in this block.
-    pub const fn aborted_solution_ids(&self) -> &Vec<SolutionID<N>> {
+    pub const fn aborted_solution_ids(&self) -> &Vec<SolutionID> {
         &self.aborted_solution_ids
     }
 
@@ -291,7 +291,7 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns the aborted transaction IDs in this block.
-    pub const fn aborted_transaction_ids(&self) -> &Vec<N::TransactionID> {
+    pub const fn aborted_transaction_ids(&self) -> &Vec<TransactionID> {
         &self.aborted_transaction_ids
     }
 }
@@ -308,22 +308,22 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns the transactions root in the block header.
-    pub const fn transactions_root(&self) -> Field<N> {
+    pub const fn transactions_root(&self) -> Field {
         self.header.transactions_root()
     }
 
     /// Returns the finalize root in the block header.
-    pub const fn finalize_root(&self) -> Field<N> {
+    pub const fn finalize_root(&self) -> Field {
         self.header.finalize_root()
     }
 
     /// Returns the ratifications root in the block header.
-    pub const fn ratifications_root(&self) -> Field<N> {
+    pub const fn ratifications_root(&self) -> Field {
         self.header.ratifications_root()
     }
 
     /// Returns the solutions root in the block header.
-    pub const fn solutions_root(&self) -> Field<N> {
+    pub const fn solutions_root(&self) -> Field {
         self.header.solutions_root()
     }
 
@@ -395,29 +395,29 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns `true` if the block contains the given serial number.
-    pub fn contains_serial_number(&self, serial_number: &Field<N>) -> bool {
+    pub fn contains_serial_number(&self, serial_number: &Field) -> bool {
         self.transactions.contains_serial_number(serial_number)
     }
 
     /// Returns `true` if the block contains the given commitment.
-    pub fn contains_commitment(&self, commitment: &Field<N>) -> bool {
+    pub fn contains_commitment(&self, commitment: &Field) -> bool {
         self.transactions.contains_commitment(commitment)
     }
 }
 
 impl<N: Network> Block<N> {
     /// Returns the solution with the given solution ID, if it exists.
-    pub fn get_solution(&self, solution_id: &SolutionID<N>) -> Option<&Solution<N>> {
+    pub fn get_solution(&self, solution_id: &SolutionID) -> Option<&Solution> {
         self.solutions.as_ref().and_then(|solution| solution.get_solution(solution_id))
     }
 
     /// Returns the transaction with the given transaction ID, if it exists.
-    pub fn get_transaction(&self, transaction_id: &N::TransactionID) -> Option<&Transaction<N>> {
+    pub fn get_transaction(&self, transaction_id: &TransactionID) -> Option<&Transaction<N>> {
         self.transactions.get(transaction_id).map(|t| t.deref())
     }
 
     /// Returns the confirmed transaction with the given transaction ID, if it exists.
-    pub fn get_confirmed_transaction(&self, transaction_id: &N::TransactionID) -> Option<&ConfirmedTransaction<N>> {
+    pub fn get_confirmed_transaction(&self, transaction_id: &TransactionID) -> Option<&ConfirmedTransaction<N>> {
         self.transactions.get(transaction_id)
     }
 }
@@ -429,12 +429,12 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns the transaction with the given serial number, if it exists.
-    pub fn find_transaction_for_serial_number(&self, serial_number: &Field<N>) -> Option<&Transaction<N>> {
+    pub fn find_transaction_for_serial_number(&self, serial_number: &Field) -> Option<&Transaction<N>> {
         self.transactions.find_transaction_for_serial_number(serial_number)
     }
 
     /// Returns the transaction with the given commitment, if it exists.
-    pub fn find_transaction_for_commitment(&self, commitment: &Field<N>) -> Option<&Transaction<N>> {
+    pub fn find_transaction_for_commitment(&self, commitment: &Field) -> Option<&Transaction<N>> {
         self.transactions.find_transaction_for_commitment(commitment)
     }
 
@@ -444,29 +444,29 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns the transition for the given serial number, if it exists.
-    pub fn find_transition_for_serial_number(&self, serial_number: &Field<N>) -> Option<&Transition<N>> {
+    pub fn find_transition_for_serial_number(&self, serial_number: &Field) -> Option<&Transition<N>> {
         self.transactions.find_transition_for_serial_number(serial_number)
     }
 
     /// Returns the transition for the given commitment, if it exists.
-    pub fn find_transition_for_commitment(&self, commitment: &Field<N>) -> Option<&Transition<N>> {
+    pub fn find_transition_for_commitment(&self, commitment: &Field) -> Option<&Transition<N>> {
         self.transactions.find_transition_for_commitment(commitment)
     }
 
     /// Returns the record with the corresponding commitment, if it exists.
-    pub fn find_record(&self, commitment: &Field<N>) -> Option<&Record<N, Ciphertext<N>>> {
+    pub fn find_record(&self, commitment: &Field) -> Option<&Record<N, Ciphertext<N>>> {
         self.transactions.find_record(commitment)
     }
 }
 
 impl<N: Network> Block<N> {
     /// Returns the solution IDs in this block.
-    pub fn solution_ids(&self) -> Option<impl '_ + Iterator<Item = &SolutionID<N>>> {
+    pub fn solution_ids(&self) -> Option<impl '_ + Iterator<Item = &SolutionID>> {
         self.solutions.as_ref().map(|solution| solution.solution_ids())
     }
 
     /// Returns an iterator over the transaction IDs, for all transactions in `self`.
-    pub fn transaction_ids(&self) -> impl '_ + Iterator<Item = &N::TransactionID> {
+    pub fn transaction_ids(&self) -> impl '_ + Iterator<Item = &TransactionID> {
         self.transactions.transaction_ids()
     }
 
@@ -491,47 +491,47 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns an iterator over the transition public keys, for all transactions.
-    pub fn transition_public_keys(&self) -> impl '_ + Iterator<Item = &Group<N>> {
+    pub fn transition_public_keys(&self) -> impl '_ + Iterator<Item = &Group> {
         self.transactions.transition_public_keys()
     }
 
     /// Returns an iterator over the transition commitments, for all transactions.
-    pub fn transition_commitments(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn transition_commitments(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transactions.transition_commitments()
     }
 
     /// Returns an iterator over the tags, for all transition inputs that are records.
-    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transactions.tags()
     }
 
     /// Returns an iterator over the input IDs, for all transition inputs that are records.
-    pub fn input_ids(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn input_ids(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transactions.input_ids()
     }
 
     /// Returns an iterator over the serial numbers, for all transition inputs that are records.
-    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transactions.serial_numbers()
     }
 
     /// Returns an iterator over the output IDs, for all transition inputs that are records.
-    pub fn output_ids(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn output_ids(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transactions.output_ids()
     }
 
     /// Returns an iterator over the commitments, for all transition outputs that are records.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transactions.commitments()
     }
 
     /// Returns an iterator over the records, for all transition outputs that are records.
-    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field<N>, &Record<N, Ciphertext<N>>)> {
+    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field, &Record<N, Ciphertext<N>>)> {
         self.transactions.records()
     }
 
     /// Returns an iterator over the nonces, for all transition outputs that are records.
-    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group<N>> {
+    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group> {
         self.transactions.nonces()
     }
 
@@ -543,7 +543,7 @@ impl<N: Network> Block<N> {
 
 impl<N: Network> Block<N> {
     /// Returns a consuming iterator over the transaction IDs, for all transactions in `self`.
-    pub fn into_transaction_ids(self) -> impl Iterator<Item = N::TransactionID> {
+    pub fn into_transaction_ids(self) -> impl Iterator<Item = TransactionID> {
         self.transactions.into_transaction_ids()
     }
 
@@ -568,32 +568,32 @@ impl<N: Network> Block<N> {
     }
 
     /// Returns a consuming iterator over the transition public keys, for all transactions.
-    pub fn into_transition_public_keys(self) -> impl Iterator<Item = Group<N>> {
+    pub fn into_transition_public_keys(self) -> impl Iterator<Item = Group> {
         self.transactions.into_transition_public_keys()
     }
 
     /// Returns a consuming iterator over the tags, for all transition inputs that are records.
-    pub fn into_tags(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_tags(self) -> impl Iterator<Item = Field> {
         self.transactions.into_tags()
     }
 
     /// Returns a consuming iterator over the serial numbers, for all transition inputs that are records.
-    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field> {
         self.transactions.into_serial_numbers()
     }
 
     /// Returns a consuming iterator over the commitments, for all transition outputs that are records.
-    pub fn into_commitments(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_commitments(self) -> impl Iterator<Item = Field> {
         self.transactions.into_commitments()
     }
 
     /// Returns a consuming iterator over the records, for all transition outputs that are records.
-    pub fn into_records(self) -> impl Iterator<Item = (Field<N>, Record<N, Ciphertext<N>>)> {
+    pub fn into_records(self) -> impl Iterator<Item = (Field, Record<N, Ciphertext<N>>)> {
         self.transactions.into_records()
     }
 
     /// Returns a consuming iterator over the nonces, for all transition outputs that are records.
-    pub fn into_nonces(self) -> impl Iterator<Item = Group<N>> {
+    pub fn into_nonces(self) -> impl Iterator<Item = Group> {
         self.transactions.into_nonces()
     }
 }
@@ -644,7 +644,7 @@ pub mod test_helpers {
     ) -> (Block<CurrentNetwork>, Transaction<CurrentNetwork>, PrivateKey<CurrentNetwork>) {
         // Sample the genesis private key.
         let private_key = PrivateKey::new(rng).unwrap();
-        let address = Address::<CurrentNetwork>::try_from(private_key).unwrap();
+        let address = Address::try_from(private_key).unwrap();
 
         // Prepare the locator.
         let locator = ("credits.aleo", "transfer_public_to_private");
@@ -685,7 +685,7 @@ pub mod test_helpers {
         // Prepare the block header.
         let header = Header::genesis(&ratifications, &transactions, vec![]).unwrap();
         // Prepare the previous block hash.
-        let previous_hash = <CurrentNetwork as Network>::BlockHash::default();
+        let previous_hash = BlockHash::default();
 
         // Construct the block.
         let block = Block::new_beacon(

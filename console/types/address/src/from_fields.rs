@@ -29,7 +29,6 @@ impl FromFields for Address {
 #[cfg(test)]
 mod tests {
     use super::*;
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 10_000;
 

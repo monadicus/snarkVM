@@ -33,11 +33,11 @@ use std::borrow::Cow;
 /// A trait for execution storage.
 pub trait ExecutionStorage<N: Network>: Clone + Send + Sync {
     /// The mapping of `transaction ID` to `([transition ID], has_fee)`.
-    type IDMap: for<'a> Map<'a, N::TransactionID, (Vec<N::TransitionID>, bool)>;
+    type IDMap: for<'a> Map<'a, TransactionID, (Vec<N::TransitionID>, bool)>;
     /// The mapping of `transition ID` to `transaction ID`.
-    type ReverseIDMap: for<'a> Map<'a, N::TransitionID, N::TransactionID>;
+    type ReverseIDMap: for<'a> Map<'a, N::TransitionID, TransactionID>;
     /// The mapping of `transaction ID` to `(global state root, (optional) proof)`.
-    type InclusionMap: for<'a> Map<'a, N::TransactionID, (N::StateRoot, Option<Proof<N>>)>;
+    type InclusionMap: for<'a> Map<'a, TransactionID, (N::StateRoot, Option<Proof<N>>)>;
     /// The fee storage.
     type FeeStorage: FeeStorage<N>;
 
@@ -162,7 +162,7 @@ pub trait ExecutionStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Removes the execution transaction for the given `transaction ID`.
-    fn remove(&self, transaction_id: &N::TransactionID) -> Result<()> {
+    fn remove(&self, transaction_id: &TransactionID) -> Result<()> {
         // Retrieve the transition IDs and fee boolean.
         let (transition_ids, has_fee) = match self.id_map().get_confirmed(transaction_id)? {
             Some(ids) => cow_to_cloned!(ids),
@@ -195,10 +195,7 @@ pub trait ExecutionStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the transaction ID that contains the given `transition ID`.
-    fn find_transaction_id_from_transition_id(
-        &self,
-        transition_id: &N::TransitionID,
-    ) -> Result<Option<N::TransactionID>> {
+    fn find_transaction_id_from_transition_id(&self, transition_id: &N::TransitionID) -> Result<Option<TransactionID>> {
         // First, check if the transition ID is in the fee store.
         if let Some(transaction_id) = self.fee_store().find_transaction_id_from_transition_id(transition_id)? {
             return Ok(Some(transaction_id));
@@ -211,7 +208,7 @@ pub trait ExecutionStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the execution for the given `transaction ID`.
-    fn get_execution(&self, transaction_id: &N::TransactionID) -> Result<Option<Execution<N>>> {
+    fn get_execution(&self, transaction_id: &TransactionID) -> Result<Option<Execution<N>>> {
         // Retrieve the transition IDs.
         let (transition_ids, _) = match self.id_map().get_confirmed(transaction_id)? {
             Some(ids) => cow_to_cloned!(ids),
@@ -240,7 +237,7 @@ pub trait ExecutionStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the transaction for the given `transaction ID`.
-    fn get_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    fn get_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         // Retrieve the transition IDs and fee boolean.
         let (transition_ids, has_fee) = match self.id_map().get_confirmed(transaction_id)? {
             Some(ids) => cow_to_cloned!(ids),
@@ -315,7 +312,7 @@ impl<N: Network, E: ExecutionStorage<N>> ExecutionStore<N, E> {
     }
 
     /// Removes the transaction for the given `transaction ID`.
-    pub fn remove(&self, transaction_id: &N::TransactionID) -> Result<()> {
+    pub fn remove(&self, transaction_id: &TransactionID) -> Result<()> {
         self.storage.remove(transaction_id)
     }
 
@@ -362,12 +359,12 @@ impl<N: Network, E: ExecutionStorage<N>> ExecutionStore<N, E> {
 
 impl<N: Network, E: ExecutionStorage<N>> ExecutionStore<N, E> {
     /// Returns the transaction for the given `transaction ID`.
-    pub fn get_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    pub fn get_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         self.storage.get_transaction(transaction_id)
     }
 
     /// Returns the execution for the given `transaction ID`.
-    pub fn get_execution(&self, transaction_id: &N::TransactionID) -> Result<Option<Execution<N>>> {
+    pub fn get_execution(&self, transaction_id: &TransactionID) -> Result<Option<Execution<N>>> {
         self.storage.get_execution(transaction_id)
     }
 }
@@ -377,14 +374,14 @@ impl<N: Network, E: ExecutionStorage<N>> ExecutionStore<N, E> {
     pub fn find_transaction_id_from_transition_id(
         &self,
         transition_id: &N::TransitionID,
-    ) -> Result<Option<N::TransactionID>> {
+    ) -> Result<Option<TransactionID>> {
         self.storage.find_transaction_id_from_transition_id(transition_id)
     }
 }
 
 impl<N: Network, E: ExecutionStorage<N>> ExecutionStore<N, E> {
     /// Returns an iterator over the execution transaction IDs, for all executions.
-    pub fn execution_transaction_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, N::TransactionID>> {
+    pub fn execution_transaction_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, TransactionID>> {
         self.storage.id_map().keys_confirmed()
     }
 }

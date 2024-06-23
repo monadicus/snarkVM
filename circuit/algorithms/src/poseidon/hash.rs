@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment, const RATE: usize> Hash for Poseidon<E, RATE> {
-    type Input = Field<E>;
-    type Output = Field<E>;
+impl<const RATE: usize> Hash for Poseidon<RATE> {
+    type Input = Field;
+    type Output = Field;
 
     #[inline]
     fn hash(&self, input: &[Self::Input]) -> Self::Output {
@@ -46,15 +46,13 @@ mod tests {
     ) -> Result<()> {
         use console::Hash as H;
 
-        let native = console::Poseidon::<<Circuit as Environment>::Network, RATE>::setup(DOMAIN)?;
-        let poseidon = Poseidon::<Circuit, RATE>::constant(native.clone());
+        let native = console::Poseidon::<RATE>::setup(DOMAIN)?;
+        let poseidon = Poseidon::<RATE>::constant(native.clone());
 
         for i in 0..ITERATIONS {
             // Prepare the preimage.
-            let native_input = (0..num_inputs)
-                .map(|_| console::Field::<<Circuit as Environment>::Network>::rand(rng))
-                .collect::<Vec<_>>();
-            let input = native_input.iter().map(|v| Field::<Circuit>::new(mode, *v)).collect::<Vec<_>>();
+            let native_input = (0..num_inputs).map(|_| console::Field::rand(rng)).collect::<Vec<_>>();
+            let input = native_input.iter().map(|v| Field::new(mode, *v)).collect::<Vec<_>>();
 
             // Compute the native hash.
             let expected = native.hash(&native_input).expect("Failed to hash native input");

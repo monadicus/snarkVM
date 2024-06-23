@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> BitXor<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitXor<Integer<I>> for Integer<I> {
     type Output = Self;
 
     /// Returns `(self != other)`.
@@ -23,16 +23,16 @@ impl<E: Environment, I: IntegerType> BitXor<Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> BitXor<Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitXor<Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self != other)`.
-    fn bitxor(self, other: Integer<E, I>) -> Self::Output {
+    fn bitxor(self, other: Integer<I>) -> Self::Output {
         self ^ &other
     }
 }
 
-impl<E: Environment, I: IntegerType> BitXor<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitXor<&Integer<I>> for Integer<I> {
     type Output = Self;
 
     /// Returns `(self != other)`.
@@ -41,27 +41,27 @@ impl<E: Environment, I: IntegerType> BitXor<&Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> BitXor<&Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> BitXor<&Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
     /// Returns `(self != other)`.
-    fn bitxor(self, other: &Integer<E, I>) -> Self::Output {
+    fn bitxor(self, other: &Integer<I>) -> Self::Output {
         let mut output = self.clone();
         output ^= other;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType> BitXorAssign<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitXorAssign<Integer<I>> for Integer<I> {
     /// Sets `self` as `(self != other)`.
-    fn bitxor_assign(&mut self, other: Integer<E, I>) {
+    fn bitxor_assign(&mut self, other: Integer<I>) {
         *self ^= &other;
     }
 }
 
-impl<E: Environment, I: IntegerType> BitXorAssign<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> BitXorAssign<&Integer<I>> for Integer<I> {
     /// Sets `self` as `(self != other)`.
-    fn bitxor_assign(&mut self, other: &Integer<E, I>) {
+    fn bitxor_assign(&mut self, other: &Integer<I>) {
         // Stores the bitwise XOR of `self` and `other` in `self`.
         *self = Self {
             bits_le: self.bits_le.iter().zip_eq(other.bits_le.iter()).map(|(a, b)| a ^ b).collect(),
@@ -70,7 +70,7 @@ impl<E: Environment, I: IntegerType> BitXorAssign<&Integer<E, I>> for Integer<E,
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn BitXor<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn BitXor<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -81,8 +81,8 @@ impl<E: Environment, I: IntegerType> Metrics<dyn BitXor<Integer<E, I>, Output = 
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn BitXor<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
-    type Case = (CircuitType<Integer<E, I>>, CircuitType<Integer<E, I>>);
+impl<I: IntegerType> OutputMode<dyn BitXor<Integer<I>, Output = Integer<I>>> for Integer<I> {
+    type Case = (CircuitType<Integer<I>>, CircuitType<Integer<I>>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match ((case.0.mode(), &case.0), (case.1.mode(), &case.1)) {
@@ -93,7 +93,9 @@ impl<E: Environment, I: IntegerType> OutputMode<dyn BitXor<Integer<E, I>, Output
                     true => mode,
                     false => Mode::Private,
                 },
-                _ => E::halt(format!("The constant is required to determine the output mode of Constant OR {mode}")),
+                _ => Circuit::halt(format!(
+                    "The constant is required to determine the output mode of Constant OR {mode}"
+                )),
             },
             (_, _) => Mode::Private,
         }
@@ -112,13 +114,13 @@ mod tests {
     #[allow(clippy::needless_borrow)]
     fn check_bitxor<I: IntegerType + BitXor<Output = I>>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, I>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<I>::new(mode_b, second);
         let expected = first ^ second;
         Circuit::scope(name, || {
             let candidate = (&a).bitxor(&b);
@@ -163,8 +165,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("BitXor: ({first} ^ {second})");
                 check_bitxor::<I>(&name, first, second, mode_a, mode_b);

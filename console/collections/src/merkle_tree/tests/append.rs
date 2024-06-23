@@ -14,7 +14,6 @@
 
 use super::*;
 use snarkvm_console_algorithms::{Poseidon, BHP1024, BHP512};
-use snarkvm_console_types::prelude::Console;
 
 const ITERATIONS: u128 = 10;
 
@@ -370,7 +369,7 @@ fn test_merkle_tree_bhp() -> Result<()> {
                 let num_additional_leaves = core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, j);
 
                 // Check the Merkle tree.
-                check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+                check_merkle_tree::<LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
                     &(0..num_leaves).map(|_| Field::rand(rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -409,8 +408,8 @@ fn test_merkle_tree_bhp() -> Result<()> {
 #[test]
 fn test_merkle_tree_poseidon() -> Result<()> {
     fn run_test<const DEPTH: u8>(rng: &mut TestRng) -> Result<()> {
-        type LH = Poseidon<CurrentEnvironment, 4>;
-        type PH = Poseidon<CurrentEnvironment, 2>;
+        type LH = Poseidon<4>;
+        type PH = Poseidon<2>;
 
         let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
         let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -422,7 +421,7 @@ fn test_merkle_tree_poseidon() -> Result<()> {
                 let num_additional_leaves = core::cmp::min(2u128.pow(DEPTH as u32) - num_leaves, j);
 
                 // Check the Merkle tree.
-                check_merkle_tree::<CurrentEnvironment, LH, PH, DEPTH>(
+                check_merkle_tree::<LH, PH, DEPTH>(
                     &leaf_hasher,
                     &path_hasher,
                     &(0..num_leaves).map(|_| vec![Uniform::rand(rng)]).collect::<Vec<_>>(),
@@ -469,7 +468,7 @@ fn test_merkle_tree_depth_2_bhp() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-2 Merkle tree.
-    check_merkle_tree_depth_2::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_2::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -478,8 +477,8 @@ fn test_merkle_tree_depth_2_bhp() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_2_poseidon() -> Result<()> {
-    type LH = Poseidon<CurrentEnvironment, 4>;
-    type PH = Poseidon<CurrentEnvironment, 2>;
+    type LH = Poseidon<4>;
+    type PH = Poseidon<2>;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -487,7 +486,7 @@ fn test_merkle_tree_depth_2_poseidon() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-2 Merkle tree.
-    check_merkle_tree_depth_2::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_2::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| vec![Uniform::rand(&mut rng)]).collect::<Vec<_>>(),
@@ -505,7 +504,7 @@ fn test_merkle_tree_depth_3_bhp() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-3 Merkle tree.
-    check_merkle_tree_depth_3_padded::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_3_padded::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -515,8 +514,8 @@ fn test_merkle_tree_depth_3_bhp() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_3_poseidon() -> Result<()> {
-    type LH = Poseidon<CurrentEnvironment, 4>;
-    type PH = Poseidon<CurrentEnvironment, 2>;
+    type LH = Poseidon<4>;
+    type PH = Poseidon<2>;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -524,7 +523,7 @@ fn test_merkle_tree_depth_3_poseidon() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-3 Merkle tree.
-    check_merkle_tree_depth_3_padded::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_3_padded::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| vec![Uniform::rand(&mut rng)]).collect::<Vec<_>>(),
@@ -543,7 +542,7 @@ fn test_merkle_tree_depth_4_bhp() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-4 Merkle tree.
-    check_merkle_tree_depth_4_padded::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_4_padded::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| Field::rand(&mut rng).to_bits_le()).collect::<Vec<Vec<bool>>>(),
@@ -553,8 +552,8 @@ fn test_merkle_tree_depth_4_bhp() -> Result<()> {
 
 #[test]
 fn test_merkle_tree_depth_4_poseidon() -> Result<()> {
-    type LH = Poseidon<CurrentEnvironment, 4>;
-    type PH = Poseidon<CurrentEnvironment, 2>;
+    type LH = Poseidon<4>;
+    type PH = Poseidon<2>;
 
     let leaf_hasher = LH::setup("AleoMerkleTreeTest0")?;
     let path_hasher = PH::setup("AleoMerkleTreeTest1")?;
@@ -562,7 +561,7 @@ fn test_merkle_tree_depth_4_poseidon() -> Result<()> {
     let mut rng = TestRng::default();
 
     // Check the depth-4 Merkle tree.
-    check_merkle_tree_depth_4_padded::<CurrentEnvironment, LH, PH>(
+    check_merkle_tree_depth_4_padded::<LH, PH>(
         &leaf_hasher,
         &path_hasher,
         &(0..4).map(|_| vec![Uniform::rand(&mut rng)]).collect::<Vec<_>>(),
@@ -593,8 +592,7 @@ fn test_profiler() -> Result<()> {
     for num_leaves in NUM_LEAVES {
         // New
         let leaves = generate_leaves!(*num_leaves, &mut rng);
-        let mut merkle_tree =
-            MerkleTree::<CurrentEnvironment, LH, PH, DEPTH>::new(&leaf_hasher, &path_hasher, &leaves)?;
+        let mut merkle_tree = MerkleTree::<LH, PH, DEPTH>::new(&leaf_hasher, &path_hasher, &leaves)?;
 
         // Append
         let new_leaf = generate_leaves!(1, &mut rng);

@@ -385,78 +385,78 @@ impl AleoNetwork {
     }
 
     /// Returns the BHP hash with an input hasher of 256-bits.
-    pub fn hash_bhp256(mut input: &[bool]) -> Result<Field> {
-        BHP_256.hash(&mut input)
+    pub fn hash_bhp256(input: &[bool]) -> Result<Field> {
+        BHP_256.hash(input)
     }
 
     /// Returns the BHP hash with an input hasher of 512-bits.
-    pub fn hash_bhp512(mut input: &[bool]) -> Result<Field> {
-        BHP_512.hash(&mut input)
+    pub fn hash_bhp512(input: &[bool]) -> Result<Field> {
+        BHP_512.hash(input)
     }
 
     /// Returns the BHP hash with an input hasher of 768-bits.
-    pub fn hash_bhp768(mut input: &[bool]) -> Result<Field> {
-        BHP_768.hash(&mut input)
+    pub fn hash_bhp768(input: &[bool]) -> Result<Field> {
+        BHP_768.hash(input)
     }
 
     /// Returns the BHP hash with an input hasher of 1024-bits.
-    pub fn hash_bhp1024(mut input: &[bool]) -> Result<Field> {
-        BHP_1024.hash(&mut input)
+    pub fn hash_bhp1024(input: &[bool]) -> Result<Field> {
+        BHP_1024.hash(input)
     }
 
     /// Returns the Keccak hash with a 256-bit output.
-    pub fn hash_keccak256(mut input: &[bool]) -> Result<Vec<bool>> {
-        Keccak256::default().hash(&mut input)
+    pub fn hash_keccak256(input: &[bool]) -> Result<Vec<bool>> {
+        Keccak256::default().hash(input)
     }
 
     /// Returns the Keccak hash with a 384-bit output.
-    pub fn hash_keccak384(mut input: &[bool]) -> Result<Vec<bool>> {
-        Keccak384::default().hash(&mut input)
+    pub fn hash_keccak384(input: &[bool]) -> Result<Vec<bool>> {
+        Keccak384::default().hash(input)
     }
 
     /// Returns the Keccak hash with a 512-bit output.
-    pub fn hash_keccak512(mut input: &[bool]) -> Result<Vec<bool>> {
-        Keccak512::default().hash(&mut input)
+    pub fn hash_keccak512(input: &[bool]) -> Result<Vec<bool>> {
+        Keccak512::default().hash(input)
     }
 
     /// Returns the Pedersen hash for a given (up to) 64-bit input.
-    pub fn hash_ped64(mut input: &[bool]) -> Result<Field> {
-        PEDERSEN_64.hash(&mut input)
+    pub fn hash_ped64(input: &[bool]) -> Result<Field> {
+        PEDERSEN_64.hash(input)
     }
 
     /// Returns the Pedersen hash for a given (up to) 128-bit input.
-    pub fn hash_ped128(mut input: &[bool]) -> Result<Field> {
-        PEDERSEN_128.hash(&mut input)
+    pub fn hash_ped128(input: &[bool]) -> Result<Field> {
+        PEDERSEN_128.hash(input)
     }
 
     /// Returns the Poseidon hash with an input rate of 2.
-    pub fn hash_psd2(mut input: &[Field]) -> Result<Field> {
-        POSEIDON_2.hash(&mut input)
+    pub fn hash_psd2(input: &[Field]) -> Result<Field> {
+        POSEIDON_2.hash(input)
     }
 
     /// Returns the Poseidon hash with an input rate of 4.
-    pub fn hash_psd4(mut input: &[Field]) -> Result<Field> {
-        POSEIDON_4.hash(&mut input)
+    pub fn hash_psd4(input: &[Field]) -> Result<Field> {
+        POSEIDON_4.hash(input)
     }
 
     /// Returns the Poseidon hash with an input rate of 8.
-    pub fn hash_psd8(mut input: &[Field]) -> Result<Field> {
-        POSEIDON_8.hash(&mut input)
+    pub fn hash_psd8(input: &[Field]) -> Result<Field> {
+        POSEIDON_8.hash(input)
     }
 
     /// Returns the SHA-3 hash with a 256-bit output.
-    pub fn hash_sha3_256(mut input: &[bool]) -> Result<Vec<bool>> {
-        Sha3_256::default().hash(&mut input)
+    pub fn hash_sha3_256(input: &[bool]) -> Result<Vec<bool>> {
+        Sha3_256::default().hash(input)
     }
 
     /// Returns the SHA-3 hash with a 384-bit output.
-    pub fn hash_sha3_384(mut input: &[bool]) -> Result<Vec<bool>> {
-        Sha3_384::default().hash(&mut input)
+    pub fn hash_sha3_384(input: &[bool]) -> Result<Vec<bool>> {
+        Sha3_384::default().hash(input)
     }
 
     /// Returns the SHA-3 hash with a 512-bit output.
-    pub fn hash_sha3_512(mut input: &[bool]) -> Result<Vec<bool>> {
-        Sha3_512::default().hash(&mut input)
+    pub fn hash_sha3_512(input: &[bool]) -> Result<Vec<bool>> {
+        Sha3_512::default().hash(input)
     }
 
     /// Returns the extended Poseidon hash with an input rate of 2.
@@ -616,7 +616,7 @@ mod tests {
     fn test_g_scalar_multiply() {
         // Compute G^r.
         let scalar = Scalar::rand(&mut TestRng::default());
-        let group = Network::g_scalar_multiply(&scalar);
-        assert_eq!(group, Network::g_powers()[0] * scalar);
+        let group = AleoNetwork::g_scalar_multiply(&scalar);
+        assert_eq!(group, AleoNetwork::g_powers()[0] * scalar);
     }
 }

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<E: Environment, const TYPE: u8, const VARIANT: usize> Hash for Keccak<E, TYPE, VARIANT> {
-    type Input = Boolean<E>;
-    type Output = Vec<Boolean<E>>;
+impl<const TYPE: u8, const VARIANT: usize> Hash for Keccak<TYPE, VARIANT> {
+    type Input = Boolean;
+    type Output = Vec<Boolean>;
 
     /// Returns the Keccak hash of the given input as bits.
     #[inline]
@@ -30,7 +32,7 @@ impl<E: Environment, const TYPE: u8, const VARIANT: usize> Hash for Keccak<E, TY
 
         // Ensure the input is not empty.
         if input.is_empty() {
-            E::halt("The input to the hash function must not be empty")
+            Circuit::halt("The input to the hash function must not be empty")
         }
 
         // The root state `s` is defined as `0^b`.
@@ -83,12 +85,12 @@ impl<E: Environment, const TYPE: u8, const VARIANT: usize> Hash for Keccak<E, TY
     }
 }
 
-impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIANT> {
+impl<const TYPE: u8, const VARIANT: usize> Keccak<TYPE, VARIANT> {
     /// In Keccak, `pad` is a multi-rate padding, defined as `pad(M) = M || 0x01 || 0x00…0x00 || 0x80`,
     /// where `M` is the input data, and `0x01 || 0x00…0x00 || 0x80` is the padding.
     /// The padding extends the input data to a multiple of the bitrate `r`, defined as `r = b - c`,
     /// where `b` is the width of the permutation, and `c` is the capacity.
-    fn pad_keccak(input: &[Boolean<E>], bitrate: usize) -> Vec<Vec<Boolean<E>>> {
+    fn pad_keccak(input: &[Boolean], bitrate: usize) -> Vec<Vec<Boolean>> {
         debug_assert!(bitrate > 0, "The bitrate must be positive");
 
         // Resize the input to a multiple of 8.
@@ -118,7 +120,7 @@ impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIA
     /// where `M` is the input data, and `0x06 || 0x00…0x00 || 0x80` is the padding.
     /// The padding extends the input data to a multiple of the bitrate `r`, defined as `r = b - c`,
     /// where `b` is the width of the permutation, and `c` is the capacity.
-    fn pad_sha3(input: &[Boolean<E>], bitrate: usize) -> Vec<Vec<Boolean<E>>> {
+    fn pad_sha3(input: &[Boolean], bitrate: usize) -> Vec<Vec<Boolean>> {
         debug_assert!(bitrate > 1, "The bitrate must be greater than 1");
 
         // Resize the input to a multiple of 8.
@@ -153,10 +155,10 @@ impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIA
     ///
     /// The round function `Rnd` is applied `12 + 2l` times, where `l` is the log width of the permutation.
     fn permutation_f<const WIDTH: usize, const NUM_ROUNDS: usize>(
-        input: Vec<Boolean<E>>,
-        round_constants: &[U64<E>],
+        input: Vec<Boolean>,
+        round_constants: &[U64],
         rotl: &[usize],
-    ) -> Vec<Boolean<E>> {
+    ) -> Vec<Boolean> {
         debug_assert_eq!(input.len(), WIDTH, "The input vector must have {WIDTH} bits");
         debug_assert_eq!(
             round_constants.len(),
@@ -181,7 +183,7 @@ impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIA
     /// Rnd = ι ◦ χ ◦ π ◦ ρ ◦ θ
     /// ```
     /// where `◦` denotes function composition.
-    fn round(a: Vec<U64<E>>, round_constant: &U64<E>, rotl: &[usize]) -> Vec<U64<E>> {
+    fn round(a: Vec<U64>, round_constant: &U64, rotl: &[usize]) -> Vec<U64> {
         debug_assert_eq!(a.len(), MODULO * MODULO, "The input vector 'a' must have {} elements", MODULO * MODULO);
 
         /* The first part of Algorithm 1, θ:
@@ -272,7 +274,7 @@ impl<E: Environment, const TYPE: u8, const VARIANT: usize> Keccak<E, TYPE, VARIA
     }
 
     /// Performs a rotate left operation on the given `u64` value.
-    fn rotate_left(value: &U64<E>, n: usize) -> U64<E> {
+    fn rotate_left(value: &U64, n: usize) -> U64 {
         // Perform the rotation.
         let mut bits_le = value.to_bits_le();
         bits_le.rotate_left(n);
@@ -303,7 +305,7 @@ mod tests {
 
                 // Prepare the preimage.
                 let native_input = (0..num_inputs).map(|_| Uniform::rand(rng)).collect::<Vec<bool>>();
-                let input = native_input.iter().map(|v| Boolean::<Circuit>::new(Mode::Private, *v)).collect::<Vec<_>>();
+                let input = native_input.iter().map(|v| Boolean::new(Mode::Private, *v)).collect::<Vec<_>>();
 
                 // Compute the console hash.
                 let expected = $console.hash(&native_input).expect("Failed to hash console input");
@@ -328,12 +330,12 @@ mod tests {
         use console::Hash as H;
 
         let native = console::Keccak256::default();
-        let keccak = Keccak256::<Circuit>::new();
+        let keccak = Keccak256::new();
 
         for i in 0..ITERATIONS {
             // Prepare the preimage.
             let native_input = (0..num_inputs).map(|_| Uniform::rand(rng)).collect::<Vec<bool>>();
-            let input = native_input.iter().map(|v| Boolean::<Circuit>::new(mode, *v)).collect::<Vec<_>>();
+            let input = native_input.iter().map(|v| Boolean::new(mode, *v)).collect::<Vec<_>>();
 
             // Compute the native hash.
             let expected = native.hash(&native_input).expect("Failed to hash native input");
@@ -418,41 +420,41 @@ mod tests {
 
     #[test]
     fn test_keccak_224_equivalence() {
-        check_equivalence!(console::Keccak224::default(), Keccak224::<Circuit>::new());
+        check_equivalence!(console::Keccak224::default(), Keccak224::new());
     }
 
     #[test]
     fn test_keccak_256_equivalence() {
-        check_equivalence!(console::Keccak256::default(), Keccak256::<Circuit>::new());
+        check_equivalence!(console::Keccak256::default(), Keccak256::new());
     }
 
     #[test]
     fn test_keccak_384_equivalence() {
-        check_equivalence!(console::Keccak384::default(), Keccak384::<Circuit>::new());
+        check_equivalence!(console::Keccak384::default(), Keccak384::new());
     }
 
     #[test]
     fn test_keccak_512_equivalence() {
-        check_equivalence!(console::Keccak512::default(), Keccak512::<Circuit>::new());
+        check_equivalence!(console::Keccak512::default(), Keccak512::new());
     }
 
     #[test]
     fn test_sha3_224_equivalence() {
-        check_equivalence!(console::Sha3_224::default(), Sha3_224::<Circuit>::new());
+        check_equivalence!(console::Sha3_224::default(), Sha3_224::new());
     }
 
     #[test]
     fn test_sha3_256_equivalence() {
-        check_equivalence!(console::Sha3_256::default(), Sha3_256::<Circuit>::new());
+        check_equivalence!(console::Sha3_256::default(), Sha3_256::new());
     }
 
     #[test]
     fn test_sha3_384_equivalence() {
-        check_equivalence!(console::Sha3_384::default(), Sha3_384::<Circuit>::new());
+        check_equivalence!(console::Sha3_384::default(), Sha3_384::new());
     }
 
     #[test]
     fn test_sha3_512_equivalence() {
-        check_equivalence!(console::Sha3_512::default(), Sha3_512::<Circuit>::new());
+        check_equivalence!(console::Sha3_512::default(), Sha3_512::new());
     }
 }

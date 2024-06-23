@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal<Self> for StringType<E> {
-    type Output = Boolean<E>;
+impl Equal<Self> for StringType {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -40,10 +40,10 @@ mod tests {
     use super::*;
     use snarkvm_circuit_environment::Circuit;
 
-    fn sample_string(mode: Mode, rng: &mut TestRng) -> StringType<Circuit> {
+    fn sample_string(mode: Mode, rng: &mut TestRng) -> StringType {
         // Sample a random string. Take 1/4th to ensure we fit for all code points.
         let given = rng.next_string(Circuit::MAX_STRING_BYTES / 4, true);
-        StringType::<Circuit>::new(mode, console::StringType::new(&given))
+        StringType::new(mode, console::StringType::new(&given))
     }
 
     fn check_is_equal(

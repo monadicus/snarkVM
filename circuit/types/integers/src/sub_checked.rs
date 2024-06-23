@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Sub<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Sub<Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
@@ -22,15 +22,15 @@ impl<E: Environment, I: IntegerType> Sub<Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Sub<Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Sub<Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn sub(self, other: Integer<E, I>) -> Self::Output {
+    fn sub(self, other: Integer<I>) -> Self::Output {
         self - &other
     }
 }
 
-impl<E: Environment, I: IntegerType> Sub<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Sub<&Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn sub(self, other: &Self) -> Self::Output {
@@ -38,40 +38,40 @@ impl<E: Environment, I: IntegerType> Sub<&Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Sub<&Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Sub<&Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn sub(self, other: &Integer<E, I>) -> Self::Output {
+    fn sub(self, other: &Integer<I>) -> Self::Output {
         let mut output = self.clone();
         output -= other;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType> SubAssign<Integer<E, I>> for Integer<E, I> {
-    fn sub_assign(&mut self, other: Integer<E, I>) {
+impl<I: IntegerType> SubAssign<Integer<I>> for Integer<I> {
+    fn sub_assign(&mut self, other: Integer<I>) {
         *self -= &other;
     }
 }
 
-impl<E: Environment, I: IntegerType> SubAssign<&Integer<E, I>> for Integer<E, I> {
-    fn sub_assign(&mut self, other: &Integer<E, I>) {
+impl<I: IntegerType> SubAssign<&Integer<I>> for Integer<I> {
+    fn sub_assign(&mut self, other: &Integer<I>) {
         // Stores the difference of `self` and `other` in `self`.
         *self = self.sub_checked(other);
     }
 }
 
-impl<E: Environment, I: IntegerType> SubChecked<Self> for Integer<E, I> {
+impl<I: IntegerType> SubChecked<Self> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn sub_checked(&self, other: &Integer<E, I>) -> Self::Output {
+    fn sub_checked(&self, other: &Integer<I>) -> Self::Output {
         // Determine the variable mode.
         if self.is_constant() && other.is_constant() {
             // Compute the difference and return the new constant.
             match self.eject_value().checked_sub(&other.eject_value()) {
                 Some(value) => Integer::constant(console::Integer::new(value)),
-                None => E::halt("Integer underflow on subtraction of two constants"),
+                None => Circuit::halt("Integer underflow on subtraction of two constants"),
             }
         } else {
             // Instead of subtracting the bits of `self` and `other` directly, the integers are
@@ -82,8 +82,8 @@ impl<E: Environment, I: IntegerType> SubChecked<Self> for Integer<E, I> {
             // Extract the integer bits from the field element, with a carry bit.
             let (difference, carry) = match difference.to_lower_bits_le(I::BITS as usize + 1).split_last() {
                 Some((carry, bits_le)) => (Integer::from_bits_le(bits_le), carry.clone()),
-                // Note: `E::halt` should never be invoked as `I::BITS as usize + 1` is greater than zero.
-                None => E::halt("Malformed difference detected during integer subtraction"),
+                // Note: `Circuit::halt` should never be invoked as `I::BITS as usize + 1` is greater than zero.
+                None => Circuit::halt("Malformed difference detected during integer subtraction"),
             };
 
             // Check for underflow.
@@ -96,10 +96,10 @@ impl<E: Environment, I: IntegerType> SubChecked<Self> for Integer<E, I> {
                 true => {
                     let is_different_signs = self.msb().is_not_equal(other.msb());
                     let is_underflow = is_different_signs & difference.msb().is_equal(other.msb());
-                    E::assert_eq(is_underflow, E::zero());
+                    Circuit::assert_eq(is_underflow, Circuit::zero());
                 }
                 // For unsigned subtraction, ensure the carry bit is one.
-                false => E::assert_eq(carry, E::one()),
+                false => Circuit::assert_eq(carry, Circuit::one()),
             }
 
             // Return the difference of `self` and `other`.
@@ -108,23 +108,23 @@ impl<E: Environment, I: IntegerType> SubChecked<Self> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Sub<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Sub<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
-        <Self as Metrics<dyn SubChecked<Integer<E, I>, Output = Integer<E, I>>>>::count(case)
+        <Self as Metrics<dyn SubChecked<Integer<I>, Output = Integer<I>>>>::count(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Sub<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Sub<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
-        <Self as OutputMode<dyn SubChecked<Integer<E, I>, Output = Integer<E, I>>>>::output_mode(case)
+        <Self as OutputMode<dyn SubChecked<Integer<I>, Output = Integer<I>>>>::output_mode(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn SubChecked<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn SubChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -143,9 +143,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn SubChecked<Integer<E, I>, Outpu
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn SubChecked<Integer<E, I>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType> OutputMode<dyn SubChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -169,13 +167,13 @@ mod tests {
 
     fn check_sub<I: IntegerType + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, I>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<I>::new(mode_b, second);
         match first.checked_sub(&second) {
             Some(expected) => Circuit::scope(name, || {
                 let candidate = a.sub_checked(&b);
@@ -219,8 +217,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Sub: ({first} - {second})");
                 check_sub::<I>(&name, first, second, mode_a, mode_b);

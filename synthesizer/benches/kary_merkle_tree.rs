@@ -34,15 +34,15 @@ type CurrentAleo = AleoV0;
 
 type NativePathHasher = Sha3_256;
 type NativeLeafHasher = Sha3_256;
-type CircuitPathHasher = circuit::Sha3_256<AleoV0>;
-type CircuitLeafHasher = circuit::Sha3_256<AleoV0>;
+type CircuitPathHasher = circuit::Sha3_256;
+type CircuitLeafHasher = circuit::Sha3_256;
 
 const DEPTH: u8 = 8;
 const ARITY: u8 = 8;
 
 /// Generates the specified number of random Merkle tree leaves.
 macro_rules! generate_leaves {
-    ($num_leaves:expr, $rng:expr) => {{ (0..$num_leaves).map(|_| Field::<MainnetV0>::rand($rng).to_bits_le()).collect::<Vec<_>>() }};
+    ($num_leaves:expr, $rng:expr) => {{ (0..$num_leaves).map(|_| Field::rand($rng).to_bits_le()).collect::<Vec<_>>() }};
 }
 
 fn batch_prove(c: &mut Criterion) {
@@ -74,8 +74,7 @@ fn batch_prove(c: &mut Criterion) {
     CurrentAleo::reset();
 
     // Initialize the Merkle path circuit.
-    let path =
-        KaryMerklePath::<CurrentAleo, circuit::Sha3_256<CurrentAleo>, DEPTH, ARITY>::new(Mode::Private, merkle_path);
+    let path = KaryMerklePath::<CurrentAleo, circuit::Sha3_256, DEPTH, ARITY>::new(Mode::Private, merkle_path);
     // Initialize the Merkle root.
     let root = <CircuitPathHasher as PathHash<CurrentAleo>>::Hash::new(Mode::Private, *merkle_tree.root());
     // Initialize the Merkle leaf.

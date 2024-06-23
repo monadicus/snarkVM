@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> From<(Group<A>, Group<A>)> for ComputeKey<A> {
+impl From<(Group, Group)> for ComputeKey {
     /// Derives the account compute key from a tuple `(pk_sig, pr_sig)`.
-    fn from((pk_sig, pr_sig): (Group<A>, Group<A>)) -> Self {
+    fn from((pk_sig, pr_sig): (Group, Group)) -> Self {
         // Compute sk_prf := HashToScalar(pk_sig || pr_sig).
-        let sk_prf = A::hash_to_scalar_psd4(&[pk_sig.to_x_coordinate(), pr_sig.to_x_coordinate()]);
+        let sk_prf = AleoV0::hash_to_scalar_psd4(&[pk_sig.to_x_coordinate(), pr_sig.to_x_coordinate()]);
         // Output the compute key.
         Self { pk_sig, pr_sig, sk_prf }
     }
@@ -30,7 +32,6 @@ mod tests {
     use crate::{helpers::generate_account, Circuit};
 
     use anyhow::Result;
-    use snarkvm_circuit_network::AleoV0;
 
     const ITERATIONS: u64 = 100;
 
@@ -50,7 +51,7 @@ mod tests {
             let pr_sig = Group::new(mode, compute_key.pr_sig());
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = ComputeKey::<AleoV0>::from((pk_sig, pr_sig));
+                let candidate = ComputeKey::from((pk_sig, pr_sig));
                 assert_eq!(compute_key, candidate.eject_value());
                 if i > 0 {
                     assert_scope!(num_constants, num_public, num_private, num_constraints);

@@ -157,11 +157,11 @@ mod tests {
 
     #[test]
     fn test_partial_ord() -> Result<()> {
-        let import1 = ProgramID::<CurrentNetwork>::from_str("bar.aleo")?;
-        let import2 = ProgramID::<CurrentNetwork>::from_str("foo.aleo")?;
+        let import1 = ProgramID::from_str("bar.aleo")?;
+        let import2 = ProgramID::from_str("foo.aleo")?;
 
-        let import3 = ProgramID::<CurrentNetwork>::from_str("bar.aleo")?;
-        let import4 = ProgramID::<CurrentNetwork>::from_str("foo.aleo")?;
+        let import3 = ProgramID::from_str("bar.aleo")?;
+        let import4 = ProgramID::from_str("foo.aleo")?;
 
         assert_eq!(import1.partial_cmp(&import1), Some(Ordering::Equal));
         assert_eq!(import1.partial_cmp(&import2), Some(Ordering::Less));

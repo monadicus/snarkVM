@@ -30,14 +30,14 @@ use std::collections::HashMap;
 #[derive(Clone, Debug)]
 struct InputTask<N: Network> {
     /// The commitment.
-    commitment: Field<N>,
+    commitment: Field,
     /// The gamma value.
-    gamma: Group<N>,
+    gamma: Group,
     /// The serial number.
-    serial_number: Field<N>,
+    serial_number: Field,
     /// Contains the local transaction leaf, local transition root, local transition tcm, local transition path,
     /// and local transition leaf, if this input is a record from a previous local transition.
-    local: Option<(TransactionLeaf<N>, Field<N>, Field<N>, TransitionPath<N>, TransitionLeaf<N>)>,
+    local: Option<(TransactionLeaf<N>, Field, Field, TransitionPath<N>, TransitionLeaf<N>)>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -45,8 +45,7 @@ pub(super) struct Inclusion<N: Network> {
     /// A map of `transition IDs` to a list of `input tasks`.
     input_tasks: HashMap<N::TransitionID, Vec<InputTask<N>>>,
     /// A map of `commitments` to `(local transaction leaf, local transition root, local transition tcm, local transition path, local transition leaf)` pairs.
-    output_commitments:
-        HashMap<Field<N>, (TransactionLeaf<N>, Field<N>, Field<N>, TransitionPath<N>, TransitionLeaf<N>)>,
+    output_commitments: HashMap<Field, (TransactionLeaf<N>, Field, Field, TransitionPath<N>, TransitionLeaf<N>)>,
 }
 
 impl<N: Network> Inclusion<N> {
@@ -164,10 +163,10 @@ impl<N: Network> Inclusion<N> {
 #[derive(Clone, Debug)]
 pub struct InclusionAssignment<N: Network> {
     pub(crate) state_path: StatePath<N>,
-    commitment: Field<N>,
-    gamma: Group<N>,
-    serial_number: Field<N>,
-    local_state_root: N::TransactionID,
+    commitment: Field,
+    gamma: Group,
+    serial_number: Field,
+    local_state_root: TransactionID,
     is_global: bool,
 }
 
@@ -175,10 +174,10 @@ impl<N: Network> InclusionAssignment<N> {
     /// Initializes a new inclusion assignment.
     pub fn new(
         state_path: StatePath<N>,
-        commitment: Field<N>,
-        gamma: Group<N>,
-        serial_number: Field<N>,
-        local_state_root: N::TransactionID,
+        commitment: Field,
+        gamma: Group,
+        serial_number: Field,
+        local_state_root: TransactionID,
         is_global: bool,
     ) -> Self {
         Self { state_path, commitment, gamma, serial_number, local_state_root, is_global }
@@ -207,20 +206,20 @@ impl<N: Network> InclusionAssignment<N> {
         // Inject the state path as `Mode::Private` (with a global state root as `Mode::Public`).
         let state_path = circuit::StatePath::<A>::new(circuit::Mode::Private, self.state_path.clone());
         // Inject the commitment as `Mode::Private`.
-        let commitment = circuit::Field::<A>::new(circuit::Mode::Private, self.commitment);
+        let commitment = circuit::Field::new(circuit::Mode::Private, self.commitment);
         // Inject the gamma as `Mode::Private`.
-        let gamma = circuit::Group::<A>::new(circuit::Mode::Private, self.gamma);
+        let gamma = circuit::Group::new(circuit::Mode::Private, self.gamma);
 
         // Inject the local state root as `Mode::Public`.
-        let local_state_root = circuit::Field::<A>::new(circuit::Mode::Public, *self.local_state_root);
+        let local_state_root = circuit::Field::new(circuit::Mode::Public, *self.local_state_root);
         // Inject the 'is_global' flag as `Mode::Private`.
         let is_global = circuit::Boolean::<A>::new(circuit::Mode::Private, self.is_global);
 
         // Inject the serial number as `Mode::Public`.
-        let serial_number = circuit::Field::<A>::new(circuit::Mode::Public, self.serial_number);
+        let serial_number = circuit::Field::new(circuit::Mode::Public, self.serial_number);
         // Compute the candidate serial number.
         let candidate_serial_number =
-            circuit::Record::<A, circuit::Plaintext<A>>::serial_number_from_gamma(&gamma, commitment.clone());
+            circuit::Record::<A, circuit::Plaintext>::serial_number_from_gamma(&gamma, commitment.clone());
         // Enforce that the candidate serial number is equal to the serial number.
         A::assert_eq(candidate_serial_number, serial_number);
 

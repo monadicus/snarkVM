@@ -97,7 +97,7 @@ mod tests {
         let ciphertext = plaintext.encrypt(&address, randomizer)?;
 
         // Decrypt the plaintext.
-        let nonce = N::g_scalar_multiply(&randomizer);
+        let nonce = AleoNetwork::g_scalar_multiply(&randomizer);
         assert_eq!(plaintext, ciphertext.decrypt(view_key, nonce)?);
         Ok(())
     }

@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleScalar;
+
 use super::*;
 
-impl<E: Environment, I: IntegerType> Integer<E, I> {
+impl<I: IntegerType> Integer<I> {
     /// Casts an integer into a scalar.
-    pub fn to_scalar(&self) -> Scalar<E> {
+    pub fn to_scalar(&self) -> Scalar {
         // Note: We are reconstituting the integer as a scalar field.
         // This is safe as the number of bits in the integer is less than the scalar field modulus,
         // and thus will always fit within a single scalar field element.
-        debug_assert!(I::BITS < E::ScalarField::size_in_bits() as u64);
+        debug_assert!(I::BITS < ConsoleScalar::size_in_bits() as u64);
 
         // Reconstruct the bits as a linear combination representing the original value.
         Scalar::from_bits_le(&self.bits_le)
@@ -38,7 +40,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random integer.
             let expected = Uniform::rand(rng);
-            let candidate = Integer::<Circuit, I>::new(mode, expected);
+            let candidate = Integer::<I>::new(mode, expected);
 
             Circuit::scope(format!("{mode} {expected} {i}"), || {
                 // Perform the operation.

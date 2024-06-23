@@ -46,23 +46,23 @@ pub struct Registers<N: Network, A: circuit::Aleo<Network = N>> {
     /// The mapping of assigned console registers to their values.
     console_registers: IndexMap<u64, Value<N>>,
     /// The mapping of assigned circuit registers to their values.
-    circuit_registers: IndexMap<u64, circuit::Value<A>>,
+    circuit_registers: IndexMap<u64, circuit::Value>,
     /// The transition signer.
-    signer: Option<Address<N>>,
+    signer: Option<Address>,
     /// The transition signer, as a circuit.
-    signer_circuit: Option<circuit::Address<A>>,
+    signer_circuit: Option<circuit::Address>,
     /// The root transition view key.
-    root_tvk: Option<Field<N>>,
+    root_tvk: Option<Field>,
     /// The root transition view key, as a circuit.
-    root_tvk_circuit: Option<circuit::Field<A>>,
+    root_tvk_circuit: Option<circuit::Field>,
     /// The transition caller.
-    caller: Option<Address<N>>,
+    caller: Option<Address>,
     /// The transition caller, as a circuit.
-    caller_circuit: Option<circuit::Address<A>>,
+    caller_circuit: Option<circuit::Address>,
     /// The transition view key.
-    tvk: Option<Field<N>>,
+    tvk: Option<Field>,
     /// The transition view key, as a circuit.
-    tvk_circuit: Option<circuit::Field<A>>,
+    tvk_circuit: Option<circuit::Field>,
 }
 
 impl<N: Network, A: circuit::Aleo<Network = N>> Registers<N, A> {

@@ -20,7 +20,7 @@ impl<N: Network> Package<N> {
     pub fn execute<A: crate::circuit::Aleo<Network = N, BaseField = N::Field>, R: Rng + CryptoRng>(
         &self,
         endpoint: String,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         function_name: Identifier<N>,
         inputs: &[Value<N>],
         rng: &mut R,

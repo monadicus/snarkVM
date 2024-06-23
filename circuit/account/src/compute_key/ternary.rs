@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> Ternary for ComputeKey<A> {
-    type Boolean = Boolean<A>;
-    type Output = ComputeKey<A>;
+impl Ternary for ComputeKey {
+    type Boolean = Boolean;
+    type Output = ComputeKey;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.
     fn ternary(condition: &Self::Boolean, first: &Self, second: &Self) -> Self::Output {
@@ -28,7 +30,7 @@ impl<A: Aleo> Ternary for ComputeKey<A> {
     }
 }
 
-impl<A: Aleo> Metrics<dyn Ternary<Boolean = Boolean<A>, Output = ComputeKey<A>>> for ComputeKey<A> {
+impl Metrics<dyn Ternary<Boolean = Boolean, Output = ComputeKey>> for ComputeKey {
     type Case = (Mode, Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -41,8 +43,8 @@ impl<A: Aleo> Metrics<dyn Ternary<Boolean = Boolean<A>, Output = ComputeKey<A>>>
     }
 }
 
-impl<A: Aleo> OutputMode<dyn Ternary<Boolean = Boolean<A>, Output = Self>> for ComputeKey<A> {
-    type Case = (CircuitType<Boolean<A>>, Mode, Mode);
+impl OutputMode<dyn Ternary<Boolean = Boolean, Output = Self>> for ComputeKey {
+    type Case = (CircuitType<Boolean>, Mode, Mode);
 
     fn output_mode(parameter: &Self::Case) -> Mode {
         match parameter.0.mode().is_constant() {
@@ -51,7 +53,7 @@ impl<A: Aleo> OutputMode<dyn Ternary<Boolean = Boolean<A>, Output = Self>> for C
                     true => parameter.1,
                     false => parameter.2,
                 },
-                _ => A::halt("The constant condition is required to determine output mode."),
+                _ => Circuit::halt("The constant condition is required to determine output mode."),
             },
             false => Mode::Private,
         }
@@ -64,13 +66,7 @@ mod tests {
     use crate::Circuit;
     use console::TestRng;
 
-    fn check_ternary(
-        name: &str,
-        expected: console::ComputeKey<<Circuit as Environment>::Network>,
-        condition: Boolean<Circuit>,
-        a: ComputeKey<Circuit>,
-        b: ComputeKey<Circuit>,
-    ) {
+    fn check_ternary(name: &str, expected: console::ComputeKey, condition: Boolean, a: ComputeKey, b: ComputeKey) {
         Circuit::scope(name, || {
             let case = format!("({} ? {:?} : {:?})", condition.eject_value(), a.eject_value(), b.eject_value());
             let candidate = ComputeKey::ternary(&condition, &a, &b);
@@ -89,86 +85,86 @@ mod tests {
 
         // false ? Constant : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("false ? Constant : Constant", expected, condition, a, b);
 
         // false ? Constant : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Constant : Public", expected, condition, a, b);
 
         // false ? Public : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("false ? Public : Constant", expected, condition, a, b);
 
         // false ? Public : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Public : Public", expected, condition, a, b);
 
         // false ? Public : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("false ? Public : Private", expected, condition, a, b);
 
         // false ? Private : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, false);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("false ? Private : Private", expected, condition, a, b);
 
         // true ? Constant : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("true ? Constant : Constant", expected, condition, a, b);
 
         // true ? Constant : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Constant : Public", expected, condition, a, b);
 
         // true ? Public : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("true ? Public : Constant", expected, condition, a, b);
 
         // true ? Public : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Public : Public", expected, condition, a, b);
 
         // true ? Public : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("true ? Public : Private", expected, condition, a, b);
 
         // true ? Private : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Constant, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Constant, true);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("true ? Private : Private", expected, condition, a, b);
     }
 
@@ -181,16 +177,16 @@ mod tests {
 
         // false ? Constant : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("false ? Constant : Constant", expected, condition, a, b);
 
         // true ? Constant : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("true ? Constant : Constant", expected, condition, a, b);
     }
 
@@ -203,30 +199,30 @@ mod tests {
 
         // false ? Constant : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Constant : Public", expected, condition, a, b);
 
         // false ? Public : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("false ? Public : Constant", expected, condition, a, b);
 
         // true ? Constant : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Constant : Public", expected, condition, a, b);
 
         // true ? Public : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("true ? Public : Constant", expected, condition, a, b);
     }
 
@@ -239,16 +235,16 @@ mod tests {
 
         // false ? Constant : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("false ? Constant : Constant", expected, condition, a, b);
 
         // true ? Constant : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("true ? Constant : Constant", expected, condition, a, b);
     }
 
@@ -261,30 +257,30 @@ mod tests {
 
         // false ? Constant : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Constant : Public", expected, condition, a, b);
 
         // false ? Public : Constant
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("false ? Public : Constant", expected, condition, a, b);
 
         // true ? Constant : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Constant, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = ComputeKey::new(Mode::Constant, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Constant : Public", expected, condition, a, b);
 
         // true ? Public : Constant
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Constant, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Constant, second);
         check_ternary("true ? Public : Constant", expected, condition, a, b);
     }
 
@@ -297,58 +293,58 @@ mod tests {
 
         // false ? Public : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Public : Public", expected, condition, a, b);
 
         // false ? Public : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("false ? Public : Private", expected, condition, a, b);
 
         // false ? Private : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Private : Public", expected, condition, a, b);
 
         // false ? Private : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Public, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, false);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("false ? Private : Private", expected, condition, a, b);
 
         // true ? Public : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Public : Public", expected, condition, a, b);
 
         // true ? Public : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("true ? Public : Private", expected, condition, a, b);
 
         // true ? Private : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Private : Public", expected, condition, a, b);
 
         // true ? Private : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Public, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Public, true);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("true ? Private : Private", expected, condition, a, b);
     }
 
@@ -361,58 +357,58 @@ mod tests {
 
         // false ? Public : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Public : Public", expected, condition, a, b);
 
         // false ? Public : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("false ? Public : Private", expected, condition, a, b);
 
         // false ? Private : Public
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("false ? Private : Public", expected, condition, a, b);
 
         // false ? Private : Private
         let expected = second;
-        let condition = Boolean::<Circuit>::new(Mode::Private, false);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, false);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("false ? Private : Private", expected, condition, a, b);
 
         // true ? Public : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Public : Public", expected, condition, a, b);
 
         // true ? Public : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Public, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = ComputeKey::new(Mode::Public, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("true ? Public : Private", expected, condition, a, b);
 
         // true ? Private : Public
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Public, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Public, second);
         check_ternary("true ? Private : Public", expected, condition, a, b);
 
         // true ? Private : Private
         let expected = first;
-        let condition = Boolean::<Circuit>::new(Mode::Private, true);
-        let a = ComputeKey::<Circuit>::new(Mode::Private, first);
-        let b = ComputeKey::<Circuit>::new(Mode::Private, second);
+        let condition = Boolean::new(Mode::Private, true);
+        let a = ComputeKey::new(Mode::Private, first);
+        let b = ComputeKey::new(Mode::Private, second);
         check_ternary("true ? Private : Private", expected, condition, a, b);
     }
 }

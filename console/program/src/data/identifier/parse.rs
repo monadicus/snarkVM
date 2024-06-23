@@ -108,17 +108,17 @@ mod tests {
     #[test]
     fn test_parse() -> Result<()> {
         // Quick sanity check.
-        let (remainder, candidate) = Identifier::<CurrentNetwork>::parse("foo_bar1")?;
+        let (remainder, candidate) = Identifier::parse("foo_bar1")?;
         assert_eq!("foo_bar1", candidate.to_string());
         assert_eq!("", remainder);
 
         // Must be alphanumeric or underscore.
-        let (remainder, candidate) = Identifier::<CurrentNetwork>::parse("foo_bar~baz")?;
+        let (remainder, candidate) = Identifier::parse("foo_bar~baz")?;
         assert_eq!("foo_bar", candidate.to_string());
         assert_eq!("~baz", remainder);
 
         // Must be alphanumeric or underscore.
-        let (remainder, candidate) = Identifier::<CurrentNetwork>::parse("foo_bar-baz")?;
+        let (remainder, candidate) = Identifier::parse("foo_bar-baz")?;
         assert_eq!("foo_bar", candidate.to_string());
         assert_eq!("-baz", remainder);
 
@@ -127,11 +127,11 @@ mod tests {
         // Check random identifiers.
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_string = sample_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_string = sample_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_field = Field::<CurrentNetwork>::from_bits_le(&expected_string.to_bits_le())?;
+            let expected_field = Field::from_bits_le(&expected_string.to_bits_le())?;
 
-            let (remainder, candidate) = Identifier::<CurrentNetwork>::parse(expected_string.as_str()).unwrap();
+            let (remainder, candidate) = Identifier::parse(expected_string.as_str()).unwrap();
             assert_eq!(expected_string, candidate.to_string());
             assert_eq!(expected_field, candidate.0);
             assert_eq!(expected_string.len(), candidate.1 as usize);
@@ -143,39 +143,38 @@ mod tests {
     #[test]
     fn test_parse_fails() {
         // Must not be solely underscores.
-        assert!(Identifier::<CurrentNetwork>::parse("_").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("__").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("___").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("____").is_err());
+        assert!(Identifier::parse("_").is_err());
+        assert!(Identifier::parse("__").is_err());
+        assert!(Identifier::parse("___").is_err());
+        assert!(Identifier::parse("____").is_err());
 
         // Must not start with a number.
-        assert!(Identifier::<CurrentNetwork>::parse("1").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("2").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("3").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("12").is_err());
-        assert!(Identifier::<CurrentNetwork>::parse("111").is_err());
+        assert!(Identifier::parse("1").is_err());
+        assert!(Identifier::parse("2").is_err());
+        assert!(Identifier::parse("3").is_err());
+        assert!(Identifier::parse("1foo").is_err());
+        assert!(Identifier::parse("12").is_err());
+        assert!(Identifier::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let identifier =
-            Identifier::<CurrentNetwork>::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
+        let identifier = Identifier::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(identifier.is_err());
     }
 
     #[test]
     fn test_from_str() -> Result<()> {
-        let candidate = Identifier::<CurrentNetwork>::from_str("foo_bar").unwrap();
+        let candidate = Identifier::from_str("foo_bar").unwrap();
         assert_eq!("foo_bar", candidate.to_string());
 
         let mut rng = TestRng::default();
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_string = sample_identifier_as_string::<CurrentNetwork>(&mut rng)?;
+            let expected_string = sample_identifier_as_string(&mut rng)?;
             // Recover the field element from the bits.
-            let expected_field = Field::<CurrentNetwork>::from_bits_le(&expected_string.to_bits_le())?;
+            let expected_field = Field::from_bits_le(&expected_string.to_bits_le())?;
 
-            let candidate = Identifier::<CurrentNetwork>::from_str(&expected_string)?;
+            let candidate = Identifier::from_str(&expected_string)?;
             assert_eq!(expected_string, candidate.to_string());
             assert_eq!(expected_field, candidate.0);
             assert_eq!(expected_string.len(), candidate.1 as usize);
@@ -186,43 +185,41 @@ mod tests {
     #[test]
     fn test_from_str_fails() {
         // Must be non-empty.
-        assert!(Identifier::<CurrentNetwork>::from_str("").is_err());
+        assert!(Identifier::from_str("").is_err());
 
         // Must be alphanumeric or underscore.
-        assert!(Identifier::<CurrentNetwork>::from_str("foo_bar~baz").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("foo_bar-baz").is_err());
+        assert!(Identifier::from_str("foo_bar~baz").is_err());
+        assert!(Identifier::from_str("foo_bar-baz").is_err());
 
         // Must not be solely underscores.
-        assert!(Identifier::<CurrentNetwork>::from_str("_").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("__").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("___").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("____").is_err());
+        assert!(Identifier::from_str("_").is_err());
+        assert!(Identifier::from_str("__").is_err());
+        assert!(Identifier::from_str("___").is_err());
+        assert!(Identifier::from_str("____").is_err());
 
         // Must not start with a number.
-        assert!(Identifier::<CurrentNetwork>::from_str("1").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("2").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("3").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("1foo").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("12").is_err());
-        assert!(Identifier::<CurrentNetwork>::from_str("111").is_err());
+        assert!(Identifier::from_str("1").is_err());
+        assert!(Identifier::from_str("2").is_err());
+        assert!(Identifier::from_str("3").is_err());
+        assert!(Identifier::from_str("1foo").is_err());
+        assert!(Identifier::from_str("12").is_err());
+        assert!(Identifier::from_str("111").is_err());
 
         // Must not start with underscore.
-        assert!(Identifier::<CurrentNetwork>::from_str("_foo").is_err());
+        assert!(Identifier::from_str("_foo").is_err());
 
         // Must be ASCII.
-        assert!(Identifier::<CurrentNetwork>::from_str("\u{03b1}").is_err()); // Greek alpha
-        assert!(Identifier::<CurrentNetwork>::from_str("\u{03b2}").is_err()); // Greek beta
+        assert!(Identifier::from_str("\u{03b1}").is_err()); // Greek alpha
+        assert!(Identifier::from_str("\u{03b2}").is_err()); // Greek beta
 
         // Must fit within the data capacity of a base field element.
-        let identifier = Identifier::<CurrentNetwork>::from_str(
-            "foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy",
-        );
+        let identifier = Identifier::from_str("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(identifier.is_err());
     }
 
     #[test]
     fn test_display() -> Result<()> {
-        let identifier = Identifier::<CurrentNetwork>::from_str("foo_bar")?;
+        let identifier = Identifier::from_str("foo_bar")?;
         assert_eq!("foo_bar", format!("{identifier}"));
         Ok(())
     }
@@ -230,7 +227,7 @@ mod tests {
     #[test]
     fn test_proxy_bits_equivalence() -> Result<()> {
         let mut rng = TestRng::default();
-        let identifier: Identifier<CurrentNetwork> = sample_identifier(&mut rng)?;
+        let identifier: Identifier = sample_identifier(&mut rng)?;
 
         // Direct conversion to bytes.
         let bytes1 = identifier.0.to_bytes_le()?;

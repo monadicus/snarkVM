@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<A: Aleo> ToBits for Plaintext<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for Plaintext {
+    type Boolean = Boolean;
 
     /// Returns this plaintext as a list of **little-endian** bits.
-    fn write_bits_le(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_le(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Literal(literal, bits_le) => {
                 // Compute the bits of the literal.
@@ -68,7 +68,7 @@ impl<A: Aleo> ToBits for Plaintext<A> {
     }
 
     /// Returns this plaintext as a list of **big-endian** bits.
-    fn write_bits_be(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_be(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Literal(literal, bits_be) => {
                 // Compute the bits of the literal.

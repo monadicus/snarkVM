@@ -114,7 +114,7 @@ mod tests {
 
     #[test]
     fn test_display_zero() {
-        let zero = <CurrentEnvironment as Environment>::Scalar::zero();
+        let zero = ConsoleScalar::zero();
 
         let candidate = Scalar::new(zero);
         assert_eq!("0scalar", &format!("{candidate}"));
@@ -122,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_display_one() {
-        let one = <CurrentEnvironment as Environment>::Scalar::one();
+        let one = ConsoleScalar::one();
 
         let candidate = Scalar::new(one);
         assert_eq!("1scalar", &format!("{candidate}"));
@@ -130,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_display_two() {
-        let one = <CurrentEnvironment as Environment>::Scalar::one();
+        let one = ConsoleScalar::one();
         let two = one + one;
 
         let candidate = Scalar::new(two);

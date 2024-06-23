@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Compare<Address<E>> for Address<E> {
-    type Output = Boolean<E>;
+impl Compare<Address> for Address {
+    type Output = Boolean;
 
     /// Returns `true` if `self` is less than `other`.
     fn is_less_than(&self, other: &Self) -> Self::Output {
@@ -51,8 +51,8 @@ mod tests {
     fn check_is_less_than(
         name: &str,
         expected: bool,
-        a: &Address<Circuit>,
-        b: &Address<Circuit>,
+        a: &Address,
+        b: &Address,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -89,15 +89,15 @@ mod tests {
             let first = Uniform::rand(&mut rng);
             let second = Uniform::rand(&mut rng);
 
-            let a = Address::<Circuit>::new(mode_a, console::Address::new(first));
-            let b = Address::<Circuit>::new(mode_b, console::Address::new(second));
+            let a = Address::new(mode_a, console::Address::new(first));
+            let b = Address::new(mode_b, console::Address::new(second));
             let expected = first.to_x_coordinate() < second.to_x_coordinate();
             let name = format!("{mode_a} {mode_b} {i}");
             check_is_less_than(&name, expected, &a, &b, num_constants, num_public, num_private, num_constraints);
 
             // Check `first` is not less than `first`.
-            let a = Address::<Circuit>::new(mode_a, console::Address::new(first));
-            let b = Address::<Circuit>::new(mode_b, console::Address::new(first));
+            let a = Address::new(mode_a, console::Address::new(first));
+            let b = Address::new(mode_b, console::Address::new(first));
             check_is_less_than(
                 "first !< first",
                 false,

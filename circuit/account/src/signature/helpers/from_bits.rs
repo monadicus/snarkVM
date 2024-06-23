@@ -12,29 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
 #[cfg(console)]
-impl<A: Aleo> FromBits for Signature<A> {
-    type Boolean = Boolean<A>;
+impl FromBits for Signature {
+    type Boolean = Boolean;
 
     /// Initializes a new signature from a list of **little-endian** bits.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
-        let scalar_size_in_bits = console::Scalar::<A::Network>::size_in_bits();
-        let compute_key_size_in_bits = console::ComputeKey::<A::Network>::size_in_bits();
+        let scalar_size_in_bits = console::Scalar::size_in_bits();
+        let compute_key_size_in_bits = console::ComputeKey::size_in_bits();
 
         let (challenge_start, challenge_end) = (0, scalar_size_in_bits);
         let (response_start, response_end) = (challenge_end, challenge_end + scalar_size_in_bits);
         let (compute_key_start, compute_key_end) = (response_end, response_end + compute_key_size_in_bits);
 
         let Some(challenge_bits) = bits_le.get(challenge_start..challenge_end) else {
-            A::halt("Unable to recover the signature challenge from (LE) bits")
+            Circuit::halt("Unable to recover the signature challenge from (LE) bits")
         };
         let Some(response_bits) = bits_le.get(response_start..response_end) else {
-            A::halt("Unable to recover the signature response from (LE) bits")
+            Circuit::halt("Unable to recover the signature response from (LE) bits")
         };
         let Some(compute_key_bits) = bits_le.get(compute_key_start..compute_key_end) else {
-            A::halt("Unable to recover the signature compute key from (LE) bits")
+            Circuit::halt("Unable to recover the signature compute key from (LE) bits")
         };
 
         Self {
@@ -46,21 +48,21 @@ impl<A: Aleo> FromBits for Signature<A> {
 
     /// Initializes a new signature from a list of **big-endian** bits.
     fn from_bits_be(bits_be: &[Self::Boolean]) -> Self {
-        let scalar_size_in_bits = console::Scalar::<A::Network>::size_in_bits();
-        let compute_key_size_in_bits = console::ComputeKey::<A::Network>::size_in_bits();
+        let scalar_size_in_bits = console::Scalar::size_in_bits();
+        let compute_key_size_in_bits = console::ComputeKey::size_in_bits();
 
         let (challenge_start, challenge_end) = (0, scalar_size_in_bits);
         let (response_start, response_end) = (challenge_end, challenge_end + scalar_size_in_bits);
         let (compute_key_start, compute_key_end) = (response_end, response_end + compute_key_size_in_bits);
 
         let Some(challenge_bits) = bits_be.get(challenge_start..challenge_end) else {
-            A::halt("Unable to recover the signature challenge from (BE) bits")
+            Circuit::halt("Unable to recover the signature challenge from (BE) bits")
         };
         let Some(response_bits) = bits_be.get(response_start..response_end) else {
-            A::halt("Unable to recover the signature response from (BE) bits")
+            Circuit::halt("Unable to recover the signature response from (BE) bits")
         };
         let Some(compute_key_bits) = bits_be.get(compute_key_start..compute_key_end) else {
-            A::halt("Unable to recover the signature compute key from (BE) bits")
+            Circuit::halt("Unable to recover the signature compute key from (BE) bits")
         };
 
         Self {
@@ -88,10 +90,10 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random signature.
             let expected = crate::helpers::generate_signature(i, rng);
-            let candidate = Signature::<CurrentAleo>::new(mode, expected).to_bits_le();
+            let candidate = Signature::new(mode, expected).to_bits_le();
 
             CurrentAleo::scope(&format!("{mode} {i}"), || {
-                let candidate = Signature::<CurrentAleo>::from_bits_le(&candidate);
+                let candidate = Signature::from_bits_le(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });
@@ -105,10 +107,10 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random signature.
             let expected = crate::helpers::generate_signature(i, rng);
-            let candidate = Signature::<CurrentAleo>::new(mode, expected).to_bits_be();
+            let candidate = Signature::new(mode, expected).to_bits_be();
 
             CurrentAleo::scope(&format!("{mode} {i}"), || {
-                let candidate = Signature::<CurrentAleo>::from_bits_be(&candidate);
+                let candidate = Signature::from_bits_be(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });

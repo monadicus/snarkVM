@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment> Adder for Boolean<E> {
-    type Carry = Boolean<E>;
-    type Sum = Boolean<E>;
+impl Adder for Boolean {
+    type Carry = Boolean;
+    type Sum = Boolean;
 
     /// Returns the sum of `self` and `other` as a sum bit and carry bit.
     fn adder(&self, other: &Self, carry: &Self) -> (Self::Sum, Self::Carry) {
@@ -42,9 +42,9 @@ mod tests {
         name: &str,
         expected_sum: bool,
         expected_carry: bool,
-        a: Boolean<Circuit>,
-        b: Boolean<Circuit>,
-        c: Boolean<Circuit>,
+        a: Boolean,
+        b: Boolean,
+        c: Boolean,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -72,9 +72,9 @@ mod tests {
         // false ADD false WITH false => (false, false)
         let expected_sum = false;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, false);
         check_adder("false ADD false WITH false", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -91,9 +91,9 @@ mod tests {
         // false ADD false WITH true => (true, false)
         let expected_sum = true;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, true);
         check_adder("false ADD false WITH true", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -110,9 +110,9 @@ mod tests {
         // false ADD true WITH false => (true, false)
         let expected_sum = true;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, false);
         check_adder("false ADD true WITH false", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -129,9 +129,9 @@ mod tests {
         // false ADD true WITH true => (false, true)
         let expected_sum = false;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, true);
         check_adder("false ADD true WITH true", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -148,9 +148,9 @@ mod tests {
         // true ADD false WITH false => (true, false)
         let expected_sum = true;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, false);
         check_adder("true ADD false WITH false", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -167,9 +167,9 @@ mod tests {
         // true ADD false WITH true => (false, true)
         let expected_sum = false;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, true);
         check_adder("true ADD false WITH true", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -186,9 +186,9 @@ mod tests {
         // true ADD true WITH false => (false, true)
         let expected_sum = false;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, false);
         check_adder("true ADD true WITH false", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -205,9 +205,9 @@ mod tests {
         // true ADD true WITH true => (true, true)
         let expected_sum = true;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, true);
         check_adder("true ADD true WITH true", expected_sum, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 

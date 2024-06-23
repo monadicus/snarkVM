@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::CONSOLE_EDWARDS_A;
+
 use super::*;
 
-impl<E: Environment> Double for Group<E> {
-    type Output = Group<E>;
+impl Double for Group {
+    type Output = Group;
 
     fn double(&self) -> Self::Output {
         // If `self` is constant *and* `self` is zero, then return `self`.
@@ -24,7 +26,7 @@ impl<E: Environment> Double for Group<E> {
         }
         // Otherwise, compute `self` + `self`.
         else {
-            let a = Field::constant(console::Field::new(E::EDWARDS_A));
+            let a = Field::constant(console::Field::new(CONSOLE_EDWARDS_A));
             let two = Field::one().double();
 
             // Compute xy, xx, yy, axx.
@@ -47,23 +49,23 @@ impl<E: Environment> Double for Group<E> {
             // x3 * (ax^2 + y^2) = 2xy
             let ax2_plus_y2 = &ax2 + &y2;
             let two_xy = xy.double();
-            E::enforce(|| (&x3, &ax2_plus_y2, two_xy));
+            Circuit::enforce(|| (&x3, &ax2_plus_y2, two_xy));
 
             // Ensure y3 is well-formed.
             // y3 * (2 - (ax^2 + y^2)) = y^2 - ax^2
             let y2_minus_a_x2 = y2 - ax2;
             let two_minus_ax2_minus_y2 = two - ax2_plus_y2;
-            E::enforce(|| (&y3, two_minus_ax2_minus_y2, y2_minus_a_x2));
+            Circuit::enforce(|| (&y3, two_minus_ax2_minus_y2, y2_minus_a_x2));
 
             Group { x: x3, y: y3 }
         }
     }
 }
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Enforce that double = 2 * self.
-    pub fn enforce_double(&self, double: &Group<E>) {
-        let a = Field::constant(console::Field::new(E::EDWARDS_A));
+    pub fn enforce_double(&self, double: &Group) {
+        let a = Field::constant(console::Field::new(CONSOLE_EDWARDS_A));
         let two = Field::one().double();
 
         // Compute xy, xx, yy, axx.
@@ -76,13 +78,13 @@ impl<E: Environment> Group<E> {
         // double.x * (ax^2 + y^2) = 2xy
         let ax2_plus_y2 = &ax2 + &y2;
         let two_xy = xy.double();
-        E::enforce(|| (&double.x, &ax2_plus_y2, two_xy));
+        Circuit::enforce(|| (&double.x, &ax2_plus_y2, two_xy));
 
         // Ensure double.y is the ordinate of the double of self.
         // double.y * (2 - (ax^2 + y^2)) = y^2 - ax^2
         let y2_minus_a_x2 = y2 - ax2;
         let two_minus_ax2_minus_y2 = two - ax2_plus_y2;
-        E::enforce(|| (&double.y, two_minus_ax2_minus_y2, y2_minus_a_x2));
+        Circuit::enforce(|| (&double.y, two_minus_ax2_minus_y2, y2_minus_a_x2));
     }
 }
 
@@ -99,11 +101,11 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let point: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let point: console::Group = Uniform::rand(&mut rng);
             let expected = point.double();
 
             // Constant variable
-            let affine = Group::<Circuit>::new(Mode::Constant, point);
+            let affine = Group::new(Mode::Constant, point);
 
             Circuit::scope(&format!("Constant {i}"), || {
                 let candidate = affine.double();
@@ -113,7 +115,7 @@ mod tests {
             Circuit::reset();
 
             // Public variable
-            let affine = Group::<Circuit>::new(Mode::Public, point);
+            let affine = Group::new(Mode::Public, point);
 
             Circuit::scope(&format!("Public {i}"), || {
                 let candidate = affine.double();
@@ -123,7 +125,7 @@ mod tests {
             Circuit::reset();
 
             // Private variable
-            let affine = Group::<Circuit>::new(Mode::Private, point);
+            let affine = Group::new(Mode::Private, point);
 
             Circuit::scope(&format!("Private {i}"), || {
                 let candidate = affine.double();
@@ -141,11 +143,11 @@ mod tests {
         let expected = a + a;
 
         // Constant
-        let candidate_a = Group::<Circuit>::new(Mode::Constant, a).double();
+        let candidate_a = Group::new(Mode::Constant, a).double();
         assert_eq!(expected, candidate_a.eject_value());
 
         // Private
-        let candidate_b = Group::<Circuit>::new(Mode::Private, a).double();
+        let candidate_b = Group::new(Mode::Private, a).double();
         assert_eq!(expected, candidate_b.eject_value());
     }
 }

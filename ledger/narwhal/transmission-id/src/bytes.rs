@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for TransmissionID<N> {
+impl FromBytes for TransmissionID {
     /// Reads the transmission ID from the buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         // Read the variant.
@@ -29,7 +29,7 @@ impl<N: Network> FromBytes for TransmissionID<N> {
     }
 }
 
-impl<N: Network> ToBytes for TransmissionID<N> {
+impl ToBytes for TransmissionID {
     /// Writes the transmission ID to the buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         // Write the transmission.

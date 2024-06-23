@@ -33,7 +33,7 @@ impl FinalizeGlobalState {
         let block_height = 0;
         let block_cumulative_weight = 0;
         let block_cumulative_proof_target = 0;
-        let previous_block_hash = N::BlockHash::default();
+        let previous_block_hash = BlockHash::default();
         // Return the new global state.
         Self::new::<N>(
             block_round,
@@ -51,7 +51,7 @@ impl FinalizeGlobalState {
         block_height: u32,
         block_cumulative_weight: u128,
         block_cumulative_proof_target: u128,
-        previous_block_hash: N::BlockHash,
+        previous_block_hash: BlockHash,
     ) -> Result<Self> {
         // Initialize the preimage.
         let preimage = to_bits_le![

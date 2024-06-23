@@ -17,6 +17,7 @@ mod commit_uncompressed;
 mod hash;
 mod hash_uncompressed;
 
+use console::ConsoleScalar;
 #[cfg(all(test, console))]
 use snarkvm_circuit_types::environment::{assert_count, assert_output_mode, assert_scope};
 
@@ -24,22 +25,22 @@ use crate::{Commit, CommitUncompressed, Hash, HashUncompressed};
 use snarkvm_circuit_types::prelude::*;
 
 /// Pedersen64 is an *additively-homomorphic* collision-resistant hash function that takes up to a 64-bit input.
-pub type Pedersen64<E> = Pedersen<E, 64>;
+pub type Pedersen64 = Pedersen<64>;
 /// Pedersen128 is an *additively-homomorphic* collision-resistant hash function that takes up to a 128-bit input.
-pub type Pedersen128<E> = Pedersen<E, 128>;
+pub type Pedersen128 = Pedersen<128>;
 
 /// Pedersen is a collision-resistant hash function that takes a variable-length input.
 /// The Pedersen hash function does *not* behave like a random oracle, see Poseidon for one.
-pub struct Pedersen<E: Environment, const NUM_BITS: u8> {
+pub struct Pedersen<const NUM_BITS: u8> {
     /// The base window for the Pedersen hash.
-    base_window: Vec<Group<E>>,
+    base_window: Vec<Group>,
     /// The random base window for the Pedersen commitment.
-    random_base: Vec<Group<E>>,
+    random_base: Vec<Group>,
 }
 
 #[cfg(console)]
-impl<E: Environment, const NUM_BITS: u8> Inject for Pedersen<E, NUM_BITS> {
-    type Primitive = console::Pedersen<E::Network, NUM_BITS>;
+impl<const NUM_BITS: u8> Inject for Pedersen<NUM_BITS> {
+    type Primitive = console::Pedersen<NUM_BITS>;
 
     /// Initializes a new instance of Pedersen with the given Pedersen variant.
     fn new(_mode: Mode, pedersen: Self::Primitive) -> Self {
@@ -49,7 +50,7 @@ impl<E: Environment, const NUM_BITS: u8> Inject for Pedersen<E, NUM_BITS> {
 
         // Initialize the random base.
         let random_base = Vec::constant(pedersen.random_base_window().iter().copied().collect());
-        assert_eq!(random_base.len(), E::ScalarField::size_in_bits());
+        assert_eq!(random_base.len(), ConsoleScalar::size_in_bits());
 
         Self { base_window, random_base }
     }
@@ -67,11 +68,11 @@ mod tests {
     fn check_setup<const NUM_BITS: u8>(num_constants: u64, num_public: u64, num_private: u64, num_constraints: u64) {
         for _ in 0..ITERATIONS {
             // Initialize the native Pedersen hash.
-            let native = console::Pedersen::<<Circuit as Environment>::Network, NUM_BITS>::setup(MESSAGE);
+            let native = console::Pedersen::<NUM_BITS>::setup(MESSAGE);
 
             Circuit::scope("Pedersen::setup", || {
                 // Perform the setup operation.
-                let circuit = Pedersen::<Circuit, NUM_BITS>::constant(native.clone());
+                let circuit = Pedersen::<NUM_BITS>::constant(native.clone());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
 
                 // Check for equivalency of the bases.

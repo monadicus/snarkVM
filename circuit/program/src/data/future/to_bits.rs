@@ -15,12 +15,12 @@
 use super::*;
 use snarkvm_circuit_types::U8;
 
-impl<A: Aleo> ToBits for Future<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for Future {
+    type Boolean = Boolean;
 
     /// Returns the circuit future as a list of **little-endian** bits.
     #[inline]
-    fn write_bits_le(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_le(&self, vec: &mut Vec<Boolean>) {
         // Write the bits for the program ID.
         let program_id_bits = self.program_id.to_bits_le();
         U16::constant(console::U16::new(program_id_bits.len() as u16)).write_bits_le(vec);
@@ -46,7 +46,7 @@ impl<A: Aleo> ToBits for Future<A> {
 
     /// Returns the circuit future as a list of **big-endian** bits.
     #[inline]
-    fn write_bits_be(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_be(&self, vec: &mut Vec<Boolean>) {
         // Write the bits for the program ID.
         let program_id_bits = self.program_id.to_bits_be();
         U16::constant(console::U16::new(program_id_bits.len() as u16)).write_bits_be(vec);

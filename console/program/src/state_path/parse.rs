@@ -85,16 +85,15 @@ mod tests {
         let mut rng = TestRng::default();
 
         // Ensure type and empty value fails.
-        assert!(StatePath::<CurrentNetwork>::parse(&format!("{STATE_PATH_PREFIX}1")).is_err());
-        assert!(StatePath::<CurrentNetwork>::parse("").is_err());
+        assert!(StatePath::parse(&format!("{STATE_PATH_PREFIX}1")).is_err());
+        assert!(StatePath::parse("").is_err());
 
         for _ in 0..ITERATIONS {
             // Sample the state path.
-            let expected =
-                crate::state_path::test_helpers::sample_global_state_path::<CurrentNetwork>(None, &mut rng).unwrap();
+            let expected = crate::state_path::test_helpers::sample_global_state_path(None, &mut rng).unwrap();
 
             let expected = format!("{expected}");
-            let (remainder, candidate) = StatePath::<CurrentNetwork>::parse(&expected).unwrap();
+            let (remainder, candidate) = StatePath::parse(&expected).unwrap();
             assert_eq!(format!("{expected}"), candidate.to_string());
             assert_eq!(STATE_PATH_PREFIX, candidate.to_string().split('1').next().unwrap());
             assert_eq!("", remainder);
@@ -107,8 +106,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample the state path.
-            let expected =
-                crate::state_path::test_helpers::sample_global_state_path::<CurrentNetwork>(None, &mut rng).unwrap();
+            let expected = crate::state_path::test_helpers::sample_global_state_path(None, &mut rng).unwrap();
 
             // Check the string representation.
             let candidate = format!("{expected}");
@@ -123,14 +121,13 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample the state path.
-            let expected =
-                crate::state_path::test_helpers::sample_global_state_path::<CurrentNetwork>(None, &mut rng).unwrap();
+            let expected = crate::state_path::test_helpers::sample_global_state_path(None, &mut rng).unwrap();
 
             let candidate = expected.to_string();
             assert_eq!(format!("{expected}"), candidate);
             assert_eq!(STATE_PATH_PREFIX, candidate.split('1').next().unwrap());
 
-            let candidate_recovered = StatePath::<CurrentNetwork>::from_str(&candidate.to_string()).unwrap();
+            let candidate_recovered = StatePath::from_str(&candidate.to_string()).unwrap();
             assert_eq!(expected, candidate_recovered);
         }
     }

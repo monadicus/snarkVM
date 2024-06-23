@@ -16,35 +16,35 @@ use super::*;
 use snarkvm_circuit_environment::{Circuit, CircuitType};
 
 #[allow(clippy::only_used_in_recursion)]
-impl<E: Environment> Pow<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Pow<Field> for Field {
+    type Output = Field;
 
-    fn pow(self, exponent: Field<E>) -> Self::Output {
+    fn pow(self, exponent: Field) -> Self::Output {
         self.pow(&exponent)
     }
 }
 
-impl<E: Environment> Pow<Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Pow<Field> for &Field {
+    type Output = Field;
 
-    fn pow(self, exponent: Field<E>) -> Self::Output {
+    fn pow(self, exponent: Field) -> Self::Output {
         self.pow(&exponent)
     }
 }
 
 #[allow(clippy::needless_borrow)]
-impl<E: Environment> Pow<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Pow<&Field> for Field {
+    type Output = Field;
 
-    fn pow(self, exponent: &Field<E>) -> Self::Output {
+    fn pow(self, exponent: &Field) -> Self::Output {
         (&self).pow(exponent)
     }
 }
 
-impl<E: Environment> Pow<&Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Pow<&Field> for &Field {
+    type Output = Field;
 
-    fn pow(self, exponent: &Field<E>) -> Self::Output {
+    fn pow(self, exponent: &Field) -> Self::Output {
         // Initialize the output.
         let mut output = Field::one();
 
@@ -73,8 +73,8 @@ impl<E: Environment> Pow<&Field<E>> for &Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn Pow<Field<E>, Output = Field<E>>> for Field<E> {
-    type Case = (CircuitType<Field<E>>, CircuitType<Field<E>>);
+impl Metrics<dyn Pow<Field, Output = Field>> for Field {
+    type Case = (CircuitType<Field>, CircuitType<Field>);
 
     fn count(case: &Self::Case) -> Count {
         match (case.0.mode(), case.1.mode()) {
@@ -83,16 +83,12 @@ impl<E: Environment> Metrics<dyn Pow<Field<E>, Output = Field<E>>> for Field<E> 
                 CircuitType::Constant(constant) => {
                     // Find the first instance (from the MSB) of a `true` bit.
                     let exponent_bits = constant.eject_value().to_bits_be();
-                    let index = exponent_bits
-                        .iter()
-                        .position(|b| *b)
-                        .unwrap_or(console::Field::<<Circuit as Environment>::Network>::size_in_bits() - 1);
+                    let index = exponent_bits.iter().position(|b| *b).unwrap_or(console::Field::size_in_bits() - 1);
 
                     // Calculate the number of squares and multiplications as follows:
                     //   `num_squares` := number of remaining bits after the first nonzero bit (from MSB -> LSB)
                     //   `num_multiplications` := number of `true` bits after the first nonzero bit (from MSB -> LSB)
-                    let num_squares =
-                        (console::Field::<<Circuit as Environment>::Network>::size_in_bits() - index - 1) as u64;
+                    let num_squares = (console::Field::size_in_bits() - index - 1) as u64;
                     let num_multiplications = exponent_bits[index + 1..].iter().map(|bit| *bit as u64).sum::<u64>();
 
                     // The number of private variables, constraints, and gates are both: num_squares + num_multiplications
@@ -100,7 +96,7 @@ impl<E: Environment> Metrics<dyn Pow<Field<E>, Output = Field<E>>> for Field<E> 
                     let num_constraints = num_private;
                     Count::is(253, 0, num_private, num_constraints)
                 }
-                _ => E::halt(format!(
+                _ => Circuit::halt(format!(
                     "Constant is required to determine the `Count` for {} POW {}",
                     case.0.mode(),
                     case.1.mode()
@@ -112,8 +108,8 @@ impl<E: Environment> Metrics<dyn Pow<Field<E>, Output = Field<E>>> for Field<E> 
     }
 }
 
-impl<E: Environment> OutputMode<dyn Pow<Field<E>, Output = Field<E>>> for Field<E> {
-    type Case = (CircuitType<Field<E>>, CircuitType<Field<E>>);
+impl OutputMode<dyn Pow<Field, Output = Field>> for Field {
+    type Case = (CircuitType<Field>, CircuitType<Field>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match (case.0.mode(), case.1.mode()) {
@@ -124,7 +120,7 @@ impl<E: Environment> OutputMode<dyn Pow<Field<E>, Output = Field<E>>> for Field<
                     value if value.is_one() => mode_a,
                     _ => Mode::Private,
                 },
-                _ => E::halt("The constant is required to determine the output mode of Public * Constant"),
+                _ => Circuit::halt("The constant is required to determine the output mode of Public * Constant"),
             },
             (_, _) => Mode::Private,
         }
@@ -138,12 +134,7 @@ mod tests {
 
     const ITERATIONS: u64 = 10;
 
-    fn check_pow(
-        name: &str,
-        expected: &console::Field<<Circuit as Environment>::Network>,
-        a: &Field<Circuit>,
-        b: &Field<Circuit>,
-    ) {
+    fn check_pow(name: &str, expected: &console::Field, a: &Field, b: &Field) {
         Circuit::scope(name, || {
             let candidate = a.pow(b);
             assert_eq!(*expected, candidate.eject_value(), "({}^{})", a.eject_value(), b.eject_value());
@@ -159,8 +150,8 @@ mod tests {
             let first = Uniform::rand(&mut rng);
             let second = Uniform::rand(&mut rng);
 
-            let a = Field::<Circuit>::new(mode_a, first);
-            let b = Field::<Circuit>::new(mode_b, second);
+            let a = Field::new(mode_a, first);
+            let b = Field::new(mode_b, second);
 
             let expected = first.pow(second);
 
@@ -169,47 +160,47 @@ mod tests {
 
             // Test one exponent.
             let name = format!("Pow: a ^ 1 {i}");
-            let a = Field::<Circuit>::new(mode_a, first);
-            let one = Field::<Circuit>::new(mode_b, console::Field::<<Circuit as Environment>::Network>::one());
+            let a = Field::new(mode_a, first);
+            let one = Field::new(mode_b, console::Field::one());
             check_pow(&name, &first, &a, &one);
 
             // Test one base.
             let name = format!("Pow: 1 ^ b {i}");
-            let one = Field::<Circuit>::new(mode_a, console::Field::<<Circuit as Environment>::Network>::one());
-            let b = Field::<Circuit>::new(mode_b, second);
-            check_pow(&name, &console::Field::<<Circuit as Environment>::Network>::one(), &one, &b);
+            let one = Field::new(mode_a, console::Field::one());
+            let b = Field::new(mode_b, second);
+            check_pow(&name, &console::Field::one(), &one, &b);
 
             // Test zero exponent.
             let name = format!("Pow: a ^ 0 {i}");
-            let a = Field::<Circuit>::new(mode_a, first);
-            let zero = Field::<Circuit>::new(mode_b, console::Field::<<Circuit as Environment>::Network>::zero());
-            check_pow(&name, &console::Field::<<Circuit as Environment>::Network>::one(), &a, &zero);
+            let a = Field::new(mode_a, first);
+            let zero = Field::new(mode_b, console::Field::zero());
+            check_pow(&name, &console::Field::one(), &a, &zero);
 
             // Test zero base.
             let name = format!("Mul: 0 ^ b {i}");
-            let zero = Field::<Circuit>::new(mode_a, console::Field::<<Circuit as Environment>::Network>::zero());
-            let b = Field::<Circuit>::new(mode_b, second);
-            check_pow(&name, &console::Field::<<Circuit as Environment>::Network>::zero(), &zero, &b);
+            let zero = Field::new(mode_a, console::Field::zero());
+            let b = Field::new(mode_b, second);
+            check_pow(&name, &console::Field::zero(), &zero, &b);
         }
 
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let zero = console::Field::zero();
+        let one = console::Field::one();
 
         // Test 0 ^ 0.
         let name = "Mul: 0 ^ 0";
-        check_pow(name, &one, &Field::<Circuit>::new(mode_a, zero), &Field::<Circuit>::new(mode_b, zero));
+        check_pow(name, &one, &Field::new(mode_a, zero), &Field::new(mode_b, zero));
 
         // Test 1 ^ 0.
         let name = "Pow: 1 ^ 0";
-        check_pow(name, &one, &Field::<Circuit>::new(mode_a, one), &Field::<Circuit>::new(mode_b, zero));
+        check_pow(name, &one, &Field::new(mode_a, one), &Field::new(mode_b, zero));
 
         // Test 0 ^ 1.
         let name = "Pow: 0 ^ 1";
-        check_pow(name, &zero, &Field::<Circuit>::new(mode_a, zero), &Field::<Circuit>::new(mode_b, one));
+        check_pow(name, &zero, &Field::new(mode_a, zero), &Field::new(mode_b, one));
 
         // Test 1 ^ 1.
         let name = "Pow: 1 ^ 1";
-        check_pow(name, &one, &Field::<Circuit>::new(mode_a, one), &Field::<Circuit>::new(mode_b, one));
+        check_pow(name, &one, &Field::new(mode_a, one), &Field::new(mode_b, one));
     }
 
     #[test]

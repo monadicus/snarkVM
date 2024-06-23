@@ -12,20 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> ComputeKey<A> {
+impl ComputeKey {
     /// Returns the account compute key for this account private key.
-    pub fn from_private_key(private_key: &PrivateKey<A>) -> Self {
+    pub fn from_private_key(private_key: &PrivateKey) -> Self {
         // Extract (sk_sig, r_sig).
         let (sk_sig, r_sig) = (private_key.sk_sig(), private_key.r_sig());
 
         // Compute `pk_sig` := G^sk_sig.
-        let pk_sig = A::g_scalar_multiply(sk_sig);
+        let pk_sig = AleoV0::g_scalar_multiply(sk_sig);
         // Compute `pr_sig` := G^r_sig.
-        let pr_sig = A::g_scalar_multiply(r_sig);
+        let pr_sig = AleoV0::g_scalar_multiply(r_sig);
         // Compute `sk_prf` := RO(G^sk_sig || G^r_sig).
-        let sk_prf = A::hash_to_scalar_psd4(&[pk_sig.to_x_coordinate(), pr_sig.to_x_coordinate()]);
+        let sk_prf = AleoV0::hash_to_scalar_psd4(&[pk_sig.to_x_coordinate(), pr_sig.to_x_coordinate()]);
 
         // Return the compute key.
         Self { pk_sig, pr_sig, sk_prf }
@@ -53,7 +55,7 @@ mod tests {
             let (private_key, compute_key, _view_key, _address) = generate_account()?;
 
             // Initialize the private key.
-            let private_key = PrivateKey::<Circuit>::new(mode, private_key);
+            let private_key = PrivateKey::new(mode, private_key);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = ComputeKey::from_private_key(&private_key);

@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Ternary for Boolean<E> {
-    type Boolean = Boolean<E>;
+impl Ternary for Boolean {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.
@@ -53,9 +53,9 @@ impl<E: Environment> Ternary for Boolean<E> {
             // Note: The constraint below will ensure `output` is either 0 or 1,
             // assuming `self` and `other` are well-formed (they are either 0 or 1).
             let output = Boolean(
-                E::new_variable(Mode::Private, match witness {
-                    true => E::BaseField::one(),
-                    false => E::BaseField::zero(),
+                Circuit::new_variable(Mode::Private, match witness {
+                    true => ConsoleField::one(),
+                    false => ConsoleField::zero(),
                 })
                 .into(),
             );
@@ -69,7 +69,7 @@ impl<E: Environment> Ternary for Boolean<E> {
             //
             // See `Field::ternary()` for the proof of correctness.
             //
-            E::enforce(|| (condition, (&first.0 - &second.0), (&output.0 - &second.0)));
+            Circuit::enforce(|| (condition, (&first.0 - &second.0), (&output.0 - &second.0)));
 
             output
         }
@@ -84,9 +84,9 @@ mod tests {
     fn check_ternary(
         name: &str,
         expected: bool,
-        condition: Boolean<Circuit>,
-        a: Boolean<Circuit>,
-        b: Boolean<Circuit>,
+        condition: Boolean,
+        a: Boolean,
+        b: Boolean,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -112,9 +112,9 @@ mod tests {
         for flag in [true, false] {
             for first in [true, false] {
                 for second in [true, false] {
-                    let condition = Boolean::<Circuit>::new(mode_condition, flag);
-                    let a = Boolean::<Circuit>::new(mode_a, first);
-                    let b = Boolean::<Circuit>::new(mode_b, second);
+                    let condition = Boolean::new(mode_condition, flag);
+                    let a = Boolean::new(mode_a, first);
+                    let b = Boolean::new(mode_b, second);
 
                     let name = format!("{mode_condition} ? {mode_a} : {mode_b}");
                     check_ternary(

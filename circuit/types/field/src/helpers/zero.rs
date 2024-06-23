@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_environment::Circuit;
+
 use super::*;
 
-impl<E: Environment> Zero for Field<E> {
-    type Boolean = Boolean<E>;
+impl Zero for Field {
+    type Boolean = Boolean;
 
     fn zero() -> Self {
-        E::zero().into()
+        Self::from(Circuit::zero())
     }
 
     fn is_zero(&self) -> Self::Boolean {
@@ -26,7 +28,7 @@ impl<E: Environment> Zero for Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn Zero<Boolean = Boolean<E>>> for Field<E> {
+impl Metrics<dyn Zero<Boolean = Boolean>> for Field {
     type Case = ();
 
     fn count(_parameter: &Self::Case) -> Count {
@@ -34,7 +36,7 @@ impl<E: Environment> Metrics<dyn Zero<Boolean = Boolean<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn Zero<Boolean = Boolean<E>>> for Field<E> {
+impl OutputMode<dyn Zero<Boolean = Boolean>> for Field {
     type Case = ();
 
     fn output_mode(_input: &Self::Case) -> Mode {
@@ -49,11 +51,11 @@ mod tests {
 
     #[test]
     fn test_zero() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
 
         Circuit::scope("Zero", || {
             assert_scope!(0, 0, 0, 0);
-            let candidate = Field::<Circuit>::zero();
+            let candidate = Field::zero();
             assert_eq!(zero, candidate.eject_value());
             assert_count!(Zero<Boolean>() => Field, &());
             assert_output_mode!(Zero<Boolean>() => Field, &(), candidate);
@@ -62,7 +64,7 @@ mod tests {
 
     #[test]
     fn test_is_zero() {
-        let candidate = Field::<Circuit>::zero();
+        let candidate = Field::zero();
         // Should equal 0.
         assert!(candidate.is_zero().eject_value());
         // Should not equal 1.

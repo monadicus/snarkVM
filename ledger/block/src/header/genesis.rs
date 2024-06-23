@@ -77,7 +77,7 @@ mod tests {
     /// Update this method if the contents of a block header have changed.
     fn get_expected_size<N: Network>() -> usize {
         // Previous state root, transactions root, finalize root, ratifications root, and solutions root size.
-        (Field::<N>::size_in_bytes() * 6)
+        (Field::size_in_bytes() * 6)
             // Metadata size.
             + 1 + 8 + 4 + 16 + 16 + 8 + 8 + 8 + 8 + 8
             // Add an additional 3 bytes for versioning.
@@ -89,7 +89,7 @@ mod tests {
         let rng = &mut TestRng::default();
 
         // Prepare the expected size.
-        let expected_size = get_expected_size::<CurrentNetwork>();
+        let expected_size = get_expected_size();
         // Prepare the genesis block header.
         let genesis_header = crate::header::test_helpers::sample_block_header(rng);
         // Ensure the size of the genesis block header is correct.

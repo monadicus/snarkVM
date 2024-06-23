@@ -22,17 +22,17 @@ use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field};
 
 #[derive(Clone)]
-pub enum Value<A: Aleo> {
+pub enum Value {
     /// A plaintext value.
-    Plaintext(Plaintext<A>),
+    Plaintext(Plaintext),
     /// A record value.
-    Record(Record<A, Plaintext<A>>),
+    Record(Record<Plaintext>),
     /// A future.
-    Future(Future<A>),
+    Future(Future),
 }
 
-impl<A: Aleo> Inject for Value<A> {
-    type Primitive = console::Value<A::Network>;
+impl Inject for Value {
+    type Primitive = console::Value;
 
     /// Initializes a circuit of the given mode and value.
     fn new(mode: Mode, value: Self::Primitive) -> Self {
@@ -44,8 +44,8 @@ impl<A: Aleo> Inject for Value<A> {
     }
 }
 
-impl<A: Aleo> Eject for Value<A> {
-    type Primitive = console::Value<A::Network>;
+impl Eject for Value {
+    type Primitive = console::Value;
 
     /// Ejects the mode of the circuit value.
     fn eject_mode(&self) -> Mode {

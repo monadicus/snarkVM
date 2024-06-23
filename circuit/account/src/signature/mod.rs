@@ -25,21 +25,21 @@ use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, Address, Boolean, Field, Scalar};
 
 #[derive(Clone)]
-pub struct Signature<A: Aleo> {
+pub struct Signature {
     /// The verifier challenge to check against.
-    challenge: Scalar<A>,
+    challenge: Scalar,
     /// The prover response to the challenge.
-    response: Scalar<A>,
+    response: Scalar,
     /// The compute key of the prover.
-    compute_key: ComputeKey<A>,
+    compute_key: ComputeKey,
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Signature<A> {
-    type Primitive = console::Signature<A::Network>;
+impl Inject for Signature {
+    type Primitive = console::Signature;
 
     /// Initializes a signature from the given mode and native signature.
-    fn new(mode: Mode, signature: Self::Primitive) -> Signature<A> {
+    fn new(mode: Mode, signature: Self::Primitive) -> Signature {
         Self {
             challenge: Scalar::new(mode, signature.challenge()),
             response: Scalar::new(mode, signature.response()),
@@ -48,26 +48,26 @@ impl<A: Aleo> Inject for Signature<A> {
     }
 }
 
-impl<A: Aleo> Signature<A> {
+impl Signature {
     /// Returns the challenge.
-    pub const fn challenge(&self) -> &Scalar<A> {
+    pub const fn challenge(&self) -> &Scalar {
         &self.challenge
     }
 
     /// Returns the response.
-    pub const fn response(&self) -> &Scalar<A> {
+    pub const fn response(&self) -> &Scalar {
         &self.response
     }
 
     /// Returns the account compute key.
-    pub const fn compute_key(&self) -> &ComputeKey<A> {
+    pub const fn compute_key(&self) -> &ComputeKey {
         &self.compute_key
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Signature<A> {
-    type Primitive = console::Signature<A::Network>;
+impl Eject for Signature {
+    type Primitive = console::Signature;
 
     /// Ejects the mode of the signature.
     fn eject_mode(&self) -> Mode {
@@ -81,7 +81,7 @@ impl<A: Aleo> Eject for Signature<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Parser for Signature<A> {
+impl Parser for Signature {
     /// Parses a string into a signature circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -98,7 +98,7 @@ impl<A: Aleo> Parser for Signature<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> FromStr for Signature<A> {
+impl FromStr for Signature {
     type Err = Error;
 
     /// Parses a string into a signature.
@@ -117,23 +117,23 @@ impl<A: Aleo> FromStr for Signature<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> TypeName for Signature<A> {
+impl TypeName for Signature {
     /// Returns the type name of the circuit as a string.
     #[inline]
     fn type_name() -> &'static str {
-        console::Signature::<A::Network>::type_name()
+        console::Signature::type_name()
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Debug for Signature<A> {
+impl Debug for Signature {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Display for Signature<A> {
+impl Display for Signature {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}.{}", self.eject_value(), self.eject_mode())
     }
@@ -167,7 +167,7 @@ mod tests {
             let signature = console::Signature::sign(&private_key, &message, rng)?;
 
             Circuit::scope(format!("New {mode}"), || {
-                let candidate = Signature::<Circuit>::new(mode, signature);
+                let candidate = Signature::new(mode, signature);
                 assert_eq!(signature, candidate.eject_value());
                 // TODO (howardwu): Resolve skipping the cost count checks for the burn-in round.
                 if i > 0 {

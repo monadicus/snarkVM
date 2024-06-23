@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> ToBits for Integer<E, I> {
-    type Boolean = Boolean<E>;
+impl<I: IntegerType> ToBits for Integer<I> {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *with* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -28,8 +28,8 @@ impl<E: Environment, I: IntegerType> ToBits for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> ToBits for &Integer<E, I> {
-    type Boolean = Boolean<E>;
+impl<I: IntegerType> ToBits for &Integer<I> {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *with* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -63,7 +63,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Integer::<Circuit, I>::new(mode, expected);
+            let candidate = Integer::<I>::new(mode, expected);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_le();
@@ -92,7 +92,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Integer::<Circuit, I>::new(mode, expected);
+            let candidate = Integer::<I>::new(mode, expected);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_be();
@@ -110,7 +110,7 @@ mod tests {
     }
 
     /// Checks that the field element, when converted to little-endian bits, is well-formed.
-    fn check_individual_bits_le<I: IntegerType>(candidate: Integer<Circuit, I>) {
+    fn check_individual_bits_le<I: IntegerType>(candidate: Integer<I>) {
         for (i, bit) in candidate.to_bits_le().iter().enumerate() {
             match i == 0 {
                 true => assert!(bit.eject_value()),
@@ -120,7 +120,7 @@ mod tests {
     }
 
     /// Checks that the field element, when converted to big-endian bits, is well-formed.
-    fn check_individual_bits_be<I: IntegerType>(candidate: Integer<Circuit, I>) {
+    fn check_individual_bits_be<I: IntegerType>(candidate: Integer<I>) {
         for (i, bit) in candidate.to_bits_be().iter().rev().enumerate() {
             match i == 0 {
                 true => assert!(bit.eject_value()),
@@ -129,16 +129,16 @@ mod tests {
         }
     }
 
-    fn test_individual_bits<I: IntegerType>(value: console::Integer<<Circuit as Environment>::Network, I>) {
+    fn test_individual_bits<I: IntegerType>(value: console::Integer<I>) {
         // Constant
-        check_individual_bits_le(Integer::<Circuit, I>::new(Mode::Constant, value));
-        check_individual_bits_be(Integer::<Circuit, I>::new(Mode::Constant, value));
+        check_individual_bits_le(Integer::<I>::new(Mode::Constant, value));
+        check_individual_bits_be(Integer::<I>::new(Mode::Constant, value));
         // Public
-        check_individual_bits_le(Integer::<Circuit, I>::new(Mode::Public, value));
-        check_individual_bits_be(Integer::<Circuit, I>::new(Mode::Public, value));
+        check_individual_bits_le(Integer::<I>::new(Mode::Public, value));
+        check_individual_bits_be(Integer::<I>::new(Mode::Public, value));
         // Private
-        check_individual_bits_le(Integer::<Circuit, I>::new(Mode::Private, value));
-        check_individual_bits_be(Integer::<Circuit, I>::new(Mode::Private, value));
+        check_individual_bits_le(Integer::<I>::new(Mode::Private, value));
+        check_individual_bits_be(Integer::<I>::new(Mode::Private, value));
     }
 
     // Tests for u8.

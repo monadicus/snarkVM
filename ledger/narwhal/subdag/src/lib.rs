@@ -159,7 +159,7 @@ impl<N: Network> Subdag<N> {
     }
 
     /// Returns the certificate IDs of the subdag (from earliest round to latest round).
-    pub fn certificate_ids(&self) -> impl Iterator<Item = Field<N>> + '_ {
+    pub fn certificate_ids(&self) -> impl Iterator<Item = Field> + '_ {
         self.values().flatten().map(BatchCertificate::id)
     }
 
@@ -176,13 +176,13 @@ impl<N: Network> Subdag<N> {
     }
 
     /// Returns the address of the leader.
-    pub fn leader_address(&self) -> Address<N> {
+    pub fn leader_address(&self) -> Address {
         // Retrieve the leader address from the leader certificate.
         self.leader_certificate().author()
     }
 
     /// Returns the transmission IDs of the subdag (from earliest round to latest round).
-    pub fn transmission_ids(&self) -> impl Iterator<Item = &TransmissionID<N>> {
+    pub fn transmission_ids(&self) -> impl Iterator<Item = &TransmissionID> {
         self.values().flatten().flat_map(BatchCertificate::transmission_ids)
     }
 
@@ -203,7 +203,7 @@ impl<N: Network> Subdag<N> {
     }
 
     /// Returns the subdag root of the certificates.
-    pub fn to_subdag_root(&self) -> Result<Field<N>> {
+    pub fn to_subdag_root(&self) -> Result<Field> {
         // Prepare the leaves.
         let leaves = cfg_iter!(self.subdag)
             .map(|(_, certificates)| {
@@ -309,8 +309,7 @@ mod tests {
     #[test]
     fn test_max_certificates() {
         // Determine the maximum number of certificates in a block.
-        let max_certificates_per_block =
-            BatchHeader::<CurrentNetwork>::MAX_GC_ROUNDS * BatchHeader::<CurrentNetwork>::MAX_CERTIFICATES as usize;
+        let max_certificates_per_block = BatchHeader::MAX_GC_ROUNDS * BatchHeader::MAX_CERTIFICATES as usize;
 
         // Note: The maximum number of certificates in a block must be able to be Merklized.
         assert!(

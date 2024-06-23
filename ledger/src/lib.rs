@@ -77,7 +77,7 @@ use time::OffsetDateTime;
 #[cfg(not(feature = "serial"))]
 use rayon::prelude::*;
 
-pub type RecordMap<N> = IndexMap<Field<N>, Record<N, Plaintext<N>>>;
+pub type RecordMap<N> = IndexMap<Field, Record<N, Plaintext<N>>>;
 
 #[derive(Copy, Clone, Debug)]
 pub enum RecordsFilter<N: Network> {
@@ -88,9 +88,9 @@ pub enum RecordsFilter<N: Network> {
     /// Returns only records associated with the account that are **not spent** with the graph key.
     Unspent,
     /// Returns all records associated with the account that are **spent** with the given private key.
-    SlowSpent(PrivateKey<N>),
+    SlowSpent(PrivateKey),
     /// Returns all records associated with the account that are **not spent** with the given private key.
-    SlowUnspent(PrivateKey<N>),
+    SlowUnspent(PrivateKey),
 }
 
 #[derive(Clone)]
@@ -100,7 +100,7 @@ pub struct Ledger<N: Network, C: ConsensusStorage<N>> {
     /// The genesis block.
     genesis_block: Block<N>,
     /// The current epoch hash.
-    current_epoch_hash: Arc<RwLock<Option<N::BlockHash>>>,
+    current_epoch_hash: Arc<RwLock<Option<BlockHash>>>,
     /// The current committee.
     current_committee: Arc<RwLock<Option<Committee<N>>>>,
     /// The current block.
@@ -223,7 +223,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the latest epoch hash.
-    pub fn latest_epoch_hash(&self) -> Result<N::BlockHash> {
+    pub fn latest_epoch_hash(&self) -> Result<BlockHash> {
         match self.current_epoch_hash.read().as_ref() {
             Some(epoch_hash) => Ok(*epoch_hash),
             None => self.get_epoch_hash(self.latest_height()),
@@ -246,7 +246,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the latest block hash.
-    pub fn latest_hash(&self) -> N::BlockHash {
+    pub fn latest_hash(&self) -> BlockHash {
         self.current_block.read().hash()
     }
 
@@ -266,7 +266,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns the latest block solutions root.
-    pub fn latest_solutions_root(&self) -> Field<N> {
+    pub fn latest_solutions_root(&self) -> Field {
         self.current_block.read().header().solutions_root()
     }
 
@@ -322,7 +322,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     /// The `priority_fee_in_microcredits` is an additional fee **on top** of the deployment fee.
     pub fn create_deploy<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         program: &Program<N>,
         priority_fee_in_microcredits: u64,
         query: Option<Query<N, C::BlockStorage>>,
@@ -345,8 +345,8 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     /// The `priority_fee_in_microcredits` is an additional fee **on top** of the execution fee.
     pub fn create_transfer<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
-        to: Address<N>,
+        private_key: &PrivateKey,
+        to: Address,
         amount_in_microcredits: u64,
         priority_fee_in_microcredits: u64,
         query: Option<Query<N, C::BlockStorage>>,
@@ -413,12 +413,12 @@ pub(crate) mod test_helpers {
         pub ledger: CurrentLedger,
         pub private_key: PrivateKey<CurrentNetwork>,
         pub view_key: ViewKey<CurrentNetwork>,
-        pub address: Address<CurrentNetwork>,
+        pub address: Address,
     }
 
     pub(crate) fn sample_test_env(rng: &mut (impl Rng + CryptoRng)) -> TestEnv {
         // Sample the genesis private key.
-        let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let private_key = PrivateKey::new(rng).unwrap();
         let view_key = ViewKey::try_from(&private_key).unwrap();
         let address = Address::try_from(&private_key).unwrap();
         // Sample the ledger.

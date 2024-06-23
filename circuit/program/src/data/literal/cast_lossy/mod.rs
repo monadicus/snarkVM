@@ -57,7 +57,7 @@ pub trait CastLossy<T: Sized = Self> {
     fn cast_lossy(&self) -> T;
 }
 
-impl<A: Aleo> Literal<A> {
+impl Literal {
     /// Casts the literal to the given literal type, with lossy truncation.
     ///
     /// This method makes a *best-effort* attempt to preserve all bits of information,
@@ -121,17 +121,17 @@ macro_rules! impl_cast_body {
 }
 
 /// Casts a boolean literal to the given literal type, with lossy truncation.
-fn cast_lossy_boolean_to_type<A: Aleo>(input: &Boolean<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_lossy_boolean_to_type(input: &Boolean, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(boolean, cast_lossy, input, to_type)
 }
 
 /// Casts a field literal to the given literal type, with lossy truncation.
-fn cast_lossy_field_to_type<A: Aleo>(input: &Field<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_lossy_field_to_type(input: &Field, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(field, cast_lossy, input, to_type)
 }
 
 /// Casts a group literal to the given literal type, with lossy truncation.
-fn cast_lossy_group_to_type<A: Aleo>(input: &Group<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_lossy_group_to_type(input: &Group, to_type: LiteralType) -> Result<Literal> {
     match to_type {
         LiteralType::Address => Ok(Literal::Address(Address::from_group(input.clone()))),
         LiteralType::Group => Ok(Literal::Group(input.clone())),
@@ -140,15 +140,12 @@ fn cast_lossy_group_to_type<A: Aleo>(input: &Group<A>, to_type: LiteralType) -> 
 }
 
 /// Casts an integer literal to the given literal type, with lossy truncation.
-fn cast_lossy_integer_to_type<A: Aleo, I: IntegerType>(
-    input: &Integer<A, I>,
-    to_type: LiteralType,
-) -> Result<Literal<A>> {
+fn cast_lossy_integer_to_type<I: IntegerType>(input: &Integer<I>, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(integer, cast_lossy, input, to_type)
 }
 
 /// Casts a scalar literal to the given literal type, with lossy truncation.
-fn cast_lossy_scalar_to_type<A: Aleo>(input: &Scalar<A>, to_type: LiteralType) -> Result<Literal<A>> {
+fn cast_lossy_scalar_to_type(input: &Scalar, to_type: LiteralType) -> Result<Literal> {
     impl_cast_body!(scalar, cast_lossy, input, to_type)
 }
 

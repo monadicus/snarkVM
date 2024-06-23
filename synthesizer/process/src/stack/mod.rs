@@ -79,12 +79,12 @@ pub type Assignments<N> = Arc<RwLock<Vec<(circuit::Assignment<<N as Environment>
 
 #[derive(Clone)]
 pub enum CallStack<N: Network> {
-    Authorize(Vec<Request<N>>, PrivateKey<N>, Authorization<N>),
-    Synthesize(Vec<Request<N>>, PrivateKey<N>, Authorization<N>),
-    CheckDeployment(Vec<Request<N>>, PrivateKey<N>, Assignments<N>, Option<u64>, Option<u64>),
+    Authorize(Vec<Request<N>>, PrivateKey, Authorization<N>),
+    Synthesize(Vec<Request<N>>, PrivateKey, Authorization<N>),
+    CheckDeployment(Vec<Request<N>>, PrivateKey, Assignments<N>, Option<u64>, Option<u64>),
     Evaluate(Authorization<N>),
     Execute(Authorization<N>, Arc<RwLock<Trace<N>>>),
-    PackageRun(Vec<Request<N>>, PrivateKey<N>, Assignments<N>),
+    PackageRun(Vec<Request<N>>, PrivateKey, Assignments<N>),
 }
 
 impl<N: Network> CallStack<N> {
@@ -310,7 +310,7 @@ impl<N: Network> StackProgram<N> for Stack<N> {
     /// Returns a value for the given value type.
     fn sample_value<R: Rng + CryptoRng>(
         &self,
-        burner_address: &Address<N>,
+        burner_address: &Address,
         value_type: &ValueType<N>,
         rng: &mut R,
     ) -> Result<Value<N>> {
@@ -334,9 +334,9 @@ impl<N: Network> StackProgram<N> for Stack<N> {
     /// Returns a record for the given record name, with the given burner address and nonce.
     fn sample_record<R: Rng + CryptoRng>(
         &self,
-        burner_address: &Address<N>,
+        burner_address: &Address,
         record_name: &Identifier<N>,
-        nonce: Group<N>,
+        nonce: Group,
         rng: &mut R,
     ) -> Result<Record<N, Plaintext<N>>> {
         // Sample a record.

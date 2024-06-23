@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+use snarkvm_circuit_network::AleoV0;
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> ToFields for Plaintext<A> {
-    type Field = Field<A>;
+impl ToFields for Plaintext {
+    type Field = Field;
 
     /// Returns this plaintext as a list of field elements.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -25,11 +29,11 @@ impl<A: Aleo> ToFields for Plaintext<A> {
         // During decryption, this final bit ensures we've reached the end.
         bits_le.push(Boolean::constant(true));
         // Pack the bits into field elements.
-        let fields = bits_le.chunks(A::BaseField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
+        let fields = bits_le.chunks(ConsoleField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= A::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoV0::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => fields,
-            false => A::halt("Plaintext exceeds maximum allowed size"),
+            false => Circuit::halt("Plaintext exceeds maximum allowed size"),
         }
     }
 }

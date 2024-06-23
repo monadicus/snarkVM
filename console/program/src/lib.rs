@@ -21,7 +21,7 @@
 extern crate enum_index_derive;
 
 pub use snarkvm_console_account::Signature;
-pub use snarkvm_console_network::Network;
+pub use snarkvm_console_network::{AleoNetwork, Network};
 pub use snarkvm_console_types::prelude::*;
 
 mod data;

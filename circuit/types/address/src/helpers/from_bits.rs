@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Address<E> {
-    type Boolean = Boolean<E>;
+impl FromBits for Address {
+    type Boolean = Boolean;
 
     /// Initializes an address from a list of little-endian bits *without* trailing zeros.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
@@ -40,11 +40,11 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
-            let candidate = Group::<Circuit>::new(mode, expected).to_bits_le();
+            let expected: console::Group = Uniform::rand(&mut rng);
+            let candidate = Group::new(mode, expected).to_bits_le();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Address::<Circuit>::from_bits_le(&candidate);
+                let candidate = Address::from_bits_le(&candidate);
                 assert_eq!(expected, *candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });
@@ -57,11 +57,11 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
-            let candidate = Group::<Circuit>::new(mode, expected).to_bits_be();
+            let expected: console::Group = Uniform::rand(&mut rng);
+            let candidate = Group::new(mode, expected).to_bits_be();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Address::<Circuit>::from_bits_be(&candidate);
+                let candidate = Address::from_bits_be(&candidate);
                 assert_eq!(expected, *candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });

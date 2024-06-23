@@ -159,7 +159,7 @@ impl<N: Network> Deployment<N> {
     }
 
     /// Returns the deployment ID.
-    pub fn to_deployment_id(&self) -> Result<Field<N>> {
+    pub fn to_deployment_id(&self) -> Result<Field> {
         Ok(*Transaction::deployment_tree(self, None)?.root())
     }
 }

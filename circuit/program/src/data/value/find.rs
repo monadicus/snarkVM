@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<A: Aleo> Value<A> {
+impl Value {
     /// Returns the value from the given path.
-    pub fn find<A0: Into<Access<A>> + Clone + Debug>(&self, path: &[A0]) -> Result<Self> {
+    pub fn find<A0: Into<Access> + Clone + Debug>(&self, path: &[A0]) -> Result<Self> {
         match self {
             Self::Plaintext(plaintext) => Ok(Self::Plaintext(plaintext.find(path)?)),
             Self::Record(record) => {

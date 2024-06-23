@@ -94,7 +94,7 @@ mod tests {
 
     #[test]
     fn test_bytes() -> Result<()> {
-        let expected = RecordType::<CurrentNetwork>::from_str(
+        let expected = RecordType::from_str(
             "record message:\n    owner as address.public;\n    first as field.constant;\n    second as field.public;",
         )?;
         let candidate = RecordType::from_bytes_le(&expected.to_bytes_le().unwrap()).unwrap();

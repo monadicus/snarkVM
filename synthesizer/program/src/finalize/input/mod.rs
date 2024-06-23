@@ -75,17 +75,17 @@ mod tests {
 
     #[test]
     fn test_input_type_name() -> Result<()> {
-        assert_eq!(Input::<CurrentNetwork>::type_name(), "input");
+        assert_eq!(Input::type_name(), "input");
         Ok(())
     }
 
     #[test]
     fn test_input_partial_ord() -> Result<()> {
-        let input1 = Input::<CurrentNetwork>::from_str("input r0 as field.public;")?;
-        let input2 = Input::<CurrentNetwork>::from_str("input r1 as field.public;")?;
+        let input1 = Input::from_str("input r0 as field.public;")?;
+        let input2 = Input::from_str("input r1 as field.public;")?;
 
-        let input3 = Input::<CurrentNetwork>::from_str("input r0 as signature.public;")?;
-        let input4 = Input::<CurrentNetwork>::from_str("input r1 as signature.public;")?;
+        let input3 = Input::from_str("input r0 as signature.public;")?;
+        let input4 = Input::from_str("input r1 as signature.public;")?;
 
         assert_eq!(input1.partial_cmp(&input1), Some(Ordering::Equal));
         assert_eq!(input1.partial_cmp(&input2), Some(Ordering::Less));

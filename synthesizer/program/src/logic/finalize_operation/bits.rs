@@ -35,47 +35,47 @@ impl<N: Network> FromBits for FinalizeOperation<N> {
         match variant {
             0 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::InitializeMapping(mapping_id))
             }
             1 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Read the key ID.
-                let key_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let key_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Read the value ID.
-                let value_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let value_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::InsertKeyValue(mapping_id, key_id, value_id))
             }
             2 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Read the key ID.
-                let key_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let key_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Read the value ID.
-                let value_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let value_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::UpdateKeyValue(mapping_id, key_id, value_id))
             }
             3 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Read the key ID.
-                let key_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let key_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::RemoveKeyValue(mapping_id, key_id))
             }
             4 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::ReplaceMapping(mapping_id))
             }
             5 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_le(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_le(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::RemoveMapping(mapping_id))
             }
@@ -103,47 +103,47 @@ impl<N: Network> FromBits for FinalizeOperation<N> {
         match variant {
             0 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::InitializeMapping(mapping_id))
             }
             1 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Read the key ID.
-                let key_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let key_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Read the value ID.
-                let value_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let value_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::InsertKeyValue(mapping_id, key_id, value_id))
             }
             2 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Read the key ID.
-                let key_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let key_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Read the value ID.
-                let value_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let value_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::UpdateKeyValue(mapping_id, key_id, value_id))
             }
             3 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Read the key ID.
-                let key_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let key_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::RemoveKeyValue(mapping_id, key_id))
             }
             4 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::ReplaceMapping(mapping_id))
             }
             5 => {
                 // Read the mapping ID.
-                let mapping_id = Field::from_bits_be(&next_bits(Field::<N>::size_in_bits())?)?;
+                let mapping_id = Field::from_bits_be(&next_bits(Field::size_in_bits())?)?;
                 // Return the finalize operation.
                 Ok(Self::RemoveMapping(mapping_id))
             }

@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo, Private: Visibility<A>> Record<A, Private> {
+impl<Private: Visibility> Record<Private> {
     /// A helper method to derive the tag from the `sk_tag` and commitment.
-    pub fn tag(sk_tag: Field<A>, commitment: Field<A>) -> Field<A> {
+    pub fn tag(sk_tag: Field, commitment: Field) -> Field {
         // Compute the tag as `Hash(sk_tag, commitment)`.
-        A::hash_psd2(&[sk_tag, commitment])
+        AleoV0::hash_psd2(&[sk_tag, commitment])
     }
 }

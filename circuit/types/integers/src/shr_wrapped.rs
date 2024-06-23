@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType, M: Magnitude> ShrWrapped<Integer<E, M>> for Integer<E, I> {
+impl<I: IntegerType, M: Magnitude> ShrWrapped<Integer<M>> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn shr_wrapped(&self, rhs: &Integer<E, M>) -> Self::Output {
+    fn shr_wrapped(&self, rhs: &Integer<M>) -> Self::Output {
         // Determine the variable mode.
         if self.is_constant() && rhs.is_constant() {
             // Note: Casting `rhs` to `u32` is safe since `Magnitude`s can only be `u8`, `u16`, or `u32`.
@@ -56,7 +56,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShrWrapped<Integer<E, M>> for
                 bits_le.reverse();
 
                 Self { bits_le, phantom: Default::default() }
-            } else if 2 * I::BITS < E::BaseField::size_in_data_bits() as u64 {
+            } else if 2 * I::BITS < ConsoleField::size_in_data_bits() as u64 {
                 if I::is_signed() {
                     // Initialize the msb of `self` as a field element.
                     let msb_field = Field::from((**self.msb()).clone());
@@ -66,7 +66,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShrWrapped<Integer<E, M>> for
                     let mut result = Field::from_bits_be(&self.bits_le);
 
                     // Calculate the result directly in the field.
-                    // Since 2^{rhs} < Integer::MAX and 2 * I::BITS is less than E::BaseField::size in data bits,
+                    // Since 2^{rhs} < Integer::MAX and 2 * I::BITS is less than ConsoleField::size in data bits,
                     // we know that the operation will not overflow the field modulus.
                     for (i, bit) in rhs.bits_le[..first_upper_bit_index].iter().enumerate() {
                         // In each iteration, multiply the result by 2^(1<<i), if the bit is set.
@@ -93,7 +93,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShrWrapped<Integer<E, M>> for
                     // Initialize the result from the reversed bits of `self`.
                     let mut result = Field::from_bits_be(&self.bits_le);
                     // Calculate the result directly in the field.
-                    // Since 2^{rhs} < Integer::MAX and 2 * I::BITS is less than E::BaseField::size in data bits,
+                    // Since 2^{rhs} < Integer::MAX and 2 * I::BITS is less than ConsoleField::size in data bits,
                     // we know that the operation will not overflow the field modulus.
                     for (i, bit) in rhs.bits_le[..first_upper_bit_index].iter().enumerate() {
                         // In each iteration, multiply the result by 2^(1<<i), if the bit is set.
@@ -155,9 +155,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> ShrWrapped<Integer<E, M>> for
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Metrics<dyn ShrWrapped<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType, M: Magnitude> Metrics<dyn ShrWrapped<Integer<M>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     #[rustfmt::skip]
@@ -165,21 +163,21 @@ impl<E: Environment, I: IntegerType, M: Magnitude> Metrics<dyn ShrWrapped<Intege
         // A quick hack that matches `(u8 -> 0, u16 -> 1, u32 -> 2, u64 -> 3, u128 -> 4)`.
         let index = |num_bits: u64| match [8, 16, 32, 64, 128].iter().position(|&bits| bits == num_bits) {
             Some(index) => index as u64,
-            None => E::halt(format!("Integer of {num_bits} bits is not supported")),
+            None => Circuit::halt(format!("Integer of {num_bits} bits is not supported")),
         };
 
         match (case.0, case.1) {
             (Mode::Constant, Mode::Constant) => Count::is(I::BITS, 0, 0, 0),
             (_, Mode::Constant) => Count::is(0, 0, 0, 0),
             (Mode::Constant, _) => {
-                match (I::is_signed(), 2 * I::BITS < E::BaseField::size_in_data_bits() as u64) {
+                match (I::is_signed(), 2 * I::BITS < ConsoleField::size_in_data_bits() as u64) {
                     (true, true) => Count::less_than((2 * I::BITS) + index(I::BITS) + 6, 0, (2 * I::BITS) + index(I::BITS) + 3, (2 * I::BITS) + index(I::BITS) + 4),
                     (true, false) => Count::less_than(5 * I::BITS, 0, 1622, 1633),
                     (false, true) => Count::less_than((2 * I::BITS) + index(I::BITS) + 3, 0, (2 * I::BITS) + index(I::BITS) + 3, (2 * I::BITS) + index(I::BITS) + 4),
                     (false, false) => Count::less_than(I::BITS, 0, 849, 857),
                 }
             }
-            (_, _) => match (I::is_signed(), 2 * I::BITS < E::BaseField::size_in_data_bits() as u64) {
+            (_, _) => match (I::is_signed(), 2 * I::BITS < ConsoleField::size_in_data_bits() as u64) {
                 (true, true) => Count::is(6 + 2 * index(I::BITS), 0, (2 * I::BITS) + index(I::BITS) + 3, (2 * I::BITS) + index(I::BITS) + 4),
                 (true, false) => Count::is(4 * I::BITS, 0, 1622, 1633),
                 (false, true) => Count::is(3 + index(I::BITS), 0, (2 * I::BITS) + index(I::BITS) + 3, (2 * I::BITS) + index(I::BITS) + 4),
@@ -189,9 +187,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> Metrics<dyn ShrWrapped<Intege
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> OutputMode<dyn ShrWrapped<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType, M: Magnitude> OutputMode<dyn ShrWrapped<Integer<M>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -214,14 +210,14 @@ mod tests {
 
     fn check_shr<I: IntegerType + RefUnwindSafe, M: Magnitude + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, M>,
+        first: console::Integer<I>,
+        second: console::Integer<M>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
         let expected = first.wrapping_shr(second.to_u32().unwrap());
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, M>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<M>::new(mode_b, second);
         Circuit::scope(name, || {
             let candidate = a.shr_wrapped(&b);
             assert_eq!(expected, *candidate.eject_value());
@@ -255,8 +251,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in M::MIN..=M::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, M>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<M>::new(second);
 
                 let name = format!("Shr: ({first} >> {second})");
                 check_shr::<I, M>(&name, first, second, mode_a, mode_b);

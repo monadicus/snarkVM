@@ -52,7 +52,7 @@ fn sample_stack(
     let opcode = opcode.to_string();
 
     // Initialize the function name.
-    let function_name = Identifier::<CurrentNetwork>::from_str("run")?;
+    let function_name = Identifier::from_str("run")?;
 
     // Initialize the registers.
     let r0 = Register::Locator(0);

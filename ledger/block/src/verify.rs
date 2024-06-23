@@ -33,10 +33,10 @@ impl<N: Network> Block<N> {
         previous_committee_lookback: &Committee<N>,
         current_committee_lookback: &Committee<N>,
         current_puzzle: &Puzzle<N>,
-        current_epoch_hash: N::BlockHash,
+        current_epoch_hash: BlockHash,
         current_timestamp: i64,
         ratified_finalize_operations: Vec<FinalizeOperation<N>>,
-    ) -> Result<(Vec<SolutionID<N>>, Vec<N::TransactionID>)> {
+    ) -> Result<(Vec<SolutionID>, Vec<TransactionID>)> {
         // Ensure the block hash is correct.
         self.verify_hash(previous_block.height(), previous_block.hash())?;
 
@@ -112,7 +112,7 @@ impl<N: Network> Block<N> {
 
 impl<N: Network> Block<N> {
     /// Ensures the block hash is correct.
-    fn verify_hash(&self, previous_height: u32, previous_hash: N::BlockHash) -> Result<(), Error> {
+    fn verify_hash(&self, previous_height: u32, previous_hash: BlockHash) -> Result<(), Error> {
         // Determine the expected height.
         let expected_height = previous_height.saturating_add(1);
 
@@ -138,7 +138,7 @@ impl<N: Network> Block<N> {
             *self.block_hash == candidate_hash,
             "Block hash is incorrect in block {expected_height} (found '{}', expected '{}')",
             self.block_hash,
-            Into::<N::BlockHash>::into(candidate_hash)
+            Into::<BlockHash>::into(candidate_hash)
         );
         // Return success.
         Ok(())
@@ -151,7 +151,7 @@ impl<N: Network> Block<N> {
         previous_height: u32,
         previous_committee_lookback: &Committee<N>,
         current_committee_lookback: &Committee<N>,
-    ) -> Result<(u64, u32, i64, Vec<SolutionID<N>>, Vec<N::TransactionID>)> {
+    ) -> Result<(u64, u32, i64, Vec<SolutionID>, Vec<TransactionID>)> {
         // Note: Do not remove this. This ensures that all blocks after genesis are quorum blocks.
         #[cfg(not(any(test, feature = "test")))]
         ensure!(self.authority.is_quorum(), "The next block must be a quorum block");
@@ -305,7 +305,7 @@ impl<N: Network> Block<N> {
         &self,
         previous_block: &Block<N>,
         current_puzzle: &Puzzle<N>,
-        current_epoch_hash: N::BlockHash,
+        current_epoch_hash: BlockHash,
     ) -> Result<(u128, u128, u64, u64, u64, i64, u64, u64)> {
         let height = self.height();
         let timestamp = self.timestamp();
@@ -497,7 +497,7 @@ impl<N: Network> Block<N> {
 }
 impl<N: Network> Block<N> {
     /// Computes the transactions root for the block.
-    fn compute_transactions_root(&self) -> Result<Field<N>> {
+    fn compute_transactions_root(&self) -> Result<Field> {
         match self.transactions.to_transactions_root() {
             Ok(transactions_root) => Ok(transactions_root),
             Err(error) => bail!("Failed to compute the transactions root for block {} - {error}", self.height()),
@@ -505,7 +505,7 @@ impl<N: Network> Block<N> {
     }
 
     /// Computes the finalize root for the block.
-    fn compute_finalize_root(&self, ratified_finalize_operations: Vec<FinalizeOperation<N>>) -> Result<Field<N>> {
+    fn compute_finalize_root(&self, ratified_finalize_operations: Vec<FinalizeOperation<N>>) -> Result<Field> {
         match self.transactions.to_finalize_root(ratified_finalize_operations) {
             Ok(finalize_root) => Ok(finalize_root),
             Err(error) => bail!("Failed to compute the finalize root for block {} - {error}", self.height()),
@@ -513,7 +513,7 @@ impl<N: Network> Block<N> {
     }
 
     /// Computes the ratifications root for the block.
-    fn compute_ratifications_root(&self) -> Result<Field<N>> {
+    fn compute_ratifications_root(&self) -> Result<Field> {
         match self.ratifications.to_ratifications_root() {
             Ok(ratifications_root) => Ok(ratifications_root),
             Err(error) => bail!("Failed to compute the ratifications root for block {} - {error}", self.height()),
@@ -521,12 +521,12 @@ impl<N: Network> Block<N> {
     }
 
     /// Computes the solutions root for the block.
-    fn compute_solutions_root(&self) -> Result<Field<N>> {
+    fn compute_solutions_root(&self) -> Result<Field> {
         self.solutions.to_solutions_root()
     }
 
     /// Computes the subdag root for the block.
-    fn compute_subdag_root(&self) -> Result<Field<N>> {
+    fn compute_subdag_root(&self) -> Result<Field> {
         match self.authority {
             Authority::Quorum(ref subdag) => subdag.to_subdag_root(),
             Authority::Beacon(_) => Ok(Field::zero()),
@@ -537,11 +537,11 @@ impl<N: Network> Block<N> {
     /// Returns the IDs of the transactions and solutions that should already exist in the ledger.
     pub(super) fn check_subdag_transmissions(
         subdag: &Subdag<N>,
-        solutions: &Option<PuzzleSolutions<N>>,
-        aborted_solution_ids: &[SolutionID<N>],
+        solutions: &Option<PuzzleSolutions>,
+        aborted_solution_ids: &[SolutionID],
         transactions: &Transactions<N>,
-        aborted_transaction_ids: &[N::TransactionID],
-    ) -> Result<(Vec<SolutionID<N>>, Vec<N::TransactionID>)> {
+        aborted_transaction_ids: &[TransactionID],
+    ) -> Result<(Vec<SolutionID>, Vec<TransactionID>)> {
         // Prepare an iterator over the solution IDs.
         let mut solutions = solutions.as_ref().map(|s| s.deref()).into_iter().flatten().peekable();
         // Prepare an iterator over the unconfirmed transaction IDs.

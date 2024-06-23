@@ -31,12 +31,12 @@ lazy_static! {
 pub struct TestnetV0;
 
 impl Environment for TestnetV0 {
-    type Affine = <Console as Environment>::Affine;
-    type BigInteger = <Console as Environment>::BigInteger;
-    type Field = <Console as Environment>::Field;
-    type PairingCurve = <Console as Environment>::PairingCurve;
-    type Projective = <Console as Environment>::Projective;
-    type Scalar = <Console as Environment>::Scalar;
+    type Affine = ConsoleAffine;
+    type BigInteger = ConsoleBigInteger;
+    type Field = ConsoleField;
+    type PairingCurve = ConsolePairingCurve;
+    type Projective = ConsoleProjective;
+    type Scalar = ConsoleScalar;
 
     /// The coefficient `A` of the twisted Edwards curve.
     const EDWARDS_A: Self::Field = Console::EDWARDS_A;

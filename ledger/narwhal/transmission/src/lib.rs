@@ -30,15 +30,15 @@ pub enum Transmission<N: Network> {
     Ratification,
     /// A prover solution.
     /// Attention: Observe that the solution is encapsulated in `Data`, and thus possibly unchecked.
-    Solution(Data<Solution<N>>),
+    Solution(Data<Solution>),
     /// A transaction.
     /// Attention: Observe that the transaction is encapsulated in `Data`, and thus possibly unchecked.
     Transaction(Data<Transaction<N>>),
 }
 
-impl<N: Network> From<Solution<N>> for Transmission<N> {
+impl<N: Network> From<Solution> for Transmission<N> {
     /// Converts the prover solution into a transmission.
-    fn from(solution: Solution<N>) -> Self {
+    fn from(solution: Solution) -> Self {
         Self::Solution(Data::Object(solution))
     }
 }
@@ -50,9 +50,9 @@ impl<N: Network> From<Transaction<N>> for Transmission<N> {
     }
 }
 
-impl<N: Network> From<Data<Solution<N>>> for Transmission<N> {
+impl<N: Network> From<Data<Solution>> for Transmission<N> {
     /// Converts the prover solution into a transmission.
-    fn from(solution: Data<Solution<N>>) -> Self {
+    fn from(solution: Data<Solution>) -> Self {
         Self::Solution(solution)
     }
 }

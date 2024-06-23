@@ -14,22 +14,22 @@
 
 use super::*;
 
-impl<E: Environment, const DEPTH: u8> MerklePath<E, DEPTH> {
+impl<const DEPTH: u8> MerklePath<DEPTH> {
     /// Returns `true` if the Merkle path is valid for the given root and leaf.
-    pub fn verify<LH: LeafHash<E, Hash = PH::Hash>, PH: PathHash<E, Hash = Field<E>>>(
+    pub fn verify<LH: LeafHash<Hash = PH::Hash>, PH: PathHash<Hash = Field>>(
         &self,
         leaf_hasher: &LH,
         path_hasher: &PH,
         root: &PH::Hash,
         leaf: &LH::Leaf,
-    ) -> Boolean<E> {
+    ) -> Boolean {
         // Ensure the leaf index is within the tree depth.
         if (*self.leaf_index.eject_value() as u128) >= (1u128 << DEPTH) {
-            E::halt("Found an out of bounds Merkle leaf index")
+            Circuit::halt("Found an out of bounds Merkle leaf index")
         }
         // Ensure the path length matches the expected depth.
         else if self.siblings.len() != DEPTH as usize {
-            E::halt("Found an incorrect Merkle path length")
+            Circuit::halt("Found an incorrect Merkle path length")
         }
 
         // Initialize a tracker for the current hash, by computing the leaf hash to start.
@@ -70,16 +70,14 @@ mod tests {
     macro_rules! check_verify {
         ($lh:ident, $ph:ident, $mode:ident, $depth:expr, $num_inputs:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize the leaf hasher.
-            let native_leaf_hasher =
-                snarkvm_console_algorithms::$lh::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit_leaf_hasher = $lh::<Circuit>::constant(native_leaf_hasher.clone());
+            let native_leaf_hasher = snarkvm_console_algorithms::$lh::setup(DOMAIN)?;
+            let circuit_leaf_hasher = $lh::constant(native_leaf_hasher.clone());
 
             let mut rng = TestRng::default();
 
             // Initialize the path hasher.
-            let native_path_hasher =
-                snarkvm_console_algorithms::$ph::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit_path_hasher = $ph::<Circuit>::constant(native_path_hasher.clone());
+            let native_path_hasher = snarkvm_console_algorithms::$ph::setup(DOMAIN)?;
+            let circuit_path_hasher = $ph::constant(native_path_hasher.clone());
 
             for i in 0..ITERATIONS {
                 // Determine the number of leaves.
@@ -100,7 +98,7 @@ mod tests {
                     let merkle_path = merkle_tree.prove(index, merkle_leaf)?;
 
                     // Initialize the Merkle path.
-                    let path = MerklePath::<Circuit, $depth>::new(Mode::$mode, merkle_path.clone());
+                    let path = MerklePath::<$depth>::new(Mode::$mode, merkle_path.clone());
                     assert_eq!(merkle_path, path.eject_value());
                     // Initialize the Merkle root.
                     let root = Field::new(Mode::$mode, *merkle_tree.root());

@@ -131,7 +131,7 @@ mod tests {
 
     const ITERATIONS: u32 = 1000;
 
-    fn check_bytes(expected: Plaintext<CurrentNetwork>) -> Result<()> {
+    fn check_bytes(expected: Plaintext) -> Result<()> {
         // Check the byte representation.
         let expected_bytes = expected.to_bytes_le()?;
         assert_eq!(expected, Plaintext::read_le(&expected_bytes[..])?);
@@ -143,83 +143,44 @@ mod tests {
         let rng = &mut TestRng::default();
 
         for _ in 0..ITERATIONS {
-            let private_key = snarkvm_console_account::PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = snarkvm_console_account::PrivateKey::new(rng)?;
 
             // Address
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::Address(Address::try_from(private_key)?),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::Address(Address::try_from(private_key)?), Default::default()))?;
             // Boolean
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::Boolean(Boolean::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::Boolean(Boolean::new(Uniform::rand(rng))), Default::default()))?;
             // Field
-            check_bytes(Plaintext::Literal(Literal::<CurrentNetwork>::Field(Uniform::rand(rng)), Default::default()))?;
+            check_bytes(Plaintext::Literal(Literal::Field(Uniform::rand(rng)), Default::default()))?;
             // Group
-            check_bytes(Plaintext::Literal(Literal::<CurrentNetwork>::Group(Uniform::rand(rng)), Default::default()))?;
+            check_bytes(Plaintext::Literal(Literal::Group(Uniform::rand(rng)), Default::default()))?;
             // I8
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::I8(I8::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::I8(I8::new(Uniform::rand(rng))), Default::default()))?;
             // I16
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::I16(I16::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::I16(I16::new(Uniform::rand(rng))), Default::default()))?;
             // I32
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::I32(I32::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::I32(I32::new(Uniform::rand(rng))), Default::default()))?;
             // I64
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::I64(I64::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::I64(I64::new(Uniform::rand(rng))), Default::default()))?;
             // I128
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::I128(I128::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::I128(I128::new(Uniform::rand(rng))), Default::default()))?;
             // U8
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::U8(U8::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::U8(U8::new(Uniform::rand(rng))), Default::default()))?;
             // U16
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::U16(U16::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::U16(U16::new(Uniform::rand(rng))), Default::default()))?;
             // U32
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::U32(U32::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::U32(U32::new(Uniform::rand(rng))), Default::default()))?;
             // U64
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::U64(U64::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::U64(U64::new(Uniform::rand(rng))), Default::default()))?;
             // U128
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::U128(U128::new(Uniform::rand(rng))),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::U128(U128::new(Uniform::rand(rng))), Default::default()))?;
             // Scalar
-            check_bytes(Plaintext::Literal(Literal::<CurrentNetwork>::Scalar(Uniform::rand(rng)), Default::default()))?;
+            check_bytes(Plaintext::Literal(Literal::Scalar(Uniform::rand(rng)), Default::default()))?;
             // String
-            check_bytes(Plaintext::Literal(
-                Literal::<CurrentNetwork>::String(StringType::rand(rng)),
-                Default::default(),
-            ))?;
+            check_bytes(Plaintext::Literal(Literal::String(StringType::rand(rng)), Default::default()))?;
         }
 
         // Check the struct manually.
-        let expected = Plaintext::<CurrentNetwork>::from_str(
+        let expected = Plaintext::from_str(
             "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah, token_amount: 100u64 }",
         )?;
 
@@ -228,7 +189,7 @@ mod tests {
         assert_eq!(expected, Plaintext::read_le(&expected_bytes[..])?);
 
         // Check the array manually.
-        let expected = Plaintext::<CurrentNetwork>::from_str("[ 1u8, 2u8, 3u8, 4u8, 5u8, 6u8, 7u8, 8u8, 9u8, 10u8 ]")?;
+        let expected = Plaintext::from_str("[ 1u8, 2u8, 3u8, 4u8, 5u8, 6u8, 7u8, 8u8, 9u8, 10u8 ]")?;
 
         // Check the byte representation.
         let expected_bytes = expected.to_bytes_le()?;

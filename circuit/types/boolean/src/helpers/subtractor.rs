@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<E: Environment> Subtractor for Boolean<E> {
-    type Borrow = Boolean<E>;
-    type Difference = Boolean<E>;
+impl Subtractor for Boolean {
+    type Borrow = Boolean;
+    type Difference = Boolean;
 
     /// Returns the difference of `self` and `other` as a difference bit and borrow bit.
     fn subtractor(&self, other: &Self, borrow: &Self) -> (Self::Difference, Self::Borrow) {
@@ -42,9 +42,9 @@ mod tests {
         name: &str,
         expected_difference: bool,
         expected_borrow: bool,
-        a: Boolean<Circuit>,
-        b: Boolean<Circuit>,
-        c: Boolean<Circuit>,
+        a: Boolean,
+        b: Boolean,
+        c: Boolean,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -72,9 +72,9 @@ mod tests {
         // false SUB false WITH false => (false, false)
         let expected_difference = false;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, false);
         check_subtractor("false SUB false WITH false", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -91,9 +91,9 @@ mod tests {
         // false SUB false WITH true => (true, true)
         let expected_difference = true;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, true);
         check_subtractor("false SUB false WITH true", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -110,9 +110,9 @@ mod tests {
         // false SUB true WITH false => (true, true)
         let expected_difference = true;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, false);
         check_subtractor("false SUB true WITH false", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -129,9 +129,9 @@ mod tests {
         // false SUB true WITH true => (false, true)
         let expected_difference = false;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, false);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, false);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, true);
         check_subtractor("false SUB true WITH true", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -148,9 +148,9 @@ mod tests {
         // true SUB false WITH false => (true, false)
         let expected_difference = true;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, false);
         check_subtractor("true SUB false WITH false", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -167,9 +167,9 @@ mod tests {
         // true SUB false WITH true => (false, false)
         let expected_difference = false;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, false);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, false);
+        let c = Boolean::new(mode_c, true);
         check_subtractor("true SUB false WITH true", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -186,9 +186,9 @@ mod tests {
         // true SUB true WITH false => (false, false)
         let expected_difference = false;
         let expected_carry = false;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, false);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, false);
         check_subtractor("true SUB true WITH false", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 
@@ -205,9 +205,9 @@ mod tests {
         // true SUB true WITH true => (true, true)
         let expected_difference = true;
         let expected_carry = true;
-        let a = Boolean::<Circuit>::new(mode_a, true);
-        let b = Boolean::<Circuit>::new(mode_b, true);
-        let c = Boolean::<Circuit>::new(mode_c, true);
+        let a = Boolean::new(mode_a, true);
+        let b = Boolean::new(mode_b, true);
+        let c = Boolean::new(mode_c, true);
         check_subtractor("true SUB true WITH true", expected_difference, expected_carry, a, b, c, num_constants, num_public, num_private, num_constraints);
     }
 

@@ -27,11 +27,11 @@ use crate::{Elligator2, Hash, HashMany, HashToGroup, HashToScalar, PRF};
 use snarkvm_circuit_types::{environment::prelude::*, Field, Group, Scalar};
 
 /// Poseidon2 is a cryptographic hash function of input rate 2.
-pub type Poseidon2<E> = Poseidon<E, 2>;
+pub type Poseidon2 = Poseidon<2>;
 /// Poseidon4 is a cryptographic hash function of input rate 4.
-pub type Poseidon4<E> = Poseidon<E, 4>;
+pub type Poseidon4 = Poseidon<4>;
 /// Poseidon8 is a cryptographic hash function of input rate 8.
-pub type Poseidon8<E> = Poseidon<E, 8>;
+pub type Poseidon8 = Poseidon<8>;
 
 const CAPACITY: usize = 1;
 
@@ -51,25 +51,25 @@ pub enum DuplexSpongeMode {
 }
 
 #[derive(Clone)]
-pub struct Poseidon<E: Environment, const RATE: usize> {
+pub struct Poseidon<const RATE: usize> {
     /// The domain separator for the Poseidon hash function.
-    domain: Field<E>,
+    domain: Field,
     /// The number of rounds in a full-round operation.
     full_rounds: usize,
     /// The number of rounds in a partial-round operation.
     partial_rounds: usize,
     /// The exponent used in S-boxes.
-    alpha: Field<E>,
+    alpha: Field,
     /// The additive round keys. These are added before each MDS matrix application to make it an affine shift.
     /// They are indexed by `ark[round_number][state_element_index]`
-    ark: Vec<Vec<Field<E>>>,
+    ark: Vec<Vec<Field>>,
     /// The Maximally Distance Separating (MDS) matrix.
-    mds: Vec<Vec<Field<E>>>,
+    mds: Vec<Vec<Field>>,
 }
 
 #[cfg(console)]
-impl<E: Environment, const RATE: usize> Inject for Poseidon<E, RATE> {
-    type Primitive = console::Poseidon<E::Network, RATE>;
+impl<const RATE: usize> Inject for Poseidon<RATE> {
+    type Primitive = console::Poseidon<RATE>;
 
     fn new(_mode: Mode, poseidon: Self::Primitive) -> Self {
         // Initialize the domain separator.

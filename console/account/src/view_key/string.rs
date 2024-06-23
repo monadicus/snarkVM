@@ -48,9 +48,6 @@ impl fmt::Display for ViewKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -60,7 +57,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new view key.
-            let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+            let private_key = PrivateKey::new(&mut rng)?;
             let expected = ViewKey::try_from(private_key)?;
 
             // Check the string representation.

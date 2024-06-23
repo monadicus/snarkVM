@@ -19,12 +19,12 @@ impl<N: Network> Transaction<N> {
     pub const MAX_TRANSITIONS: usize = usize::pow(2, TRANSACTION_DEPTH as u32);
 
     /// Returns the transaction root, by computing the root for a Merkle tree of the transition IDs.
-    pub fn to_root(&self) -> Result<Field<N>> {
+    pub fn to_root(&self) -> Result<Field> {
         Ok(*self.to_tree()?.root())
     }
 
     /// Returns the Merkle leaf for the given ID of a function or transition in the transaction.
-    pub fn to_leaf(&self, id: &Field<N>) -> Result<TransactionLeaf<N>> {
+    pub fn to_leaf(&self, id: &Field) -> Result<TransactionLeaf<N>> {
         match self {
             Self::Deploy(_, _, deployment, fee) => {
                 // Check if the ID is the transition ID for the fee.

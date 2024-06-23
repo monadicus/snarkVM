@@ -196,23 +196,22 @@ mod tests {
             let rng = &mut TestRng::default();
 
             let scalar = Scalar::one();
-            let integer: Integer<CurrentEnvironment, $type> = scalar.cast_lossy();
-            assert_eq!(integer, Integer::<CurrentEnvironment, $type>::one());
+            let integer: Integer<$type> = scalar.cast_lossy();
+            assert_eq!(integer, Integer::<$type>::one());
 
             let scalar = Scalar::zero();
-            let integer: Integer<CurrentEnvironment, $type> = scalar.cast_lossy();
-            assert_eq!(integer, Integer::<CurrentEnvironment, $type>::zero());
+            let integer: Integer<$type> = scalar.cast_lossy();
+            assert_eq!(integer, Integer::<$type>::zero());
 
             for _ in 0..ITERATIONS {
                 // Sample a random scalar.
                 let scalar = Scalar::rand(rng);
                 // Perform the operation.
-                let candidate: Integer<CurrentEnvironment, $type> = scalar.cast_lossy();
+                let candidate: Integer<$type> = scalar.cast_lossy();
                 // Compare the result against the least significant bits of the scalar.
-                let expected = Integer::<CurrentEnvironment, $type>::from_bits_le(
-                    &scalar.to_bits_le()[..usize::try_from(<$type>::BITS).unwrap()],
-                )
-                .unwrap();
+                let expected =
+                    Integer::<$type>::from_bits_le(&scalar.to_bits_le()[..usize::try_from(<$type>::BITS).unwrap()])
+                        .unwrap();
                 assert_eq!(expected, candidate);
             }
         };

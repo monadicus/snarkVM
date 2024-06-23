@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for Address<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for Address {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self.x` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -28,8 +28,8 @@ impl<E: Environment> ToBits for Address<E> {
     }
 }
 
-impl<E: Environment> ToBits for &Address<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for &Address {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self.x` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -57,7 +57,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Address::<Circuit>::from_group(Group::new(mode, expected));
+            let candidate = Address::from_group(Group::new(mode, expected));
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_le();
@@ -80,7 +80,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Address::<Circuit>::from_group(Group::new(mode, expected));
+            let candidate = Address::from_group(Group::new(mode, expected));
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_bits_be();

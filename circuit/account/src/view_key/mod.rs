@@ -25,21 +25,21 @@ use snarkvm_circuit_types::{environment::prelude::*, Address, Scalar};
 use core::ops::Deref;
 
 /// The account view key is able to decrypt records and ciphertext.
-pub struct ViewKey<A: Aleo>(Scalar<A>, OnceCell<Address<A>>);
+pub struct ViewKey(Scalar, OnceCell<Address>);
 
 #[cfg(console)]
-impl<A: Aleo> Inject for ViewKey<A> {
-    type Primitive = console::ViewKey<A::Network>;
+impl Inject for ViewKey {
+    type Primitive = console::ViewKey;
 
     /// Initializes an account view key from the given mode and scalar field element.
-    fn new(mode: Mode, view_key: Self::Primitive) -> ViewKey<A> {
+    fn new(mode: Mode, view_key: Self::Primitive) -> ViewKey {
         Self(Scalar::new(mode, *view_key), Default::default())
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for ViewKey<A> {
-    type Primitive = console::ViewKey<A::Network>;
+impl Eject for ViewKey {
+    type Primitive = console::ViewKey;
 
     /// Ejects the mode of the view key.
     fn eject_mode(&self) -> Mode {
@@ -52,8 +52,8 @@ impl<A: Aleo> Eject for ViewKey<A> {
     }
 }
 
-impl<A: Aleo> Deref for ViewKey<A> {
-    type Target = Scalar<A>;
+impl Deref for ViewKey {
+    type Target = Scalar;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -81,7 +81,7 @@ mod tests {
             let (_private_key, _compute_key, view_key, _address) = generate_account()?;
 
             Circuit::scope(format!("New {mode}"), || {
-                let candidate = ViewKey::<Circuit>::new(mode, view_key);
+                let candidate = ViewKey::new(mode, view_key);
                 assert_eq!(mode, candidate.eject_mode());
                 assert_eq!(view_key, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);

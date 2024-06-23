@@ -14,15 +14,15 @@
 
 use super::*;
 
-impl<A: Aleo> ToFields for Ciphertext<A> {
-    type Field = Field<A>;
+impl ToFields for Ciphertext {
+    type Field = Field;
 
     /// Returns this ciphertext as a list of field elements.
     fn to_fields(&self) -> Vec<Self::Field> {
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match self.0.len() <= A::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match self.0.len() <= AleoV0::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => self.0.clone(),
-            false => A::halt("Ciphertext exceeds maximum allowed size"),
+            false => Circuit::halt("Ciphertext exceeds maximum allowed size"),
         }
     }
 }

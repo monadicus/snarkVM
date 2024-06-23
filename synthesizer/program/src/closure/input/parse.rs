@@ -101,19 +101,19 @@ mod tests {
     #[test]
     fn test_input_parse() -> Result<()> {
         // Literal
-        let input = Input::<CurrentNetwork>::parse("input r0 as field;").unwrap().1;
-        assert_eq!(input.register(), &Register::<CurrentNetwork>::Locator(0));
-        assert_eq!(input.register_type(), &RegisterType::<CurrentNetwork>::from_str("field")?);
+        let input = Input::parse("input r0 as field;").unwrap().1;
+        assert_eq!(input.register(), &Register::Locator(0));
+        assert_eq!(input.register_type(), &RegisterType::from_str("field")?);
 
         // Struct
-        let input = Input::<CurrentNetwork>::parse("input r1 as signature;").unwrap().1;
-        assert_eq!(input.register(), &Register::<CurrentNetwork>::Locator(1));
-        assert_eq!(input.register_type(), &RegisterType::<CurrentNetwork>::from_str("signature")?);
+        let input = Input::parse("input r1 as signature;").unwrap().1;
+        assert_eq!(input.register(), &Register::Locator(1));
+        assert_eq!(input.register_type(), &RegisterType::from_str("signature")?);
 
         // Record
-        let input = Input::<CurrentNetwork>::parse("input r2 as token.record;").unwrap().1;
-        assert_eq!(input.register(), &Register::<CurrentNetwork>::Locator(2));
-        assert_eq!(input.register_type(), &RegisterType::<CurrentNetwork>::from_str("token.record")?);
+        let input = Input::parse("input r2 as token.record;").unwrap().1;
+        assert_eq!(input.register(), &Register::Locator(2));
+        assert_eq!(input.register_type(), &RegisterType::from_str("token.record")?);
 
         Ok(())
     }
@@ -121,15 +121,15 @@ mod tests {
     #[test]
     fn test_input_display() -> Result<()> {
         // Literal
-        let input = Input::<CurrentNetwork>::from_str("input r0 as field;")?;
+        let input = Input::from_str("input r0 as field;")?;
         assert_eq!("input r0 as field;", input.to_string());
 
         // Struct
-        let input = Input::<CurrentNetwork>::from_str("input r1 as signature;")?;
+        let input = Input::from_str("input r1 as signature;")?;
         assert_eq!("input r1 as signature;", input.to_string());
 
         // Record
-        let input = Input::<CurrentNetwork>::parse("input r2 as token.record;").unwrap().1;
+        let input = Input::parse("input r2 as token.record;").unwrap().1;
         assert_eq!(format!("{input}"), "input r2 as token.record;");
 
         Ok(())

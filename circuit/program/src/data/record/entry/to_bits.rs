@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<A: Aleo> ToBits for Entry<A, Plaintext<A>> {
-    type Boolean = Boolean<A>;
+impl ToBits for Entry<Plaintext> {
+    type Boolean = Boolean;
 
     /// Returns this entry as a list of **little-endian** bits.
-    fn write_bits_le(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_le(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Constant(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(false)]),
             Self::Public(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(true)]),
@@ -32,7 +32,7 @@ impl<A: Aleo> ToBits for Entry<A, Plaintext<A>> {
     }
 
     /// Returns this entry as a list of **big-endian** bits.
-    fn write_bits_be(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_be(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Constant(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(false)]),
             Self::Public(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(true)]),
@@ -46,11 +46,11 @@ impl<A: Aleo> ToBits for Entry<A, Plaintext<A>> {
     }
 }
 
-impl<A: Aleo> ToBits for Entry<A, Ciphertext<A>> {
-    type Boolean = Boolean<A>;
+impl ToBits for Entry<Ciphertext> {
+    type Boolean = Boolean;
 
     /// Returns this entry as a list of **little-endian** bits.
-    fn write_bits_le(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_le(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Constant(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(false)]),
             Self::Public(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(true)]),
@@ -64,7 +64,7 @@ impl<A: Aleo> ToBits for Entry<A, Ciphertext<A>> {
     }
 
     /// Returns this entry as a list of **big-endian** bits.
-    fn write_bits_be(&self, vec: &mut Vec<Boolean<A>>) {
+    fn write_bits_be(&self, vec: &mut Vec<Boolean>) {
         match self {
             Self::Constant(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(false)]),
             Self::Public(..) => vec.extend_from_slice(&[Boolean::constant(false), Boolean::constant(true)]),

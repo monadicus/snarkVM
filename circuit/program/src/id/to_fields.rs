@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> ToFields for ProgramID<A> {
-    type Field = Field<A>;
+impl ToFields for ProgramID {
+    type Field = Field;
 
     /// Returns this program ID as a list of field elements.
     fn to_fields(&self) -> Vec<Self::Field> {

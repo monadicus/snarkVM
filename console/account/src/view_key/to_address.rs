@@ -24,9 +24,6 @@ impl ViewKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     const ITERATIONS: u64 = 1000;
 
@@ -36,7 +33,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new view key and address.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng)?;
+            let private_key = PrivateKey::new(rng)?;
             let view_key = ViewKey::try_from(private_key)?;
             let address = Address::try_from(private_key)?;
 

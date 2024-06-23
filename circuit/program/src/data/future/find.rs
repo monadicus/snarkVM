@@ -14,18 +14,18 @@
 
 use super::*;
 
-impl<A: Aleo> Future<A> {
+impl Future {
     /// Returns the value from the given path.
-    pub fn find<A0: Into<Access<A>> + Clone + Debug>(&self, path: &[A0]) -> Result<Value<A>> {
+    pub fn find<A0: Into<Access> + Clone + Debug>(&self, path: &[A0]) -> Result<Value> {
         // Ensure the path is not empty.
         ensure!(!path.is_empty(), "Attempted to find an argument with an empty path.");
 
         // A helper enum to track the the argument.
-        enum ArgumentRefType<'a, A: Aleo> {
+        enum ArgumentRefType<'a> {
             /// A plaintext type.
-            Plaintext(&'a Plaintext<A>),
+            Plaintext(&'a Plaintext),
             /// A future.
-            Future(&'a Future<A>),
+            Future(&'a Future),
         }
 
         // Initialize a value starting from the top-level.

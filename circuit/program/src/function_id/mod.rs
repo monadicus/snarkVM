@@ -13,16 +13,12 @@
 // limitations under the License.
 
 use crate::{Identifier, ProgramID};
-use snarkvm_circuit_network::Aleo;
+use snarkvm_circuit_network::{Aleo, AleoV0};
 use snarkvm_circuit_types::{environment::prelude::*, Field, U16};
 
 /// Compute the function ID as `Hash(network_id, program_id.len(), program_id, function_name.len(), function_name)`.
-pub fn compute_function_id<A: Aleo>(
-    network_id: &U16<A>,
-    program_id: &ProgramID<A>,
-    function_name: &Identifier<A>,
-) -> Field<A> {
-    A::hash_bhp1024(
+pub fn compute_function_id(network_id: &U16, program_id: &ProgramID, function_name: &Identifier) -> Field {
+    AleoV0::hash_bhp1024(
         &(
             network_id,
             program_id.name().size_in_bits(),

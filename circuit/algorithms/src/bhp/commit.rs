@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Commit for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Input = Boolean<E>;
-    type Output = Field<E>;
-    type Randomizer = Scalar<E>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Commit for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Input = Boolean;
+    type Output = Field;
+    type Randomizer = Scalar;
 
     /// Returns the BHP commitment of the given input and randomizer as a field element.
     fn commit(&self, input: &[Self::Input], randomizer: &Self::Randomizer) -> Self::Output {
@@ -46,8 +46,8 @@ mod tests {
         use console::Commit as C;
 
         // Initialize BHP.
-        let native = console::BHP::<<Circuit as Environment>::Network, NUM_WINDOWS, WINDOW_SIZE>::setup(DOMAIN)?;
-        let circuit = BHP::<Circuit, NUM_WINDOWS, WINDOW_SIZE>::new(Mode::Constant, native.clone());
+        let native = console::BHP::<NUM_WINDOWS, WINDOW_SIZE>::setup(DOMAIN)?;
+        let circuit = BHP::<NUM_WINDOWS, WINDOW_SIZE>::new(Mode::Constant, native.clone());
         // Determine the number of inputs.
         let num_input_bits = NUM_WINDOWS as usize * WINDOW_SIZE as usize * BHP_CHUNK_SIZE;
 
@@ -61,9 +61,9 @@ mod tests {
             // Compute the expected commitment.
             let expected = native.commit(&input, &randomizer).expect("Failed to commit native input");
             // Prepare the circuit input.
-            let circuit_input: Vec<Boolean<_>> = Inject::new(mode, input);
+            let circuit_input: Vec<Boolean> = Inject::new(mode, input);
             // Prepare the circuit randomizer.
-            let circuit_randomizer: Scalar<_> = Inject::new(mode, randomizer);
+            let circuit_randomizer: Scalar = Inject::new(mode, randomizer);
 
             Circuit::scope(format!("BHP {mode} {i}"), || {
                 // Perform the hash operation.

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for Solution<N> {
+impl Serialize for Solution {
     /// Serializes the solution to a JSON-string or buffer.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -29,7 +29,7 @@ impl<N: Network> Serialize for Solution<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for Solution<N> {
+impl<'de> Deserialize<'de> for Solution {
     /// Deserializes the solution from a JSON-string or buffer.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
@@ -49,14 +49,12 @@ impl<'de, N: Network> Deserialize<'de> for Solution<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use console::{account::PrivateKey, network::MainnetV0};
-
-    type CurrentNetwork = MainnetV0;
+    use console::account::PrivateKey;
 
     #[test]
     fn test_serde_json() -> Result<()> {
         let mut rng = TestRng::default();
-        let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+        let private_key = PrivateKey::new(&mut rng)?;
         let address = Address::try_from(private_key)?;
 
         // Sample a new solution.
@@ -79,7 +77,7 @@ mod tests {
     #[test]
     fn test_bincode() -> Result<()> {
         let mut rng = TestRng::default();
-        let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+        let private_key = PrivateKey::new(&mut rng)?;
         let address = Address::try_from(private_key)?;
 
         // Sample a new solution.

@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_environment::Circuit;
+
 use super::*;
 
-impl<E: Environment> ToUpperBits for Field<E> {
-    type Boolean = Boolean<E>;
+impl ToUpperBits for Field {
+    type Boolean = Boolean;
 
     ///
     /// Outputs the upper `k` bits of an `n`-bit field element in little-endian representation.
@@ -33,20 +35,20 @@ impl<E: Environment> ToUpperBits for Field<E> {
     ///
     fn to_upper_bits_be(&self, k: usize) -> Vec<Self::Boolean> {
         // Ensure the size is within the allowed capacity.
-        if k > E::BaseField::size_in_bits() {
-            E::halt(format!(
+        if k > ConsoleField::size_in_bits() {
+            Circuit::halt(format!(
                 "Attempted to extract {k} bits from a {}-bit base field element",
-                E::BaseField::size_in_bits()
+                ConsoleField::size_in_bits()
             ))
         }
 
         // Construct a vector of `Boolean`s comprising the bits of the field value.
-        let bits: Vec<Boolean<E>> = witness!(|self| self.to_bits_be().into_iter().take(k).collect());
+        let bits: Vec<Boolean> = witness!(|self| self.to_bits_be().into_iter().take(k).collect());
 
         // Reconstruct the bits as a linear combination representing the original field value.
         let mut accumulator = Field::zero();
         let mut coefficient = Field::one();
-        for _ in 0..(E::BaseField::size_in_bits() - k) {
+        for _ in 0..(ConsoleField::size_in_bits() - k) {
             coefficient = coefficient.double();
         }
         for bit in bits.iter().rev() {
@@ -56,13 +58,13 @@ impl<E: Environment> ToUpperBits for Field<E> {
 
         // Ensure value * 1 == (2^n * b_n + ... + 2^{n-k} * b_{n-k})
         // and ensures that b_{n-k-1}, ..., b_0 are all equal to zero.
-        E::assert_eq(self, accumulator);
+        Circuit::assert_eq(self, accumulator);
 
         bits
     }
 }
 
-impl<E: Environment> Metrics<dyn ToUpperBits<Boolean = Boolean<E>>> for Field<E> {
+impl Metrics<dyn ToUpperBits<Boolean = Boolean>> for Field {
     type Case = (Mode, u64);
 
     fn count(case: &Self::Case) -> Count {
@@ -73,7 +75,7 @@ impl<E: Environment> Metrics<dyn ToUpperBits<Boolean = Boolean<E>>> for Field<E>
     }
 }
 
-impl<E: Environment> OutputMode<dyn ToUpperBits<Boolean = Boolean<E>>> for Field<E> {
+impl OutputMode<dyn ToUpperBits<Boolean = Boolean>> for Field {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -95,7 +97,7 @@ mod tests {
     fn check_to_upper_k_bits_be<I: IntegerType + Unsigned>(
         mode: Mode,
     ) {
-        let size_in_bits = console::Field::<<Circuit as Environment>::Network>::size_in_bits();
+        let size_in_bits = console::Field::size_in_bits();
         let size_in_bytes = (size_in_bits + 7) / 8;
         let num_leading_zero_bits = (size_in_bytes * 8) - size_in_bits;
 
@@ -126,7 +128,7 @@ mod tests {
                     bits_be_with_leading_zeros.resize(size_in_bytes * 8, false); // Pad up to field byte-aligned size.
                     bits_be_with_leading_zeros
                 };
-                Field::<Circuit>::new(mode, console::Field::from_bits_be(&bits_be).unwrap())
+                Field::new(mode, console::Field::from_bits_be(&bits_be).unwrap())
             };
 
             Circuit::scope(&format!("{mode} {i}"), || {

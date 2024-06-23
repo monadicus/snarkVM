@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> Literal<A> {
+impl Literal {
     /// Initializes a new literal from a list of little-endian bits *without* trailing zeros.
-    pub fn from_bits_le(variant: &U8<A>, bits_le: &[Boolean<A>]) -> Self {
+    pub fn from_bits_le(variant: &U8, bits_le: &[Boolean]) -> Self {
         let literal = bits_le;
         match *variant.eject_value() {
             0 => Literal::Address(Address::from_bits_le(literal)),
@@ -36,12 +38,14 @@ impl<A: Aleo> Literal<A> {
             14 => Literal::Scalar(Scalar::from_bits_le(literal)),
             15 => Literal::Signature(Box::new(Signature::from_bits_le(literal))),
             16 => Literal::String(StringType::from_bits_le(literal)),
-            17.. => A::halt(format!("Failed to initialize literal variant {} from bits (LE)", variant.eject_value())),
+            17.. => {
+                Circuit::halt(format!("Failed to initialize literal variant {} from bits (LE)", variant.eject_value()))
+            }
         }
     }
 
     /// Initializes a new literal from a list of big-endian bits *without* leading zeros.
-    pub fn from_bits_be(variant: &U8<A>, bits_be: &[Boolean<A>]) -> Self {
+    pub fn from_bits_be(variant: &U8, bits_be: &[Boolean]) -> Self {
         let literal = bits_be;
         match *variant.eject_value() {
             0 => Literal::Address(Address::from_bits_be(literal)),
@@ -61,7 +65,9 @@ impl<A: Aleo> Literal<A> {
             14 => Literal::Scalar(Scalar::from_bits_be(literal)),
             15 => Literal::Signature(Box::new(Signature::from_bits_be(literal))),
             16 => Literal::String(StringType::from_bits_be(literal)),
-            17.. => A::halt(format!("Failed to initialize literal variant {} from bits (BE))", variant.eject_value())),
+            17.. => {
+                Circuit::halt(format!("Failed to initialize literal variant {} from bits (BE))", variant.eject_value()))
+            }
         }
     }
 }
@@ -74,7 +80,7 @@ mod tests {
 
     const ITERATIONS: u32 = 1000;
 
-    fn check_serialization(expected: Literal<Circuit>) {
+    fn check_serialization(expected: Literal) {
         // Success cases.
         assert_eq!(
             expected.eject_value(),
@@ -97,41 +103,41 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Address
-            check_serialization(Literal::<Circuit>::Address(Address::new(mode, console::Address::rand(rng))));
+            check_serialization(Literal::Address(Address::new(mode, console::Address::rand(rng))));
             // Boolean
-            check_serialization(Literal::<Circuit>::Boolean(Boolean::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::Boolean(Boolean::new(mode, Uniform::rand(rng))));
             // Field
-            check_serialization(Literal::<Circuit>::Field(Field::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::Field(Field::new(mode, Uniform::rand(rng))));
             // Group
-            check_serialization(Literal::<Circuit>::Group(Group::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::Group(Group::new(mode, Uniform::rand(rng))));
             // I8
-            check_serialization(Literal::<Circuit>::I8(I8::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::I8(I8::new(mode, Uniform::rand(rng))));
             // I16
-            check_serialization(Literal::<Circuit>::I16(I16::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::I16(I16::new(mode, Uniform::rand(rng))));
             // I32
-            check_serialization(Literal::<Circuit>::I32(I32::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::I32(I32::new(mode, Uniform::rand(rng))));
             // I64
-            check_serialization(Literal::<Circuit>::I64(I64::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::I64(I64::new(mode, Uniform::rand(rng))));
             // I128
-            check_serialization(Literal::<Circuit>::I128(I128::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::I128(I128::new(mode, Uniform::rand(rng))));
             // U8
-            check_serialization(Literal::<Circuit>::U8(U8::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::U8(U8::new(mode, Uniform::rand(rng))));
             // U16
-            check_serialization(Literal::<Circuit>::U16(U16::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::U16(U16::new(mode, Uniform::rand(rng))));
             // U32
-            check_serialization(Literal::<Circuit>::U32(U32::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::U32(U32::new(mode, Uniform::rand(rng))));
             // U64
-            check_serialization(Literal::<Circuit>::U64(U64::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::U64(U64::new(mode, Uniform::rand(rng))));
             // U128
-            check_serialization(Literal::<Circuit>::U128(U128::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::U128(U128::new(mode, Uniform::rand(rng))));
             // Scalar
-            check_serialization(Literal::<Circuit>::Scalar(Scalar::new(mode, Uniform::rand(rng))));
+            check_serialization(Literal::Scalar(Scalar::new(mode, Uniform::rand(rng))));
             // Signature
             check_serialization(Literal::new(mode, console::Literal::sample(LiteralType::Signature, rng)));
             // String
             // Sample a random string. Take 1/4th to ensure we fit for all code points.
             let string = rng.next_string(Circuit::MAX_STRING_BYTES / 4, false);
-            check_serialization(Literal::<Circuit>::String(StringType::new(mode, console::StringType::new(&string))));
+            check_serialization(Literal::String(StringType::new(mode, console::StringType::new(&string))));
         }
     }
 

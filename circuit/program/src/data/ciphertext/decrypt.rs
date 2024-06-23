@@ -14,19 +14,19 @@
 
 use super::*;
 
-impl<A: Aleo> Ciphertext<A> {
+impl Ciphertext {
     /// Decrypts `self` into plaintext using the given plaintext view key.
-    pub fn decrypt_symmetric(&self, plaintext_view_key: Field<A>) -> Plaintext<A> {
+    pub fn decrypt_symmetric(&self, plaintext_view_key: Field) -> Plaintext {
         // Determine the number of randomizers needed to encrypt the plaintext.
         let num_randomizers = self.num_randomizers();
         // Prepare a randomizer for each field element.
-        let randomizers = A::hash_many_psd8(&[A::encryption_domain(), plaintext_view_key], num_randomizers);
+        let randomizers = AleoV0::hash_many_psd8(&[AleoV0::encryption_domain(), plaintext_view_key], num_randomizers);
         // Decrypt the plaintext.
         self.decrypt_with_randomizers(&randomizers)
     }
 
     /// Decrypts `self` into plaintext using the given randomizers.
-    pub(crate) fn decrypt_with_randomizers(&self, randomizers: &[Field<A>]) -> Plaintext<A> {
+    pub(crate) fn decrypt_with_randomizers(&self, randomizers: &[Field]) -> Plaintext {
         // Decrypt the ciphertext.
         Plaintext::from_fields(
             &self
@@ -49,11 +49,11 @@ mod tests {
 
     const ITERATIONS: u64 = 100;
 
-    fn check_encrypt_and_decrypt<A: Aleo>() -> Result<()> {
+    fn check_encrypt_and_decrypt() -> Result<()> {
         let mut rng = TestRng::default();
 
         // Prepare the plaintext.
-        let plaintext = Plaintext::<A>::from(Literal::Field(Field::new(Mode::Private, Uniform::rand(&mut rng))));
+        let plaintext = Plaintext::from(Literal::Field(Field::new(Mode::Private, Uniform::rand(&mut rng))));
 
         // Encrypt the plaintext.
         let plaintext_view_key = Field::new(Mode::Private, Uniform::rand(&mut rng));

@@ -16,10 +16,10 @@ use super::*;
 
 impl<N: Network> Solutions<N> {
     /// Returns the solutions root.
-    pub fn to_solutions_root(&self) -> Result<Field<N>> {
+    pub fn to_solutions_root(&self) -> Result<Field> {
         match &self.solutions {
             Some(solutions) => solutions.to_accumulator_point(),
-            None => Ok(Field::<N>::zero()),
+            None => Ok(Field::zero()),
         }
     }
 }

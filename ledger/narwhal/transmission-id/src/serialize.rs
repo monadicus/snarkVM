@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for TransmissionID<N> {
+impl Serialize for TransmissionID {
     #[inline]
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -24,7 +24,7 @@ impl<N: Network> Serialize for TransmissionID<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for TransmissionID<N> {
+impl<'de> Deserialize<'de> for TransmissionID {
     #[inline]
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {

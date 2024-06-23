@@ -12,31 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, Boolean, Field, U8};
 
 #[derive(Clone)]
-pub struct HeaderLeaf<A: Aleo> {
+pub struct HeaderLeaf {
     /// The index of the Merkle leaf.
-    index: U8<A>,
+    index: U8,
     /// The ID.
-    id: Field<A>,
+    id: Field,
 }
 
-impl<A: Aleo> HeaderLeaf<A> {
+impl HeaderLeaf {
     /// Returns the index of the Merkle leaf.
-    pub fn index(&self) -> &U8<A> {
+    pub fn index(&self) -> &U8 {
         &self.index
     }
 
     /// Returns the ID in the Merkle leaf.
-    pub const fn id(&self) -> &Field<A> {
+    pub const fn id(&self) -> &Field {
         &self.id
     }
 }
 
-impl<A: Aleo> Inject for HeaderLeaf<A> {
-    type Primitive = console::HeaderLeaf<A::Network>;
+impl Inject for HeaderLeaf {
+    type Primitive = console::HeaderLeaf;
 
     /// Initializes a new header leaf circuit from a primitive.
     fn new(mode: Mode, leaf: Self::Primitive) -> Self {
@@ -44,8 +43,8 @@ impl<A: Aleo> Inject for HeaderLeaf<A> {
     }
 }
 
-impl<A: Aleo> Eject for HeaderLeaf<A> {
-    type Primitive = console::HeaderLeaf<A::Network>;
+impl Eject for HeaderLeaf {
+    type Primitive = console::HeaderLeaf;
 
     /// Ejects the mode of the header leaf.
     fn eject_mode(&self) -> Mode {
@@ -58,8 +57,8 @@ impl<A: Aleo> Eject for HeaderLeaf<A> {
     }
 }
 
-impl<A: Aleo> ToBits for HeaderLeaf<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for HeaderLeaf {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {

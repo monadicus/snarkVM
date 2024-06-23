@@ -15,21 +15,21 @@
 use super::*;
 
 #[cfg(console)]
-impl<A: Aleo> FromBits for ComputeKey<A> {
-    type Boolean = Boolean<A>;
+impl FromBits for ComputeKey {
+    type Boolean = Boolean;
 
     /// Initializes a new compute key from a list of **little-endian** bits.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
-        let group_size_in_bits = console::Group::<A::Network>::size_in_bits();
+        let group_size_in_bits = console::Group::size_in_bits();
 
         let (pk_sig_start, pk_sig_end) = (0, group_size_in_bits);
         let (pr_sig_start, pr_sig_end) = (pk_sig_end, pk_sig_end + group_size_in_bits);
 
         let Some(pk_sig_bits) = bits_le.get(pk_sig_start..pk_sig_end) else {
-            A::halt("Unable to recover the 'pk_sig' (LE) bits for the compute key")
+            Circuit::halt("Unable to recover the 'pk_sig' (LE) bits for the compute key")
         };
         let Some(pr_sig_bits) = bits_le.get(pr_sig_start..pr_sig_end) else {
-            A::halt("Unable to recover the 'pr_sig' (LE) bits for the compute key")
+            Circuit::halt("Unable to recover the 'pr_sig' (LE) bits for the compute key")
         };
 
         Self::from((Group::from_bits_le(pk_sig_bits), Group::from_bits_le(pr_sig_bits)))
@@ -37,16 +37,16 @@ impl<A: Aleo> FromBits for ComputeKey<A> {
 
     /// Initializes a new compute key from a list of **big-endian** bits.
     fn from_bits_be(bits_be: &[Self::Boolean]) -> Self {
-        let group_size_in_bits = console::Group::<A::Network>::size_in_bits();
+        let group_size_in_bits = console::Group::size_in_bits();
 
         let (pk_sig_start, pk_sig_end) = (0, group_size_in_bits);
         let (pr_sig_start, pr_sig_end) = (pk_sig_end, pk_sig_end + group_size_in_bits);
 
         let Some(pk_sig_bits) = bits_be.get(pk_sig_start..pk_sig_end) else {
-            A::halt("Unable to recover the 'pk_sig' (BE) bits for the compute key")
+            Circuit::halt("Unable to recover the 'pk_sig' (BE) bits for the compute key")
         };
         let Some(pr_sig_bits) = bits_be.get(pr_sig_start..pr_sig_end) else {
-            A::halt("Unable to recover the 'pr_sig' (BE) bits for the compute key")
+            Circuit::halt("Unable to recover the 'pr_sig' (BE) bits for the compute key")
         };
 
         Self::from((Group::from_bits_be(pk_sig_bits), Group::from_bits_be(pr_sig_bits)))
@@ -70,10 +70,10 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random compute key.
             let expected = console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap();
-            let candidate = ComputeKey::<CurrentAleo>::new(mode, expected).to_bits_le();
+            let candidate = ComputeKey::new(mode, expected).to_bits_le();
 
             CurrentAleo::scope(&format!("{mode} {i}"), || {
-                let candidate = ComputeKey::<CurrentAleo>::from_bits_le(&candidate);
+                let candidate = ComputeKey::from_bits_le(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });
@@ -87,10 +87,10 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random compute key.
             let expected = console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap();
-            let candidate = ComputeKey::<CurrentAleo>::new(mode, expected).to_bits_be();
+            let candidate = ComputeKey::new(mode, expected).to_bits_be();
 
             CurrentAleo::scope(&format!("{mode} {i}"), || {
-                let candidate = ComputeKey::<CurrentAleo>::from_bits_be(&candidate);
+                let candidate = ComputeKey::from_bits_be(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });

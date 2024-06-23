@@ -14,55 +14,55 @@
 
 use super::*;
 
-impl<E: Environment> Sub<Field<E>> for Field<E> {
+impl Sub<Field> for Field {
     type Output = Self;
 
-    fn sub(self, other: Field<E>) -> Self::Output {
+    fn sub(self, other: Field) -> Self::Output {
         self - &other
     }
 }
 
-impl<E: Environment> Sub<&Field<E>> for Field<E> {
+impl Sub<&Field> for Field {
     type Output = Self;
 
-    fn sub(self, other: &Field<E>) -> Self::Output {
+    fn sub(self, other: &Field) -> Self::Output {
         let mut result = self;
         result -= other;
         result
     }
 }
 
-impl<E: Environment> Sub<Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Sub<Field> for &Field {
+    type Output = Field;
 
-    fn sub(self, other: Field<E>) -> Self::Output {
+    fn sub(self, other: Field) -> Self::Output {
         self - &other
     }
 }
 
-impl<E: Environment> Sub<&Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Sub<&Field> for &Field {
+    type Output = Field;
 
-    fn sub(self, other: &Field<E>) -> Self::Output {
+    fn sub(self, other: &Field) -> Self::Output {
         let mut result = self.clone();
         result -= other;
         result
     }
 }
 
-impl<E: Environment> SubAssign<Field<E>> for Field<E> {
-    fn sub_assign(&mut self, other: Field<E>) {
+impl SubAssign<Field> for Field {
+    fn sub_assign(&mut self, other: Field) {
         *self -= &other;
     }
 }
 
-impl<E: Environment> SubAssign<&Field<E>> for Field<E> {
-    fn sub_assign(&mut self, other: &Field<E>) {
+impl SubAssign<&Field> for Field {
+    fn sub_assign(&mut self, other: &Field) {
         *self += -other;
     }
 }
 
-impl<E: Environment> Metrics<dyn Sub<Field<E>, Output = Field<E>>> for Field<E> {
+impl Metrics<dyn Sub<Field, Output = Field>> for Field {
     type Case = (Mode, Mode);
 
     fn count(_case: &Self::Case) -> Count {
@@ -70,8 +70,8 @@ impl<E: Environment> Metrics<dyn Sub<Field<E>, Output = Field<E>>> for Field<E> 
     }
 }
 
-impl<E: Environment> OutputMode<dyn Sub<Field<E>, Output = Field<E>>> for Field<E> {
-    type Case = (CircuitType<Field<E>>, CircuitType<Field<E>>);
+impl OutputMode<dyn Sub<Field, Output = Field>> for Field {
+    type Case = (CircuitType<Field>, CircuitType<Field>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match (case.0.mode(), case.1.mode()) {
@@ -81,7 +81,7 @@ impl<E: Environment> OutputMode<dyn Sub<Field<E>, Output = Field<E>>> for Field<
                     true => Mode::Public,
                     false => Mode::Private,
                 },
-                _ => E::halt("The constant is required to determine the output mode of Public + Constant"),
+                _ => Circuit::halt("The constant is required to determine the output mode of Public + Constant"),
             },
             (_, _) => Mode::Private,
         }
@@ -95,12 +95,7 @@ mod tests {
 
     const ITERATIONS: u64 = 10_000;
 
-    fn check_sub(
-        name: &str,
-        expected: &console::Field<<Circuit as Environment>::Network>,
-        a: &Field<Circuit>,
-        b: &Field<Circuit>,
-    ) {
+    fn check_sub(name: &str, expected: &console::Field, a: &Field, b: &Field) {
         Circuit::scope(name, || {
             let candidate = a - b;
             assert_eq!(*expected, candidate.eject_value(), "({} - {})", a.eject_value(), b.eject_value());
@@ -109,12 +104,7 @@ mod tests {
         });
     }
 
-    fn check_sub_assign(
-        name: &str,
-        expected: &console::Field<<Circuit as Environment>::Network>,
-        a: &Field<Circuit>,
-        b: &Field<Circuit>,
-    ) {
+    fn check_sub_assign(name: &str, expected: &console::Field, a: &Field, b: &Field) {
         Circuit::scope(name, || {
             let mut candidate = a.clone();
             candidate -= b;
@@ -132,8 +122,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Field::<Circuit>::new(mode_a, first);
-            let b = Field::<Circuit>::new(mode_b, second);
+            let a = Field::new(mode_a, first);
+            let b = Field::new(mode_b, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -142,14 +132,14 @@ mod tests {
 
             // Test identity.
             let name = format!("Sub: a - 0 {i}");
-            let zero = Field::<Circuit>::new(mode_b, console::Field::<<Circuit as Environment>::Network>::zero());
+            let zero = Field::new(mode_b, console::Field::zero());
             check_sub(&name, &first, &a, &zero);
             let name = format!("SubAssign: a - 0 {i}");
             check_sub_assign(&name, &first, &a, &zero);
 
             // Test negation.
             let name = format!("Sub: 0 - b {i}");
-            let zero = Field::<Circuit>::new(mode_a, console::Field::<<Circuit as Environment>::Network>::zero());
+            let zero = Field::new(mode_a, console::Field::zero());
             check_sub(&name, &(-second), &zero, &b);
             let name = format!("SubAssign: 0 - b {i}");
             check_sub_assign(&name, &(-second), &zero, &b);
@@ -203,86 +193,86 @@ mod tests {
 
     #[test]
     fn test_0_minus_0() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
 
-        let candidate = Field::<Circuit>::zero() - Field::zero();
+        let candidate = Field::zero() - Field::zero();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::zero() - &Field::zero();
+        let candidate = Field::zero() - &Field::zero();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero) - Field::new(Mode::Public, zero);
+        let candidate = Field::new(Mode::Public, zero) - Field::new(Mode::Public, zero);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero) - Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Public, zero) - Field::new(Mode::Private, zero);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, zero) - Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Private, zero) - Field::new(Mode::Private, zero);
         assert_eq!(zero, candidate.eject_value());
     }
 
     #[test]
     fn test_1_minus_0() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let zero = console::Field::zero();
+        let one = console::Field::one();
 
-        let candidate = Field::<Circuit>::one() - Field::zero();
+        let candidate = Field::one() - Field::zero();
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::one() - &Field::zero();
+        let candidate = Field::one() - &Field::zero();
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one) - Field::new(Mode::Public, zero);
+        let candidate = Field::new(Mode::Public, one) - Field::new(Mode::Public, zero);
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one) - Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Public, one) - Field::new(Mode::Private, zero);
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, one) - Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Private, one) - Field::new(Mode::Private, zero);
         assert_eq!(one, candidate.eject_value());
     }
 
     #[test]
     fn test_1_minus_1() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let zero = console::Field::zero();
+        let one = console::Field::one();
 
-        let candidate = Field::<Circuit>::one() - Field::one();
+        let candidate = Field::one() - Field::one();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::one() - &Field::one();
+        let candidate = Field::one() - &Field::one();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one) - Field::new(Mode::Public, one);
+        let candidate = Field::new(Mode::Public, one) - Field::new(Mode::Public, one);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, one) - Field::new(Mode::Public, one);
+        let candidate = Field::new(Mode::Private, one) - Field::new(Mode::Public, one);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, one) - Field::new(Mode::Private, one);
+        let candidate = Field::new(Mode::Private, one) - Field::new(Mode::Private, one);
         assert_eq!(zero, candidate.eject_value());
     }
 
     #[test]
     fn test_2_minus_1() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
         let two = one + one;
 
-        let candidate_two = Field::<Circuit>::one() + Field::one();
+        let candidate_two = Field::one() + Field::one();
         let candidate = candidate_two - Field::one();
         assert_eq!(one, candidate.eject_value());
 
-        let candidate_two = Field::<Circuit>::one() + &Field::one();
+        let candidate_two = Field::one() + &Field::one();
         let candidate = candidate_two - &Field::one();
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, two) - Field::new(Mode::Public, one);
+        let candidate = Field::new(Mode::Public, two) - Field::new(Mode::Public, one);
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, two) - Field::new(Mode::Public, one);
+        let candidate = Field::new(Mode::Private, two) - Field::new(Mode::Public, one);
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, two) - Field::new(Mode::Private, one);
+        let candidate = Field::new(Mode::Private, two) - Field::new(Mode::Private, one);
         assert_eq!(one, candidate.eject_value());
     }
 }

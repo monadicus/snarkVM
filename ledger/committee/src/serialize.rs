@@ -37,7 +37,7 @@ impl<'de, N: Network> Deserialize<'de> for Committee<N> {
         match deserializer.is_human_readable() {
             true => {
                 let mut value = serde_json::Value::deserialize(deserializer)?;
-                let id: Field<N> = DeserializeExt::take_from_value::<D>(&mut value, "id")?;
+                let id: Field = DeserializeExt::take_from_value::<D>(&mut value, "id")?;
                 let total_stake: u64 = DeserializeExt::take_from_value::<D>(&mut value, "total_stake")?;
                 let committee = Self::new(
                     DeserializeExt::take_from_value::<D>(&mut value, "starting_round")?,

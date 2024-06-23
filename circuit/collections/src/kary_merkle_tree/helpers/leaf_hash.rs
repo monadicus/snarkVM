@@ -24,9 +24,9 @@ pub trait LeafHash {
     fn hash_leaf(&self, leaf: &Self::Leaf) -> Self::Hash;
 }
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Hash = Field<E>;
-    type Leaf = Vec<Boolean<E>>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Hash = Field;
+    type Leaf = Vec<Boolean>;
 
     /// Returns the hash of the given leaf node.
     fn hash_leaf(&self, leaf: &Self::Leaf) -> Self::Hash {
@@ -39,9 +39,9 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash for 
     }
 }
 
-impl<E: Environment, const RATE: usize> LeafHash for Poseidon<E, RATE> {
-    type Hash = Field<E>;
-    type Leaf = Vec<Field<E>>;
+impl<const RATE: usize> LeafHash for Poseidon<RATE> {
+    type Hash = Field;
+    type Leaf = Vec<Field>;
 
     /// Returns the hash of the given leaf node.
     fn hash_leaf(&self, leaf: &Self::Leaf) -> Self::Hash {
@@ -54,9 +54,9 @@ impl<E: Environment, const RATE: usize> LeafHash for Poseidon<E, RATE> {
     }
 }
 
-impl<E: Environment, const TYPE: u8, const VARIANT: usize> LeafHash for Keccak<E, TYPE, VARIANT> {
-    type Hash = BooleanHash<E, VARIANT>;
-    type Leaf = Vec<Boolean<E>>;
+impl<const TYPE: u8, const VARIANT: usize> LeafHash for Keccak<TYPE, VARIANT> {
+    type Hash = BooleanHash<VARIANT>;
+    type Leaf = Vec<Boolean>;
 
     /// Returns the hash of the given leaf node.
     fn hash_leaf(&self, leaf: &Self::Leaf) -> Self::Hash {
@@ -111,8 +111,8 @@ mod tests {
         }};
         ($hash:ident, $mode:ident, $num_inputs:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize the hash.
-            let native = snarkvm_console_algorithms::$hash::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit = $hash::<Circuit>::constant(native.clone());
+            let native = snarkvm_console_algorithms::$hash::setup(DOMAIN)?;
+            let circuit = $hash::constant(native.clone());
 
             check_hash_leaf!(
                 native,
@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn test_hash_leaf_keccak256_constant() -> Result<()> {
         let native = snarkvm_console_algorithms::Keccak256 {};
-        let circuit = Keccak256::<Circuit>::new();
+        let circuit = Keccak256::new();
 
         check_hash_leaf!(native, circuit, Constant, 1024, (256, 0, 0, 0))
     }
@@ -165,7 +165,7 @@ mod tests {
     #[test]
     fn test_hash_leaf_keccak256_public() -> Result<()> {
         let native = snarkvm_console_algorithms::Keccak256 {};
-        let circuit = Keccak256::<Circuit>::new();
+        let circuit = Keccak256::new();
 
         check_hash_leaf!(native, circuit, Public, 1024, (256, 0, 152448, 152448))
     }
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn test_hash_leaf_keccak256_private() -> Result<()> {
         let native = snarkvm_console_algorithms::Keccak256 {};
-        let circuit = Keccak256::<Circuit>::new();
+        let circuit = Keccak256::new();
 
         check_hash_leaf!(native, circuit, Private, 1024, (256, 0, 152448, 152448))
     }
@@ -181,7 +181,7 @@ mod tests {
     #[test]
     fn test_hash_leaf_sha3_256_constant() -> Result<()> {
         let native = snarkvm_console_algorithms::Sha3_256 {};
-        let circuit = Sha3_256::<Circuit>::new();
+        let circuit = Sha3_256::new();
 
         check_hash_leaf!(native, circuit, Constant, 1024, (256, 0, 0, 0))
     }
@@ -189,7 +189,7 @@ mod tests {
     #[test]
     fn test_hash_leaf_sha3_256_public() -> Result<()> {
         let native = snarkvm_console_algorithms::Sha3_256 {};
-        let circuit = Sha3_256::<Circuit>::new();
+        let circuit = Sha3_256::new();
 
         check_hash_leaf!(native, circuit, Public, 1024, (256, 0, 152448, 152448))
     }
@@ -197,7 +197,7 @@ mod tests {
     #[test]
     fn test_hash_leaf_sha3_256_private() -> Result<()> {
         let native = snarkvm_console_algorithms::Sha3_256 {};
-        let circuit = Sha3_256::<Circuit>::new();
+        let circuit = Sha3_256::new();
 
         check_hash_leaf!(native, circuit, Private, 1024, (256, 0, 152448, 152448))
     }

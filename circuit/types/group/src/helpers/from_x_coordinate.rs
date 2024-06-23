@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment> Group<E> {
+impl Group {
     /// Initializes an affine group element from a given x-coordinate field element.
     /// For safety, the resulting point is always enforced to be on the curve with constraints.
-    pub fn from_x_coordinate(x: Field<E>) -> Self {
+    pub fn from_x_coordinate(x: Field) -> Self {
         // Derive the y-coordinate.
         let y = witness!(|x| match console::Group::from_x_coordinate(x) {
             Ok(point) => point.to_y_coordinate(),
@@ -31,10 +31,10 @@ impl<E: Environment> Group<E> {
     /// Additionally, returns an error flag.
     /// If the error flag is set, there is **no** group element with the given x-coordinate.
     /// If the error flag is set, the returned point is `(0, 0)`.
-    pub fn from_x_coordinate_flagged(x: Field<E>) -> (Self, Boolean<E>) {
+    pub fn from_x_coordinate_flagged(x: Field) -> (Self, Boolean) {
         // Obtain the A and D coefficients of the elliptic curve.
-        let a = Field::constant(console::Field::new(E::EDWARDS_A));
-        let d = Field::constant(console::Field::new(E::EDWARDS_D));
+        let a = Field::constant(console::Field::new(CONSOLE_EDWARDS_A));
+        let d = Field::constant(console::Field::new(CONSOLE_EDWARDS_D));
 
         // Compute x^2.
         let xx = &x * &x;
@@ -46,8 +46,8 @@ impl<E: Environment> Group<E> {
         let d_xx_minus_1 = d * &xx - Field::one();
 
         // Compute y^2 = (a * x^2 - 1) / (d * x^2 - 1), i.e. solve the curve equation for y^2.
-        let yy: Field<E> = witness!(|a_xx_minus_1, d_xx_minus_1| { a_xx_minus_1 / d_xx_minus_1 });
-        E::enforce(|| (&yy, &d_xx_minus_1, &a_xx_minus_1));
+        let yy: Field = witness!(|a_xx_minus_1, d_xx_minus_1| { a_xx_minus_1 / d_xx_minus_1 });
+        Circuit::enforce(|| (&yy, &d_xx_minus_1, &a_xx_minus_1));
 
         // Compute both square roots of y^2, with a flag indicating whether y^2 is a square or not.
         // Note that there is **no** ordering on the square roots in the circuit computation.
@@ -98,13 +98,13 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let point: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let point: console::Group = Uniform::rand(&mut rng);
 
             // Inject the x-coordinate.
             let x_coordinate = Field::new(mode, point.to_x_coordinate());
 
             Circuit::scope(format!("{mode} {i}"), || {
-                let affine = Group::<Circuit>::from_x_coordinate(x_coordinate);
+                let affine = Group::from_x_coordinate(x_coordinate);
                 assert_eq!(point, affine.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });
@@ -123,14 +123,14 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random x coordinate.
-            let x: console::Field<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
+            let x: console::Field = Uniform::rand(&mut rng);
             // Compute error flag and point in console-land.
             let (expected_error_flag, expected_point) = match console::Group::from_x_coordinate(x) {
                 Ok(point) => (false, point),
                 Err(_) => (true, console::Group::from_xy_coordinates_unchecked(x, console::Field::zero())),
             };
             // Compute error flag and point in circuit-land.
-            let input = Field::<Circuit>::new(mode, x);
+            let input = Field::new(mode, x);
             Circuit::scope(format!("{mode} {i}"), || {
                 let (candidate_point, candidate_error_flag) = Group::from_x_coordinate_flagged(input);
                 assert_eq!(expected_error_flag, candidate_error_flag.eject_value());

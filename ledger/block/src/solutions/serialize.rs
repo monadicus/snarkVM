@@ -71,7 +71,7 @@ pub(super) mod tests {
         // Sample a new solutions.
         let mut solutions = vec![];
         for _ in 0..rng.gen_range(1..=CurrentNetwork::MAX_SOLUTIONS) {
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+            let private_key = PrivateKey::new(rng).unwrap();
             let address = Address::try_from(private_key).unwrap();
             let partial_solution = PartialSolution::new(rng.gen(), address, u64::rand(rng)).unwrap();
             solutions.push(Solution::new(partial_solution, u64::rand(rng)));

@@ -14,16 +14,16 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Not for Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Not for Integer<I> {
+    type Output = Integer<I>;
 
     fn not(self) -> Self::Output {
         (&self).not()
     }
 }
 
-impl<E: Environment, I: IntegerType> Not for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Not for &Integer<I> {
+    type Output = Integer<I>;
 
     fn not(self) -> Self::Output {
         // Flip each bit in the representation of the `self` integer.
@@ -31,7 +31,7 @@ impl<E: Environment, I: IntegerType> Not for &Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Not<Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Not<Output = Integer<I>>> for Integer<I> {
     type Case = Mode;
 
     fn count(_case: &Self::Case) -> Count {
@@ -39,7 +39,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn Not<Output = Integer<E, I>>> fo
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Not<Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Not<Output = Integer<I>>> for Integer<I> {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -59,12 +59,8 @@ mod tests {
 
     const ITERATIONS: u64 = 128;
 
-    fn check_not<I: IntegerType + Not<Output = I>>(
-        name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        mode: Mode,
-    ) {
-        let a = Integer::<Circuit, I>::new(mode, first);
+    fn check_not<I: IntegerType + Not<Output = I>>(name: &str, first: console::Integer<I>, mode: Mode) {
+        let a = Integer::<I>::new(mode, first);
         let expected = !first;
 
         Circuit::scope(name, || {
@@ -99,7 +95,7 @@ mod tests {
         RangeInclusive<I>: Iterator<Item = I>,
     {
         for value in I::MIN..=I::MAX {
-            let value = console::Integer::<_, I>::new(value);
+            let value = console::Integer::<I>::new(value);
 
             let name = format!("Not: {mode}");
             check_not::<I>(&name, value, mode);

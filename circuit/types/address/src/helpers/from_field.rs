@@ -14,25 +14,25 @@
 
 use super::*;
 
-impl<E: Environment> From<Field<E>> for Address<E> {
+impl From<Field> for Address {
     /// Initializes an address from the **x-coordinate** of an affine group element.
-    fn from(value: Field<E>) -> Self {
+    fn from(value: Field) -> Self {
         Self::from_field(value)
     }
 }
 
-impl<E: Environment> From<&Field<E>> for Address<E> {
+impl From<&Field> for Address {
     /// Initializes an address from the **x-coordinate** of an affine group element.
-    fn from(value: &Field<E>) -> Self {
+    fn from(value: &Field) -> Self {
         Self::from_field(value.clone())
     }
 }
 
-impl<E: Environment> FromField for Address<E> {
-    type Field = Field<E>;
+impl FromField for Address {
+    type Field = Field;
 
     /// Initializes an address from the **x-coordinate** of an affine group element.
-    fn from_field(x_coordinate: Field<E>) -> Self {
+    fn from_field(x_coordinate: Field) -> Self {
         Self::from_group(Group::from_x_coordinate(x_coordinate))
     }
 }
@@ -49,8 +49,8 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let expected: console::Group<<Circuit as Environment>::Network> = Uniform::rand(&mut rng);
-            let candidate = Group::<Circuit>::new(mode, expected).to_x_coordinate();
+            let expected: console::Group = Uniform::rand(&mut rng);
+            let candidate = Group::new(mode, expected).to_x_coordinate();
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = Address::from_field(candidate);

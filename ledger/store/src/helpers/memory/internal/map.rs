@@ -391,16 +391,14 @@ mod tests {
     #[test]
     fn test_contains_key_sanity_check() {
         // Initialize an address.
-        let address =
-            Address::<CurrentNetwork>::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8")
-                .unwrap();
+        let address = Address::from_str("aleo1q6qstg8q8shwqf5m6q5fcenuwsdqsvp4hhsgfnx5chzjm3secyzqt9mxm8").unwrap();
 
         // Sanity check.
-        let addresses: IndexMap<Address<CurrentNetwork>, ()> = [(address, ())].into_iter().collect();
+        let addresses: IndexMap<Address, ()> = [(address, ())].into_iter().collect();
         assert!(addresses.contains_key(&address));
 
         // Initialize a map.
-        let map: MemoryMap<Address<CurrentNetwork>, ()> = [(address, ())].into_iter().collect();
+        let map: MemoryMap<Address, ()> = [(address, ())].into_iter().collect();
         assert!(map.contains_key_confirmed(&address).unwrap());
     }
 

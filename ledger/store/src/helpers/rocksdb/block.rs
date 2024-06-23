@@ -42,36 +42,35 @@ pub struct BlockDB<N: Network> {
     /// The mapping of `state root` to `block height`.
     reverse_state_root_map: DataMap<N::StateRoot, u32>,
     /// The mapping of `block height` to `block hash`.
-    id_map: DataMap<u32, N::BlockHash>,
+    id_map: DataMap<u32, BlockHash>,
     /// The mapping of `block hash` to `block height`.
-    reverse_id_map: DataMap<N::BlockHash, u32>,
+    reverse_id_map: DataMap<BlockHash, u32>,
     /// The header map.
-    header_map: DataMap<N::BlockHash, Header<N>>,
+    header_map: DataMap<BlockHash, Header<N>>,
     /// The authority map.
-    authority_map: DataMap<N::BlockHash, Authority<N>>,
+    authority_map: DataMap<BlockHash, Authority<N>>,
     /// The certificate map.
-    certificate_map: DataMap<Field<N>, (u32, u64)>,
+    certificate_map: DataMap<Field, (u32, u64)>,
     /// The ratifications map.
-    ratifications_map: DataMap<N::BlockHash, Ratifications<N>>,
+    ratifications_map: DataMap<BlockHash, Ratifications<N>>,
     /// The solutions map.
-    solutions_map: DataMap<N::BlockHash, Solutions<N>>,
+    solutions_map: DataMap<BlockHash, Solutions<N>>,
     /// The solution IDs map.
-    solution_ids_map: DataMap<SolutionID<N>, u32>,
+    solution_ids_map: DataMap<SolutionID, u32>,
     /// The aborted solution IDs map.
-    aborted_solution_ids_map: DataMap<N::BlockHash, Vec<SolutionID<N>>>,
+    aborted_solution_ids_map: DataMap<BlockHash, Vec<SolutionID>>,
     /// The aborted solution heights map.
-    aborted_solution_heights_map: DataMap<SolutionID<N>, u32>,
+    aborted_solution_heights_map: DataMap<SolutionID, u32>,
     /// The transactions map.
-    transactions_map: DataMap<N::BlockHash, Vec<N::TransactionID>>,
+    transactions_map: DataMap<BlockHash, Vec<TransactionID>>,
     /// The aborted transaction IDs map.
-    aborted_transaction_ids_map: DataMap<N::BlockHash, Vec<N::TransactionID>>,
+    aborted_transaction_ids_map: DataMap<BlockHash, Vec<TransactionID>>,
     /// The rejected or aborted transaction ID map.
-    rejected_or_aborted_transaction_id_map: DataMap<N::TransactionID, N::BlockHash>,
+    rejected_or_aborted_transaction_id_map: DataMap<TransactionID, BlockHash>,
     /// The confirmed transactions map.
-    confirmed_transactions_map:
-        DataMap<N::TransactionID, (N::BlockHash, ConfirmedTxType<N>, Vec<FinalizeOperation<N>>)>,
+    confirmed_transactions_map: DataMap<TransactionID, (BlockHash, ConfirmedTxType<N>, Vec<FinalizeOperation<N>>)>,
     /// The rejected deployment or execution map.
-    rejected_deployment_or_execution_map: DataMap<Field<N>, Rejected<N>>,
+    rejected_deployment_or_execution_map: DataMap<Field, Rejected<N>>,
     /// The transaction store.
     transaction_store: TransactionStore<N, TransactionDB<N>>,
 }
@@ -80,21 +79,21 @@ pub struct BlockDB<N: Network> {
 impl<N: Network> BlockStorage<N> for BlockDB<N> {
     type StateRootMap = DataMap<u32, N::StateRoot>;
     type ReverseStateRootMap = DataMap<N::StateRoot, u32>;
-    type IDMap = DataMap<u32, N::BlockHash>;
-    type ReverseIDMap = DataMap<N::BlockHash, u32>;
-    type HeaderMap = DataMap<N::BlockHash, Header<N>>;
-    type AuthorityMap = DataMap<N::BlockHash, Authority<N>>;
-    type CertificateMap = DataMap<Field<N>, (u32, u64)>;
-    type RatificationsMap = DataMap<N::BlockHash, Ratifications<N>>;
-    type SolutionsMap = DataMap<N::BlockHash, Solutions<N>>;
-    type SolutionIDsMap = DataMap<SolutionID<N>, u32>;
-    type AbortedSolutionIDsMap = DataMap<N::BlockHash, Vec<SolutionID<N>>>;
-    type AbortedSolutionHeightsMap = DataMap<SolutionID<N>, u32>;
-    type TransactionsMap = DataMap<N::BlockHash, Vec<N::TransactionID>>;
-    type AbortedTransactionIDsMap = DataMap<N::BlockHash, Vec<N::TransactionID>>;
-    type RejectedOrAbortedTransactionIDMap = DataMap<N::TransactionID, N::BlockHash>;
-    type ConfirmedTransactionsMap = DataMap<N::TransactionID, (N::BlockHash, ConfirmedTxType<N>, Vec<FinalizeOperation<N>>)>;
-    type RejectedDeploymentOrExecutionMap = DataMap<Field<N>, Rejected<N>>;
+    type IDMap = DataMap<u32, BlockHash>;
+    type ReverseIDMap = DataMap<BlockHash, u32>;
+    type HeaderMap = DataMap<BlockHash, Header<N>>;
+    type AuthorityMap = DataMap<BlockHash, Authority<N>>;
+    type CertificateMap = DataMap<Field, (u32, u64)>;
+    type RatificationsMap = DataMap<BlockHash, Ratifications<N>>;
+    type SolutionsMap = DataMap<BlockHash, Solutions<N>>;
+    type SolutionIDsMap = DataMap<SolutionID, u32>;
+    type AbortedSolutionIDsMap = DataMap<BlockHash, Vec<SolutionID>>;
+    type AbortedSolutionHeightsMap = DataMap<SolutionID, u32>;
+    type TransactionsMap = DataMap<BlockHash, Vec<TransactionID>>;
+    type AbortedTransactionIDsMap = DataMap<BlockHash, Vec<TransactionID>>;
+    type RejectedOrAbortedTransactionIDMap = DataMap<TransactionID, BlockHash>;
+    type ConfirmedTransactionsMap = DataMap<TransactionID, (BlockHash, ConfirmedTxType<N>, Vec<FinalizeOperation<N>>)>;
+    type RejectedDeploymentOrExecutionMap = DataMap<Field, Rejected<N>>;
     type TransactionStorage = TransactionDB<N>;
     type TransitionStorage = TransitionDB<N>;
 

@@ -14,50 +14,50 @@
 
 use super::*;
 
-impl<E: Environment> Mul<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Mul<Field> for Field {
+    type Output = Field;
 
-    fn mul(self, other: Field<E>) -> Self::Output {
+    fn mul(self, other: Field) -> Self::Output {
         self * &other
     }
 }
 
-impl<E: Environment> Mul<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Mul<&Field> for Field {
+    type Output = Field;
 
-    fn mul(self, other: &Field<E>) -> Self::Output {
+    fn mul(self, other: &Field) -> Self::Output {
         let mut output = self;
         output *= other;
         output
     }
 }
 
-impl<E: Environment> Mul<Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Mul<Field> for &Field {
+    type Output = Field;
 
-    fn mul(self, other: Field<E>) -> Self::Output {
+    fn mul(self, other: Field) -> Self::Output {
         other * self
     }
 }
 
-impl<E: Environment> Mul<&Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Mul<&Field> for &Field {
+    type Output = Field;
 
-    fn mul(self, other: &Field<E>) -> Self::Output {
+    fn mul(self, other: &Field) -> Self::Output {
         let mut output = self.clone();
         output *= other;
         output
     }
 }
 
-impl<E: Environment> MulAssign<Field<E>> for Field<E> {
-    fn mul_assign(&mut self, other: Field<E>) {
+impl MulAssign<Field> for Field {
+    fn mul_assign(&mut self, other: Field) {
         *self *= &other;
     }
 }
 
-impl<E: Environment> MulAssign<&Field<E>> for Field<E> {
-    fn mul_assign(&mut self, other: &Field<E>) {
+impl MulAssign<&Field> for Field {
+    fn mul_assign(&mut self, other: &Field) {
         match (self.is_constant(), other.is_constant()) {
             (true, true) | (false, true) => *self = (&self.linear_combination * *other.eject_value()).into(),
             (true, false) => *self = (&other.linear_combination * *self.eject_value()).into(),
@@ -65,7 +65,7 @@ impl<E: Environment> MulAssign<&Field<E>> for Field<E> {
                 let product = witness!(|self, other| self * other);
 
                 // Ensure self * other == product.
-                E::enforce(|| (&*self, other, &product));
+                Circuit::enforce(|| (&*self, other, &product));
 
                 *self = product;
             }
@@ -73,7 +73,7 @@ impl<E: Environment> MulAssign<&Field<E>> for Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn Mul<Field<E>, Output = Field<E>>> for Field<E> {
+impl Metrics<dyn Mul<Field, Output = Field>> for Field {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -84,8 +84,8 @@ impl<E: Environment> Metrics<dyn Mul<Field<E>, Output = Field<E>>> for Field<E> 
     }
 }
 
-impl<E: Environment> OutputMode<dyn Mul<Field<E>, Output = Field<E>>> for Field<E> {
-    type Case = (CircuitType<Field<E>>, CircuitType<Field<E>>);
+impl OutputMode<dyn Mul<Field, Output = Field>> for Field {
+    type Case = (CircuitType<Field>, CircuitType<Field>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match (case.0.mode(), case.1.mode()) {
@@ -96,7 +96,7 @@ impl<E: Environment> OutputMode<dyn Mul<Field<E>, Output = Field<E>>> for Field<
                     value if value.is_one() => Mode::Public,
                     _ => Mode::Private,
                 },
-                _ => E::halt("The constant is required to determine the output mode of Constant * Public"),
+                _ => Circuit::halt("The constant is required to determine the output mode of Constant * Public"),
             },
             (Mode::Public, Mode::Constant) => match &case.1 {
                 CircuitType::Constant(constant) => match constant.eject_value() {
@@ -104,21 +104,21 @@ impl<E: Environment> OutputMode<dyn Mul<Field<E>, Output = Field<E>>> for Field<
                     value if value.is_one() => Mode::Public,
                     _ => Mode::Private,
                 },
-                _ => E::halt("The constant is required to determine the output mode of Public * Constant"),
+                _ => Circuit::halt("The constant is required to determine the output mode of Public * Constant"),
             },
             (Mode::Private, Mode::Constant) => match &case.1 {
                 CircuitType::Constant(constant) => match constant.eject_value() {
                     value if value.is_zero() => Mode::Constant,
                     _ => Mode::Private,
                 },
-                _ => E::halt("The constant is required to determine the output mode of Private * Constant"),
+                _ => Circuit::halt("The constant is required to determine the output mode of Private * Constant"),
             },
             (Mode::Constant, Mode::Private) => match &case.0 {
                 CircuitType::Constant(constant) => match constant.eject_value() {
                     value if value.is_zero() => Mode::Constant,
                     _ => Mode::Private,
                 },
-                _ => E::halt("The constant is required to determine the output mode of Constant * Private"),
+                _ => Circuit::halt("The constant is required to determine the output mode of Constant * Private"),
             },
             (_, _) => Mode::Private,
         }
@@ -132,12 +132,7 @@ mod tests {
 
     const ITERATIONS: u64 = 100;
 
-    fn check_mul(
-        name: &str,
-        expected: &console::Field<<Circuit as Environment>::Network>,
-        a: &Field<Circuit>,
-        b: &Field<Circuit>,
-    ) {
+    fn check_mul(name: &str, expected: &console::Field, a: &Field, b: &Field) {
         Circuit::scope(name, || {
             let candidate = a * b;
             assert_eq!(*expected, candidate.eject_value(), "({} * {})", a.eject_value(), b.eject_value());
@@ -146,12 +141,7 @@ mod tests {
         });
     }
 
-    fn check_mul_assign(
-        name: &str,
-        expected: &console::Field<<Circuit as Environment>::Network>,
-        a: &Field<Circuit>,
-        b: &Field<Circuit>,
-    ) {
+    fn check_mul_assign(name: &str, expected: &console::Field, a: &Field, b: &Field) {
         Circuit::scope(name, || {
             let mut candidate = a.clone();
             candidate *= b;
@@ -169,8 +159,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first * second;
-            let a = Field::<Circuit>::new(mode_a, first);
-            let b = Field::<Circuit>::new(mode_b, second);
+            let a = Field::new(mode_a, first);
+            let b = Field::new(mode_b, second);
 
             let name = format!("Mul: a + b {i}");
             check_mul(&name, &expected, &a, &b);
@@ -179,29 +169,29 @@ mod tests {
 
             // Test identity.
             let name = format!("Mul: a * 1 {i}");
-            let one = Field::<Circuit>::new(mode_b, console::Field::<<Circuit as Environment>::Network>::one());
+            let one = Field::new(mode_b, console::Field::one());
             check_mul(&name, &first, &a, &one);
             let name = format!("MulAssign: a * 1 {i}");
             check_mul_assign(&name, &first, &a, &one);
 
             let name = format!("Mul: 1 * b {i}");
-            let one = Field::<Circuit>::new(mode_a, console::Field::<<Circuit as Environment>::Network>::one());
+            let one = Field::new(mode_a, console::Field::one());
             check_mul(&name, &second, &one, &b);
             let name = format!("MulAssign: 1 * b {i}");
             check_mul_assign(&name, &second, &one, &b);
 
             // Test zero.
             let name = format!("Mul: a * 0 {i}");
-            let zero = Field::<Circuit>::new(mode_b, console::Field::<<Circuit as Environment>::Network>::zero());
-            check_mul(&name, &console::Field::<<Circuit as Environment>::Network>::zero(), &a, &zero);
+            let zero = Field::new(mode_b, console::Field::zero());
+            check_mul(&name, &console::Field::zero(), &a, &zero);
             let name = format!("MulAssign: a * 0 {i}");
-            check_mul_assign(&name, &console::Field::<<Circuit as Environment>::Network>::zero(), &a, &zero);
+            check_mul_assign(&name, &console::Field::zero(), &a, &zero);
 
             let name = format!("Mul: 0 * b {i}");
-            let zero = Field::<Circuit>::new(mode_a, console::Field::<<Circuit as Environment>::Network>::zero());
-            check_mul(&name, &console::Field::<<Circuit as Environment>::Network>::zero(), &zero, &b);
+            let zero = Field::new(mode_a, console::Field::zero());
+            check_mul(&name, &console::Field::zero(), &zero, &b);
             let name = format!("MulAssign: 0 * b {i}");
-            check_mul_assign(&name, &console::Field::<<Circuit as Environment>::Network>::zero(), &zero, &b);
+            check_mul_assign(&name, &console::Field::zero(), &zero, &b);
         }
     }
 
@@ -260,102 +250,102 @@ mod tests {
         let expected = a * b;
 
         // Constant
-        let first = Field::<Circuit>::new(Mode::Constant, a);
-        let second = Field::<Circuit>::new(Mode::Constant, b);
+        let first = Field::new(Mode::Constant, a);
+        let second = Field::new(Mode::Constant, b);
         let candidate_a = first * second;
         assert_eq!(expected, candidate_a.eject_value());
 
         // Private
-        let first = Field::<Circuit>::new(Mode::Private, a);
-        let second = Field::<Circuit>::new(Mode::Private, b);
+        let first = Field::new(Mode::Private, a);
+        let second = Field::new(Mode::Private, b);
         let candidate_b = first * second;
         assert_eq!(expected, candidate_b.eject_value());
     }
 
     #[test]
     fn test_0_times_0() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+        let zero = console::Field::zero();
 
-        let candidate = Field::<Circuit>::zero() * Field::zero();
+        let candidate = Field::zero() * Field::zero();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::zero() * &Field::zero();
+        let candidate = Field::zero() * &Field::zero();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero) * Field::new(Mode::Public, zero);
+        let candidate = Field::new(Mode::Public, zero) * Field::new(Mode::Public, zero);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, zero) * Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Public, zero) * Field::new(Mode::Private, zero);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, zero) * Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Private, zero) * Field::new(Mode::Private, zero);
         assert_eq!(zero, candidate.eject_value());
     }
 
     #[test]
     fn test_0_times_1() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let zero = console::Field::zero();
+        let one = console::Field::one();
 
-        let candidate = Field::<Circuit>::zero() * Field::one();
+        let candidate = Field::zero() * Field::one();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::zero() * &Field::one();
+        let candidate = Field::zero() * &Field::one();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::one() * Field::zero();
+        let candidate = Field::one() * Field::zero();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::one() * &Field::zero();
+        let candidate = Field::one() * &Field::zero();
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one) * Field::new(Mode::Public, zero);
+        let candidate = Field::new(Mode::Public, one) * Field::new(Mode::Public, zero);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one) * Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Public, one) * Field::new(Mode::Private, zero);
         assert_eq!(zero, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, one) * Field::new(Mode::Private, zero);
+        let candidate = Field::new(Mode::Private, one) * Field::new(Mode::Private, zero);
         assert_eq!(zero, candidate.eject_value());
     }
 
     #[test]
     fn test_1_times_1() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
 
-        let candidate = Field::<Circuit>::one() * Field::one();
+        let candidate = Field::one() * Field::one();
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::one() * &Field::one();
+        let candidate = Field::one() * &Field::one();
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, one) * Field::new(Mode::Public, one);
+        let candidate = Field::new(Mode::Public, one) * Field::new(Mode::Public, one);
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, one) * Field::new(Mode::Public, one);
+        let candidate = Field::new(Mode::Private, one) * Field::new(Mode::Public, one);
         assert_eq!(one, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, one) * Field::new(Mode::Private, one);
+        let candidate = Field::new(Mode::Private, one) * Field::new(Mode::Private, one);
         assert_eq!(one, candidate.eject_value());
     }
 
     #[test]
     fn test_2_times_2() {
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
         let two = one + one;
         let four = two + two;
 
-        let candidate_two = Field::<Circuit>::one() + Field::one();
-        let candidate = candidate_two * (Field::<Circuit>::one() + Field::one());
+        let candidate_two = Field::one() + Field::one();
+        let candidate = candidate_two * (Field::one() + Field::one());
         assert_eq!(four, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Public, two) * Field::new(Mode::Public, two);
+        let candidate = Field::new(Mode::Public, two) * Field::new(Mode::Public, two);
         assert_eq!(four, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, two) * Field::new(Mode::Public, two);
+        let candidate = Field::new(Mode::Private, two) * Field::new(Mode::Public, two);
         assert_eq!(four, candidate.eject_value());
 
-        let candidate = Field::<Circuit>::new(Mode::Private, two) * Field::new(Mode::Private, two);
+        let candidate = Field::new(Mode::Private, two) * Field::new(Mode::Private, two);
         assert_eq!(four, candidate.eject_value());
     }
 }

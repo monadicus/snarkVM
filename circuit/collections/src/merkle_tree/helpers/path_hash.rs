@@ -16,7 +16,7 @@ use super::*;
 use snarkvm_circuit_algorithms::{Hash, Poseidon, BHP};
 
 /// A trait for a Merkle path hash function.
-pub trait PathHash<E: Environment> {
+pub trait PathHash {
     type Hash: FieldTrait;
 
     /// Returns the hash of the given child nodes.
@@ -28,8 +28,8 @@ pub trait PathHash<E: Environment> {
     }
 }
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash<E> for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Hash = Field<E>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Hash = Field;
 
     /// Returns the hash of the given child nodes.
     fn hash_children(&self, left: &Self::Hash, right: &Self::Hash) -> Self::Hash {
@@ -43,8 +43,8 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> PathHash<E> f
     }
 }
 
-impl<E: Environment, const RATE: usize> PathHash<E> for Poseidon<E, RATE> {
-    type Hash = Field<E>;
+impl<const RATE: usize> PathHash for Poseidon<RATE> {
+    type Hash = Field;
 
     /// Returns the hash of the given child nodes.
     fn hash_children(&self, left: &Self::Hash, right: &Self::Hash) -> Self::Hash {
@@ -70,8 +70,8 @@ mod tests {
     macro_rules! check_hash_children {
         ($hash:ident, $mode:ident, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize the hash.
-            let native = snarkvm_console_algorithms::$hash::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit = $hash::<Circuit>::constant(native.clone());
+            let native = snarkvm_console_algorithms::$hash::setup(DOMAIN)?;
+            let circuit = $hash::constant(native.clone());
 
             let mut rng = TestRng::default();
 

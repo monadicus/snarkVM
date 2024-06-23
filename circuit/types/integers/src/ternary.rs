@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Ternary for Integer<E, I> {
-    type Boolean = Boolean<E>;
+impl<I: IntegerType> Ternary for Integer<I> {
+    type Boolean = Boolean;
     type Output = Self;
 
     /// Returns `first` if `condition` is `true`, otherwise returns `second`.
@@ -45,9 +45,7 @@ impl<E: Environment, I: IntegerType> Ternary for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Ternary<Boolean = Boolean<E>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType> Metrics<dyn Ternary<Boolean = Boolean, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -60,10 +58,8 @@ impl<E: Environment, I: IntegerType> Metrics<dyn Ternary<Boolean = Boolean<E>, O
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Ternary<Boolean = Boolean<E>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
-    type Case = (CircuitType<Boolean<E>>, Mode, Mode);
+impl<I: IntegerType> OutputMode<dyn Ternary<Boolean = Boolean, Output = Integer<I>>> for Integer<I> {
+    type Case = (CircuitType<Boolean>, Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
         let (condition, mode_a, mode_b) = case;
@@ -73,7 +69,7 @@ impl<E: Environment, I: IntegerType> OutputMode<dyn Ternary<Boolean = Boolean<E>
                     true => *mode_a,
                     false => *mode_b,
                 },
-                _ => E::halt("The constant condition is required to determine output mode."),
+                _ => Circuit::halt("The constant condition is required to determine output mode."),
             },
             false => Mode::Private,
         }
@@ -93,8 +89,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
             let expected = if *flag { first } else { second };
 
-            let condition = Boolean::<Circuit>::new(mode_condition, *flag);
-            let a = Integer::<Circuit, I>::new(mode_a, first);
+            let condition = Boolean::new(mode_condition, *flag);
+            let a = Integer::<I>::new(mode_a, first);
             let b = Integer::new(mode_b, second);
 
             let name = format!("Ternary({flag}): if ({mode_condition}) then ({mode_a}) else ({mode_b})");

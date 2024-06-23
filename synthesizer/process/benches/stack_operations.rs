@@ -47,11 +47,11 @@ fn bench_stack_new(c: &mut Criterion) {
         b.iter_batched_ref(
             || {
                 // Sample a random identifier.
-                let identifier = sample_identifier_as_string::<CurrentNetwork>(&mut rng).unwrap();
+                let identifier = sample_identifier_as_string(&mut rng).unwrap();
                 // Construct the program.
                 Program::from_str(&format!("program {identifier}.aleo; function foo:")).unwrap()
             },
-            |program| Stack::<CurrentNetwork>::new(&process, program),
+            |program| Stack::new(&process, program),
             BatchSize::PerIteration,
         )
     });
@@ -76,7 +76,7 @@ fn bench_stack_new(c: &mut Criterion) {
             b.iter_batched_ref(
                 || {
                     // Sample a random identifier.
-                    let identifier = sample_identifier_as_string::<CurrentNetwork>(&mut rng).unwrap();
+                    let identifier = sample_identifier_as_string(&mut rng).unwrap();
                     // Construct the program.
                     Program::from_str(&format!(
                         "program {identifier}.aleo; function foo: call test_{i}.aleo/foo;",
@@ -85,7 +85,7 @@ fn bench_stack_new(c: &mut Criterion) {
                     ))
                     .unwrap()
                 },
-                |program| Stack::<CurrentNetwork>::new(&process, program),
+                |program| Stack::new(&process, program),
                 BatchSize::PerIteration,
             )
         });
@@ -153,16 +153,16 @@ fn add_program_at_depth(process: &mut Process<CurrentNetwork>, depth: usize) {
 }
 
 // Samples a random identifier as a string.
-fn sample_identifier_as_string<N: Network>(rng: &mut TestRng) -> console::prelude::Result<String> {
+fn sample_identifier_as_string(rng: &mut TestRng) -> console::prelude::Result<String> {
     // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
     let string = "a".to_string()
         + &rng
             .sample_iter(&Alphanumeric)
-            .take(Field::<N>::size_in_data_bits() / (8 * 2))
+            .take(Field::size_in_data_bits() / (8 * 2))
             .map(char::from)
             .collect::<String>();
     // Ensure identifier fits within the data capacity of the base field.
-    let max_bytes = Field::<N>::size_in_data_bits() / 8; // Note: This intentionally rounds down.
+    let max_bytes = Field::size_in_data_bits() / 8; // Note: This intentionally rounds down.
     match string.len() <= max_bytes {
         // Return the identifier.
         true => Ok(string.to_lowercase()),

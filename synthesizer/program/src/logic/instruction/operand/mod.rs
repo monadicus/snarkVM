@@ -24,13 +24,13 @@ use console::{
 /// The `Operand` enum represents the options for an operand in an instruction.
 /// This enum is designed to for instructions such as `add {Register} {Literal} into {Register}`.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub enum Operand<N: Network> {
+pub enum Operand {
     /// The operand is a literal.
-    Literal(Literal<N>),
+    Literal(Literal),
     /// The operand is a register.
-    Register(Register<N>),
+    Register(Register),
     /// The operand is the program ID.
-    ProgramID(ProgramID<N>),
+    ProgramID(ProgramID),
     /// The operand is the signer address.
     /// Note: This variant is only accessible in the `function` scope.
     Signer,
@@ -45,34 +45,34 @@ pub enum Operand<N: Network> {
     NetworkID,
 }
 
-impl<N: Network> From<Literal<N>> for Operand<N> {
+impl From<Literal> for Operand {
     /// Initializes a new operand from a literal.
     #[inline]
-    fn from(literal: Literal<N>) -> Self {
+    fn from(literal: Literal) -> Self {
         Operand::Literal(literal)
     }
 }
 
-impl<N: Network> From<&Literal<N>> for Operand<N> {
+impl From<&Literal> for Operand {
     /// Initializes a new operand from a reference to a literal.
     #[inline]
-    fn from(literal: &Literal<N>) -> Self {
+    fn from(literal: &Literal) -> Self {
         Operand::Literal(literal.clone())
     }
 }
 
-impl<N: Network> From<Register<N>> for Operand<N> {
+impl From<Register> for Operand {
     /// Initializes a new operand from a register.
     #[inline]
-    fn from(register: Register<N>) -> Self {
+    fn from(register: Register) -> Self {
         Operand::Register(register)
     }
 }
 
-impl<N: Network> From<&Register<N>> for Operand<N> {
+impl From<&Register> for Operand {
     /// Initializes a new operand from a reference to a register.
     #[inline]
-    fn from(register: &Register<N>) -> Self {
+    fn from(register: &Register) -> Self {
         Operand::Register(register.clone())
     }
 }

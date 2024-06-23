@@ -50,7 +50,7 @@ use rayon::prelude::*;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Transactions<N: Network> {
     /// The transactions included in a block.
-    transactions: IndexMap<N::TransactionID, ConfirmedTransaction<N>>,
+    transactions: IndexMap<TransactionID, ConfirmedTransaction<N>>,
 }
 
 impl<N: Network> Transactions<N> {
@@ -76,7 +76,7 @@ impl<'a, N: Network> FromIterator<&'a ConfirmedTransaction<N>> for Transactions<
 
 impl<N: Network> Transactions<N> {
     /// Returns the transaction for the given transaction ID.
-    pub fn get(&self, transaction_id: &N::TransactionID) -> Option<&ConfirmedTransaction<N>> {
+    pub fn get(&self, transaction_id: &TransactionID) -> Option<&ConfirmedTransaction<N>> {
         self.transactions.get(transaction_id)
     }
 
@@ -113,12 +113,12 @@ impl<N: Network> Transactions<N> {
     }
 
     /// Returns `true` if the transactions contains the given serial number.
-    pub fn contains_serial_number(&self, serial_number: &Field<N>) -> bool {
+    pub fn contains_serial_number(&self, serial_number: &Field) -> bool {
         cfg_values!(self.transactions).any(|tx| tx.contains_serial_number(serial_number))
     }
 
     /// Returns `true` if the transactions contains the given commitment.
-    pub fn contains_commitment(&self, commitment: &Field<N>) -> bool {
+    pub fn contains_commitment(&self, commitment: &Field) -> bool {
         cfg_values!(self.transactions).any(|tx| tx.contains_commitment(commitment))
     }
 }
@@ -127,7 +127,7 @@ impl<N: Network> Transactions<N> {
     /// Returns the confirmed transaction for the given unconfirmed transaction ID, if it exists.
     pub fn find_confirmed_transaction_for_unconfirmed_transaction_id(
         &self,
-        unconfirmed_transaction_id: &N::TransactionID,
+        unconfirmed_transaction_id: &TransactionID,
     ) -> Option<&ConfirmedTransaction<N>> {
         cfg_find!(self.transactions, unconfirmed_transaction_id, contains_unconfirmed_transaction_id)
     }
@@ -138,12 +138,12 @@ impl<N: Network> Transactions<N> {
     }
 
     /// Returns the transaction with the given serial number, if it exists.
-    pub fn find_transaction_for_serial_number(&self, serial_number: &Field<N>) -> Option<&Transaction<N>> {
+    pub fn find_transaction_for_serial_number(&self, serial_number: &Field) -> Option<&Transaction<N>> {
         cfg_find!(self.transactions, serial_number, contains_serial_number).map(|tx| tx.transaction())
     }
 
     /// Returns the transaction with the given commitment, if it exists.
-    pub fn find_transaction_for_commitment(&self, commitment: &Field<N>) -> Option<&Transaction<N>> {
+    pub fn find_transaction_for_commitment(&self, commitment: &Field) -> Option<&Transaction<N>> {
         cfg_find!(self.transactions, commitment, contains_commitment).map(|tx| tx.transaction())
     }
 
@@ -153,17 +153,17 @@ impl<N: Network> Transactions<N> {
     }
 
     /// Returns the transition for the given serial number, if it exists.
-    pub fn find_transition_for_serial_number(&self, serial_number: &Field<N>) -> Option<&Transition<N>> {
+    pub fn find_transition_for_serial_number(&self, serial_number: &Field) -> Option<&Transition<N>> {
         cfg_find_map!(self.transactions, serial_number, find_transition_for_serial_number)
     }
 
     /// Returns the transition for the given commitment, if it exists.
-    pub fn find_transition_for_commitment(&self, commitment: &Field<N>) -> Option<&Transition<N>> {
+    pub fn find_transition_for_commitment(&self, commitment: &Field) -> Option<&Transition<N>> {
         cfg_find_map!(self.transactions, commitment, find_transition_for_commitment)
     }
 
     /// Returns the record with the corresponding commitment, if it exists.
-    pub fn find_record(&self, commitment: &Field<N>) -> Option<&Record<N, Ciphertext<N>>> {
+    pub fn find_record(&self, commitment: &Field) -> Option<&Record<N, Ciphertext<N>>> {
         cfg_find_map!(self.transactions, commitment, find_record)
     }
 }
@@ -188,7 +188,7 @@ impl<N: Network> Transactions<N> {
     }
 
     /// Returns an iterator over the transaction IDs, for all transactions in `self`.
-    pub fn transaction_ids(&self) -> impl '_ + ExactSizeIterator<Item = &N::TransactionID> {
+    pub fn transaction_ids(&self) -> impl '_ + ExactSizeIterator<Item = &TransactionID> {
         self.transactions.keys()
     }
 
@@ -213,47 +213,47 @@ impl<N: Network> Transactions<N> {
     }
 
     /// Returns an iterator over the transition public keys, for all transactions.
-    pub fn transition_public_keys(&self) -> impl '_ + Iterator<Item = &Group<N>> {
+    pub fn transition_public_keys(&self) -> impl '_ + Iterator<Item = &Group> {
         self.iter().flat_map(|tx| tx.transition_public_keys())
     }
 
     /// Returns an iterator over the transition commitments, for all transactions.
-    pub fn transition_commitments(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn transition_commitments(&self) -> impl '_ + Iterator<Item = &Field> {
         self.iter().flat_map(|tx| tx.transition_commitments())
     }
 
     /// Returns an iterator over the tags, for all transition inputs that are records.
-    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field> {
         self.iter().flat_map(|tx| tx.tags())
     }
 
     /// Returns an iterator over the input IDs, for all transition inputs that are records.
-    pub fn input_ids(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn input_ids(&self) -> impl '_ + Iterator<Item = &Field> {
         self.iter().flat_map(|tx| tx.input_ids())
     }
 
     /// Returns an iterator over the serial numbers, for all transition inputs that are records.
-    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field> {
         self.iter().flat_map(|tx| tx.serial_numbers())
     }
 
     /// Returns an iterator over the output IDs, for all transition inputs that are records.
-    pub fn output_ids(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn output_ids(&self) -> impl '_ + Iterator<Item = &Field> {
         self.iter().flat_map(|tx| tx.output_ids())
     }
 
     /// Returns an iterator over the commitments, for all transition outputs that are records.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field> {
         self.iter().flat_map(|tx| tx.commitments())
     }
 
     /// Returns an iterator over the records, for all transition outputs that are records.
-    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field<N>, &Record<N, Ciphertext<N>>)> {
+    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field, &Record<N, Ciphertext<N>>)> {
         self.iter().flat_map(|tx| tx.records())
     }
 
     /// Returns an iterator over the nonces, for all transition outputs that are records.
-    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group<N>> {
+    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group> {
         self.iter().flat_map(|tx| tx.nonces())
     }
 
@@ -269,7 +269,7 @@ impl<N: Network> Transactions<N> {
 }
 
 impl<N: Network> IntoIterator for Transactions<N> {
-    type IntoIter = indexmap::map::IntoValues<N::TransactionID, Self::Item>;
+    type IntoIter = indexmap::map::IntoValues<TransactionID, Self::Item>;
     type Item = ConfirmedTransaction<N>;
 
     /// Returns a consuming iterator over all transactions, for all transactions in `self`.
@@ -280,7 +280,7 @@ impl<N: Network> IntoIterator for Transactions<N> {
 
 impl<N: Network> Transactions<N> {
     /// Returns a consuming iterator over the transaction IDs, for all transactions in `self`.
-    pub fn into_transaction_ids(self) -> impl ExactSizeIterator<Item = N::TransactionID> {
+    pub fn into_transaction_ids(self) -> impl ExactSizeIterator<Item = TransactionID> {
         self.transactions.into_keys()
     }
 
@@ -305,32 +305,32 @@ impl<N: Network> Transactions<N> {
     }
 
     /// Returns a consuming iterator over the transition public keys, for all transactions.
-    pub fn into_transition_public_keys(self) -> impl Iterator<Item = Group<N>> {
+    pub fn into_transition_public_keys(self) -> impl Iterator<Item = Group> {
         self.into_iter().flat_map(|tx| tx.into_transaction().into_transition_public_keys())
     }
 
     /// Returns a consuming iterator over the tags, for all transition inputs that are records.
-    pub fn into_tags(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_tags(self) -> impl Iterator<Item = Field> {
         self.into_iter().flat_map(|tx| tx.into_transaction().into_tags())
     }
 
     /// Returns a consuming iterator over the serial numbers, for all transition inputs that are records.
-    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field> {
         self.into_iter().flat_map(|tx| tx.into_transaction().into_serial_numbers())
     }
 
     /// Returns a consuming iterator over the commitments, for all transition outputs that are records.
-    pub fn into_commitments(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_commitments(self) -> impl Iterator<Item = Field> {
         self.into_iter().flat_map(|tx| tx.into_transaction().into_commitments())
     }
 
     /// Returns a consuming iterator over the records, for all transition outputs that are records.
-    pub fn into_records(self) -> impl Iterator<Item = (Field<N>, Record<N, Ciphertext<N>>)> {
+    pub fn into_records(self) -> impl Iterator<Item = (Field, Record<N, Ciphertext<N>>)> {
         self.into_iter().flat_map(|tx| tx.into_transaction().into_records())
     }
 
     /// Returns a consuming iterator over the nonces, for all transition outputs that are records.
-    pub fn into_nonces(self) -> impl Iterator<Item = Group<N>> {
+    pub fn into_nonces(self) -> impl Iterator<Item = Group> {
         self.into_iter().flat_map(|tx| tx.into_transaction().into_nonces())
     }
 }
@@ -357,15 +357,15 @@ mod tests {
     #[test]
     fn test_max_transmissions() {
         // Determine the maximum number of transmissions in a block.
-        let max_transmissions_per_block = BatchHeader::<CurrentNetwork>::MAX_TRANSMISSIONS_PER_BATCH
-            * BatchHeader::<CurrentNetwork>::MAX_GC_ROUNDS
-            * BatchHeader::<CurrentNetwork>::MAX_CERTIFICATES as usize;
+        let max_transmissions_per_block = BatchHeader::MAX_TRANSMISSIONS_PER_BATCH
+            * BatchHeader::MAX_GC_ROUNDS
+            * CurrentNetwork::MAX_CERTIFICATES as usize;
 
         // Note: The maximum number of *transmissions* in a block cannot exceed the maximum number of *transactions* in a block.
         // If you intended to change the number of 'MAX_TRANSACTIONS', note that this will break the inclusion proof,
         // and you will need to migrate all users to a new circuit for the inclusion proof.
         assert!(
-            max_transmissions_per_block <= Transactions::<CurrentNetwork>::MAX_TRANSACTIONS,
+            max_transmissions_per_block <= Transactions::MAX_TRANSACTIONS,
             "The maximum number of transmissions in a block is too large"
         );
     }

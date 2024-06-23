@@ -73,7 +73,7 @@ impl<'de, N: Network> Deserialize<'de> for Input<N> {
                 // Parse the input from a string into a value.
                 let mut input = serde_json::Value::deserialize(deserializer)?;
                 // Retrieve the ID.
-                let id: Field<N> = DeserializeExt::take_from_value::<D>(&mut input, "id")?;
+                let id: Field = DeserializeExt::take_from_value::<D>(&mut input, "id")?;
 
                 // Recover the input.
                 let input = match input.get("type").and_then(|t| t.as_str()) {

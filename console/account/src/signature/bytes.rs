@@ -52,7 +52,7 @@ mod tests {
             // Check the byte representation.
             let signature_bytes = signature.to_bytes_le()?;
             assert_eq!(signature, Signature::read_le(&signature_bytes[..])?);
-            assert!(Signature:::read_le(&signature_bytes[1..]).is_err());
+            assert!(Signature::read_le(&signature_bytes[1..]).is_err());
         }
         Ok(())
     }

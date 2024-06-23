@@ -85,9 +85,6 @@ impl Deref for Address {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: u64 = 1000;
 
@@ -97,7 +94,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a new address.
-            let expected = Address::<CurrentEnvironment>::rand(&mut rng);
+            let expected = Address::rand(&mut rng);
 
             // Check the group representation.
             let candidate = *expected;

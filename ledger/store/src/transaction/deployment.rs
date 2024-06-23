@@ -36,11 +36,11 @@ use std::borrow::Cow;
 /// A trait for deployment storage.
 pub trait DeploymentStorage<N: Network>: Clone + Send + Sync {
     /// The mapping of `transaction ID` to `program ID`.
-    type IDMap: for<'a> Map<'a, N::TransactionID, ProgramID<N>>;
+    type IDMap: for<'a> Map<'a, TransactionID, ProgramID<N>>;
     /// The mapping of `program ID` to `edition`.
     type EditionMap: for<'a> Map<'a, ProgramID<N>, u16>;
     /// The mapping of `(program ID, edition)` to `transaction ID`.
-    type ReverseIDMap: for<'a> Map<'a, (ProgramID<N>, u16), N::TransactionID>;
+    type ReverseIDMap: for<'a> Map<'a, (ProgramID<N>, u16), TransactionID>;
     /// The mapping of `(program ID, edition)` to `ProgramOwner`.
     type OwnerMap: for<'a> Map<'a, (ProgramID<N>, u16), ProgramOwner<N>>;
     /// The mapping of `(program ID, edition)` to `program`.
@@ -211,7 +211,7 @@ pub trait DeploymentStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Removes the deployment transaction for the given `transaction ID`.
-    fn remove(&self, transaction_id: &N::TransactionID) -> Result<()> {
+    fn remove(&self, transaction_id: &TransactionID) -> Result<()> {
         // Retrieve the program ID.
         let program_id = match self.get_program_id(transaction_id)? {
             Some(edition) => edition,
@@ -257,7 +257,7 @@ pub trait DeploymentStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the transaction ID that contains the given `program ID`.
-    fn find_transaction_id_from_program_id(&self, program_id: &ProgramID<N>) -> Result<Option<N::TransactionID>> {
+    fn find_transaction_id_from_program_id(&self, program_id: &ProgramID<N>) -> Result<Option<TransactionID>> {
         // Check if the program ID is for 'credits.aleo'.
         // This case is handled separately, as it is a default program of the VM.
         // TODO (howardwu): After we update 'fee' rules and 'Ratify' in genesis, we can remove this.
@@ -278,15 +278,12 @@ pub trait DeploymentStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the transaction ID that contains the given `transition ID`.
-    fn find_transaction_id_from_transition_id(
-        &self,
-        transition_id: &N::TransitionID,
-    ) -> Result<Option<N::TransactionID>> {
+    fn find_transaction_id_from_transition_id(&self, transition_id: &N::TransitionID) -> Result<Option<TransactionID>> {
         self.fee_store().find_transaction_id_from_transition_id(transition_id)
     }
 
     /// Returns the program ID for the given `transaction ID`.
-    fn get_program_id(&self, transaction_id: &N::TransactionID) -> Result<Option<ProgramID<N>>> {
+    fn get_program_id(&self, transaction_id: &TransactionID) -> Result<Option<ProgramID<N>>> {
         // Retrieve the program ID.
         match self.id_map().get_confirmed(transaction_id)? {
             Some(program_id) => Ok(Some(cow_to_copied!(program_id))),
@@ -388,7 +385,7 @@ pub trait DeploymentStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the deployment for the given `transaction ID`.
-    fn get_deployment(&self, transaction_id: &N::TransactionID) -> Result<Option<Deployment<N>>> {
+    fn get_deployment(&self, transaction_id: &TransactionID) -> Result<Option<Deployment<N>>> {
         // Retrieve the program ID.
         let program_id = match self.get_program_id(transaction_id)? {
             Some(edition) => edition,
@@ -429,7 +426,7 @@ pub trait DeploymentStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the fee for the given `transaction ID`.
-    fn get_fee(&self, transaction_id: &N::TransactionID) -> Result<Option<Fee<N>>> {
+    fn get_fee(&self, transaction_id: &TransactionID) -> Result<Option<Fee<N>>> {
         self.fee_store().get_fee(transaction_id)
     }
 
@@ -457,7 +454,7 @@ pub trait DeploymentStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the transaction for the given `transaction ID`.
-    fn get_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    fn get_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         // Retrieve the deployment.
         let deployment = match self.get_deployment(transaction_id)? {
             Some(deployment) => deployment,
@@ -514,7 +511,7 @@ impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
     }
 
     /// Removes the transaction for the given `transaction ID`.
-    pub fn remove(&self, transaction_id: &N::TransactionID) -> Result<()> {
+    pub fn remove(&self, transaction_id: &TransactionID) -> Result<()> {
         self.storage.remove(transaction_id)
     }
 
@@ -561,12 +558,12 @@ impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
 
 impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
     /// Returns the transaction for the given `transaction ID`.
-    pub fn get_transaction(&self, transaction_id: &N::TransactionID) -> Result<Option<Transaction<N>>> {
+    pub fn get_transaction(&self, transaction_id: &TransactionID) -> Result<Option<Transaction<N>>> {
         self.storage.get_transaction(transaction_id)
     }
 
     /// Returns the deployment for the given `transaction ID`.
-    pub fn get_deployment(&self, transaction_id: &N::TransactionID) -> Result<Option<Deployment<N>>> {
+    pub fn get_deployment(&self, transaction_id: &TransactionID) -> Result<Option<Deployment<N>>> {
         self.storage.get_deployment(transaction_id)
     }
 
@@ -576,7 +573,7 @@ impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
     }
 
     /// Returns the program ID for the given `transaction ID`.
-    pub fn get_program_id(&self, transaction_id: &N::TransactionID) -> Result<Option<ProgramID<N>>> {
+    pub fn get_program_id(&self, transaction_id: &TransactionID) -> Result<Option<ProgramID<N>>> {
         self.storage.get_program_id(transaction_id)
     }
 
@@ -604,14 +601,14 @@ impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
     }
 
     /// Returns the fee for the given `transaction ID`.
-    pub fn get_fee(&self, transaction_id: &N::TransactionID) -> Result<Option<Fee<N>>> {
+    pub fn get_fee(&self, transaction_id: &TransactionID) -> Result<Option<Fee<N>>> {
         self.storage.get_fee(transaction_id)
     }
 }
 
 impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
     /// Returns the transaction ID that deployed the given `program ID`.
-    pub fn find_transaction_id_from_program_id(&self, program_id: &ProgramID<N>) -> Result<Option<N::TransactionID>> {
+    pub fn find_transaction_id_from_program_id(&self, program_id: &ProgramID<N>) -> Result<Option<TransactionID>> {
         self.storage.find_transaction_id_from_program_id(program_id)
     }
 
@@ -619,7 +616,7 @@ impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
     pub fn find_transaction_id_from_transition_id(
         &self,
         transition_id: &N::TransitionID,
-    ) -> Result<Option<N::TransactionID>> {
+    ) -> Result<Option<TransactionID>> {
         self.storage.find_transaction_id_from_transition_id(transition_id)
     }
 }
@@ -633,7 +630,7 @@ impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
 
 impl<N: Network, D: DeploymentStorage<N>> DeploymentStore<N, D> {
     /// Returns an iterator over the deployment transaction IDs, for all deployments.
-    pub fn deployment_transaction_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, N::TransactionID>> {
+    pub fn deployment_transaction_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, TransactionID>> {
         self.storage.id_map().keys_confirmed()
     }
 

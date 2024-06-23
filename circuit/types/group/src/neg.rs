@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Neg for Group<E> {
+impl Neg for Group {
     type Output = Self;
 
     /// Performs the unary `-` operation.
@@ -23,8 +23,8 @@ impl<E: Environment> Neg for Group<E> {
     }
 }
 
-impl<E: Environment> Neg for &Group<E> {
-    type Output = Group<E>;
+impl Neg for &Group {
+    type Output = Group;
 
     /// Performs the unary `-` operation.
     fn neg(self) -> Self::Output {
@@ -32,7 +32,7 @@ impl<E: Environment> Neg for &Group<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn Neg<Output = Group<E>>> for Group<E> {
+impl Metrics<dyn Neg<Output = Group>> for Group {
     type Case = Mode;
 
     fn count(_case: &Self::Case) -> Count {
@@ -40,7 +40,7 @@ impl<E: Environment> Metrics<dyn Neg<Output = Group<E>>> for Group<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn Neg<Output = Group<E>>> for Group<E> {
+impl OutputMode<dyn Neg<Output = Group>> for Group {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -58,11 +58,7 @@ mod tests {
 
     const ITERATIONS: u64 = 100;
 
-    fn check_neg(
-        name: &str,
-        expected: console::Group<<Circuit as Environment>::Network>,
-        candidate_input: Group<Circuit>,
-    ) {
+    fn check_neg(name: &str, expected: console::Group, candidate_input: Group) {
         Circuit::scope(name, || {
             let mode = candidate_input.eject_mode();
             let candidate_output = -candidate_input;
@@ -78,10 +74,10 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let point: console::Group<_> = Uniform::rand(&mut rng);
-            let expected: console::Group<_> = -point;
+            let point: console::Group = Uniform::rand(&mut rng);
+            let expected: console::Group = -point;
 
-            let candidate_input = Group::<Circuit>::new(Mode::Constant, point);
+            let candidate_input = Group::new(Mode::Constant, point);
             check_neg(&format!("NEG Constant {i}"), expected, candidate_input);
         }
     }
@@ -92,10 +88,10 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let point: console::Group<_> = Uniform::rand(&mut rng);
-            let expected: console::Group<_> = -point;
+            let point: console::Group = Uniform::rand(&mut rng);
+            let expected: console::Group = -point;
 
-            let candidate_input = Group::<Circuit>::new(Mode::Public, point);
+            let candidate_input = Group::new(Mode::Public, point);
             check_neg(&format!("NEG Public {i}"), expected, candidate_input);
         }
     }
@@ -106,25 +102,25 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample a random element.
-            let point: console::Group<_> = Uniform::rand(&mut rng);
-            let expected: console::Group<_> = -point;
+            let point: console::Group = Uniform::rand(&mut rng);
+            let expected: console::Group = -point;
 
-            let candidate_input = Group::<Circuit>::new(Mode::Private, point);
+            let candidate_input = Group::new(Mode::Private, point);
             check_neg(&format!("NEG Private {i}"), expected, candidate_input);
         }
     }
 
     #[test]
     fn test_zero() {
-        let expected = console::Group::<<Circuit as Environment>::Network>::zero();
+        let expected = console::Group::zero();
 
-        let candidate_input = Group::<Circuit>::zero();
+        let candidate_input = Group::zero();
         check_neg("NEG Constant Zero", expected, candidate_input);
 
-        let candidate_input = Group::<Circuit>::new(Mode::Public, expected);
+        let candidate_input = Group::new(Mode::Public, expected);
         check_neg("NEG Public Zero", expected, candidate_input);
 
-        let candidate_input = Group::<Circuit>::new(Mode::Private, expected);
+        let candidate_input = Group::new(Mode::Private, expected);
         check_neg("NEG Private Zero", expected, candidate_input);
     }
 }

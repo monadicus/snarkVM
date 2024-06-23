@@ -276,7 +276,7 @@ pub mod test_helpers {
         let header_root = header_tree.root();
         let header_path = header_tree.prove(1, &header_leaf.to_bits_le())?;
 
-        let previous_block_hash: N::BlockHash = Field::rand(rng).into();
+        let previous_block_hash: BlockHash = Field::rand(rng).into();
         let preimage = (*previous_block_hash).to_bits_le().into_iter().chain(header_root.to_bits_le());
         let block_hash = AleoNetwork::hash_bhp1024(&preimage.collect::<Vec<_>>())?;
 
@@ -345,8 +345,8 @@ pub mod test_helpers {
         let header_root = header_tree.root();
         let header_path = header_tree.prove(random_header_index as usize, &header_leaf.to_bits_le())?;
 
-        let previous_block_hash: N::BlockHash = Field::rand(rng).into();
-        let block_hash: N::BlockHash = Field::rand(rng).into();
+        let previous_block_hash: BlockHash = Field::rand(rng).into();
+        let block_hash: BlockHash = Field::rand(rng).into();
 
         // Construct the global state root and block path.
         let block_tree: BlockTree = AleoNetwork::merkle_tree_bhp(&[block_hash.to_bits_le()])?;

@@ -15,8 +15,8 @@
 use super::*;
 
 #[cfg(console)]
-impl<A: Aleo> Equal<Self> for Signature<A> {
-    type Output = Boolean<A>;
+impl Equal<Self> for Signature {
+    type Output = Boolean;
 
     ///
     /// Returns `true` if `self` and `other` are equal.
@@ -44,7 +44,7 @@ impl<A: Aleo> Equal<Self> for Signature<A> {
     }
 }
 
-impl<A: Aleo> Metrics<dyn Equal<Signature<A>, Output = Boolean<A>>> for Signature<A> {
+impl Metrics<dyn Equal<Signature, Output = Boolean>> for Signature {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -55,7 +55,7 @@ impl<A: Aleo> Metrics<dyn Equal<Signature<A>, Output = Boolean<A>>> for Signatur
     }
 }
 
-impl<A: Aleo> OutputMode<dyn Equal<Signature<A>, Output = Boolean<A>>> for Signature<A> {
+impl OutputMode<dyn Equal<Signature, Output = Boolean>> for Signature {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -88,8 +88,8 @@ mod tests {
     ) {
         for i in 0..ITERATIONS {
             // Sample two random signatures.
-            let a = Signature::<CurrentAleo>::new(mode_a, crate::helpers::generate_signature(i, rng));
-            let b = Signature::<CurrentAleo>::new(mode_b, crate::helpers::generate_signature(i, rng));
+            let a = Signature::new(mode_a, crate::helpers::generate_signature(i, rng));
+            let b = Signature::new(mode_b, crate::helpers::generate_signature(i, rng));
 
             CurrentAleo::scope(&format!("{mode_a} {mode_a} {i}"), || {
                 let equals = a.is_equal(&a);
@@ -115,8 +115,8 @@ mod tests {
     ) {
         for i in 0..ITERATIONS {
             // Sample two random signatures.
-            let a = Signature::<CurrentAleo>::new(mode_a, crate::helpers::generate_signature(i, rng));
-            let b = Signature::<CurrentAleo>::new(mode_b, crate::helpers::generate_signature(i, rng));
+            let a = Signature::new(mode_a, crate::helpers::generate_signature(i, rng));
+            let b = Signature::new(mode_b, crate::helpers::generate_signature(i, rng));
 
             CurrentAleo::scope(&format!("{mode_a} {mode_a} {i}"), || {
                 let equals = a.is_not_equal(&a);

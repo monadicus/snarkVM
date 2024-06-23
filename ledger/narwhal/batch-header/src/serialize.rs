@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> Serialize for BatchHeader<N> {
+impl Serialize for BatchHeader {
     #[inline]
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match serializer.is_human_readable() {
@@ -35,13 +35,13 @@ impl<N: Network> Serialize for BatchHeader<N> {
     }
 }
 
-impl<'de, N: Network> Deserialize<'de> for BatchHeader<N> {
+impl<'de> Deserialize<'de> for BatchHeader {
     #[inline]
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         match deserializer.is_human_readable() {
             true => {
                 let mut header = serde_json::Value::deserialize(deserializer)?;
-                let batch_id: Field<N> = DeserializeExt::take_from_value::<D>(&mut header, "batch_id")?;
+                let batch_id: Field = DeserializeExt::take_from_value::<D>(&mut header, "batch_id")?;
 
                 // Recover the header.
                 let batch_header = Self::from(

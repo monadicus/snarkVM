@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment> Sub<Self> for Group<E> {
+impl Sub<Self> for Group {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
@@ -22,7 +22,7 @@ impl<E: Environment> Sub<Self> for Group<E> {
     }
 }
 
-impl<E: Environment> Sub<&Self> for Group<E> {
+impl Sub<&Self> for Group {
     type Output = Self;
 
     fn sub(self, other: &Self) -> Self::Output {
@@ -30,27 +30,27 @@ impl<E: Environment> Sub<&Self> for Group<E> {
     }
 }
 
-impl<E: Environment> Sub<&Group<E>> for &Group<E> {
-    type Output = Group<E>;
+impl Sub<&Group> for &Group {
+    type Output = Group;
 
-    fn sub(self, other: &Group<E>) -> Self::Output {
+    fn sub(self, other: &Group) -> Self::Output {
         (*self).clone() - other
     }
 }
 
-impl<E: Environment> SubAssign<Self> for Group<E> {
+impl SubAssign<Self> for Group {
     fn sub_assign(&mut self, other: Self) {
         *self -= &other;
     }
 }
 
-impl<E: Environment> SubAssign<&Self> for Group<E> {
+impl SubAssign<&Self> for Group {
     fn sub_assign(&mut self, other: &Self) {
         *self = self.clone() + -other;
     }
 }
 
-impl<E: Environment> Metrics<dyn Sub<Group<E>, Output = Group<E>>> for Group<E> {
+impl Metrics<dyn Sub<Group, Output = Group>> for Group {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -62,7 +62,7 @@ impl<E: Environment> Metrics<dyn Sub<Group<E>, Output = Group<E>>> for Group<E> 
     }
 }
 
-impl<E: Environment> OutputMode<dyn Sub<Group<E>, Output = Group<E>>> for Group<E> {
+impl OutputMode<dyn Sub<Group, Output = Group>> for Group {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -80,12 +80,7 @@ mod tests {
 
     const ITERATIONS: u64 = 100;
 
-    fn check_sub(
-        name: &str,
-        expected: &console::Group<<Circuit as Environment>::Network>,
-        a: &Group<Circuit>,
-        b: &Group<Circuit>,
-    ) {
+    fn check_sub(name: &str, expected: &console::Group, a: &Group, b: &Group) {
         Circuit::scope(name, || {
             let candidate = a - b;
             assert_eq!(*expected, candidate.eject_value(), "({} - {})", a.eject_value(), b.eject_value());
@@ -94,12 +89,7 @@ mod tests {
         });
     }
 
-    fn check_sub_assign(
-        name: &str,
-        expected: &console::Group<<Circuit as Environment>::Network>,
-        a: &Group<Circuit>,
-        b: &Group<Circuit>,
-    ) {
+    fn check_sub_assign(name: &str, expected: &console::Group, a: &Group, b: &Group) {
         Circuit::scope(name, || {
             let mut candidate = a.clone();
             candidate -= b;
@@ -118,8 +108,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Constant, first);
-            let b = Group::<Circuit>::new(Mode::Constant, second);
+            let a = Group::new(Mode::Constant, first);
+            let b = Group::new(Mode::Constant, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -137,8 +127,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Constant, first);
-            let b = Group::<Circuit>::new(Mode::Public, second);
+            let a = Group::new(Mode::Constant, first);
+            let b = Group::new(Mode::Public, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -156,8 +146,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Public, first);
-            let b = Group::<Circuit>::new(Mode::Constant, second);
+            let a = Group::new(Mode::Public, first);
+            let b = Group::new(Mode::Constant, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -175,8 +165,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Constant, first);
-            let b = Group::<Circuit>::new(Mode::Private, second);
+            let a = Group::new(Mode::Constant, first);
+            let b = Group::new(Mode::Private, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -194,8 +184,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Private, first);
-            let b = Group::<Circuit>::new(Mode::Constant, second);
+            let a = Group::new(Mode::Private, first);
+            let b = Group::new(Mode::Constant, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -213,8 +203,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Public, first);
-            let b = Group::<Circuit>::new(Mode::Public, second);
+            let a = Group::new(Mode::Public, first);
+            let b = Group::new(Mode::Public, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -232,8 +222,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Public, first);
-            let b = Group::<Circuit>::new(Mode::Private, second);
+            let a = Group::new(Mode::Public, first);
+            let b = Group::new(Mode::Private, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -251,8 +241,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Private, first);
-            let b = Group::<Circuit>::new(Mode::Public, second);
+            let a = Group::new(Mode::Private, first);
+            let b = Group::new(Mode::Public, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -270,8 +260,8 @@ mod tests {
             let second = Uniform::rand(&mut rng);
 
             let expected = first - second;
-            let a = Group::<Circuit>::new(Mode::Private, first);
-            let b = Group::<Circuit>::new(Mode::Private, second);
+            let a = Group::new(Mode::Private, first);
+            let b = Group::new(Mode::Private, second);
 
             let name = format!("Sub: a - b {i}");
             check_sub(&name, &expected, &a, &b);
@@ -290,14 +280,14 @@ mod tests {
         let expected = a - b;
 
         // Constant
-        let first = Group::<Circuit>::new(Mode::Constant, a);
-        let second = Group::<Circuit>::new(Mode::Constant, b);
+        let first = Group::new(Mode::Constant, a);
+        let second = Group::new(Mode::Constant, b);
         let candidate_a = first - second;
         assert_eq!(expected, candidate_a.eject_value());
 
         // Private
-        let first = Group::<Circuit>::new(Mode::Private, a);
-        let second = Group::<Circuit>::new(Mode::Private, b);
+        let first = Group::new(Mode::Private, a);
+        let second = Group::new(Mode::Private, b);
         let candidate_b = first - second;
         assert_eq!(expected, candidate_b.eject_value());
     }

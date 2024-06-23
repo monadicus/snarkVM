@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const RATE: usize> PRF for Poseidon<E, RATE> {
-    type Input = Field<E>;
-    type Output = Field<E>;
-    type Seed = Field<E>;
+impl<const RATE: usize> PRF for Poseidon<RATE> {
+    type Input = Field;
+    type Output = Field;
+    type Seed = Field;
 
     #[inline]
     fn prf(&self, seed: &Self::Seed, input: &[Self::Input]) -> Self::Output {
@@ -54,8 +54,8 @@ mod tests {
     ) -> Result<()> {
         use console::PRF as P;
 
-        let native = console::Poseidon::<<Circuit as Environment>::Network, RATE>::setup(DOMAIN)?;
-        let poseidon = Poseidon::<Circuit, RATE>::constant(native.clone());
+        let native = console::Poseidon::<RATE>::setup(DOMAIN)?;
+        let poseidon = Poseidon::<RATE>::constant(native.clone());
 
         for i in 0..ITERATIONS {
             // Prepare the seed.
@@ -64,7 +64,7 @@ mod tests {
 
             // Prepare the preimage.
             let native_input = (0..num_inputs).map(|_| Uniform::rand(rng)).collect::<Vec<_>>();
-            let input = native_input.iter().map(|v| Field::<Circuit>::new(mode, *v)).collect::<Vec<_>>();
+            let input = native_input.iter().map(|v| Field::new(mode, *v)).collect::<Vec<_>>();
 
             // Compute the native hash.
             let expected = native.prf(&native_seed, &native_input).expect("Failed to PRF native input");

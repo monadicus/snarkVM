@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> Record<A, Plaintext<A>> {
+impl Record<Plaintext> {
     /// Encrypts `self` for the record owner under the given randomizer.
-    pub fn encrypt(&self, randomizer: &Scalar<A>) -> Record<A, Ciphertext<A>> {
+    pub fn encrypt(&self, randomizer: &Scalar) -> Record<Ciphertext> {
         // Ensure the randomizer corresponds to the record nonce.
-        A::assert_eq(&self.nonce, A::g_scalar_multiply(randomizer));
+        AleoV0::assert_eq(&self.nonce, AleoV0::g_scalar_multiply(randomizer));
         // Compute the record view key.
         let record_view_key = ((*self.owner).to_group() * randomizer).to_x_coordinate();
         // Encrypt the record.
@@ -28,17 +30,17 @@ impl<A: Aleo> Record<A, Plaintext<A>> {
     /// Encrypts `self` under the given record view key.
     /// Note: This method does not check that the record view key corresponds to the record owner.
     /// Use `Self::encrypt` for the checked variant.
-    pub fn encrypt_symmetric_unchecked(&self, record_view_key: Field<A>) -> Record<A, Ciphertext<A>> {
+    pub fn encrypt_symmetric_unchecked(&self, record_view_key: Field) -> Record<Ciphertext> {
         // Determine the number of randomizers needed to encrypt the record.
         let num_randomizers = self.num_randomizers();
         // Prepare a randomizer for each field element.
-        let randomizers = A::hash_many_psd8(&[A::encryption_domain(), record_view_key], num_randomizers);
+        let randomizers = AleoV0::hash_many_psd8(&[AleoV0::encryption_domain(), record_view_key], num_randomizers);
         // Encrypt the record.
         self.encrypt_with_randomizers(&randomizers)
     }
 
     /// Encrypts `self` under the given randomizers.
-    fn encrypt_with_randomizers(&self, randomizers: &[Field<A>]) -> Record<A, Ciphertext<A>> {
+    fn encrypt_with_randomizers(&self, randomizers: &[Field]) -> Record<Ciphertext> {
         // Initialize an index to keep track of the randomizer index.
         let mut index: usize = 0;
 
@@ -69,7 +71,7 @@ impl<A: Aleo> Record<A, Plaintext<A>> {
             };
             // Insert the encrypted entry.
             if encrypted_data.insert(id.clone(), entry).is_some() {
-                A::halt(format!("Duplicate identifier in record: {id}"))
+                Circuit::halt(format!("Duplicate identifier in record: {id}"))
             }
             // Increment the index.
             index += num_randomizers as usize;

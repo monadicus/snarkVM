@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_environment::Circuit;
+
 use super::*;
 
-impl<E: Environment, I: IntegerType, M: Magnitude> PowWrapped<Integer<E, M>> for Integer<E, I> {
+impl<I: IntegerType, M: Magnitude> PowWrapped<Integer<M>> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn pow_wrapped(&self, other: &Integer<E, M>) -> Self::Output {
+    fn pow_wrapped(&self, other: &Integer<M>) -> Self::Output {
         // Determine the variable mode.
         if self.is_constant() && other.is_constant() {
             // Compute the result and return the new constant.
@@ -35,30 +37,26 @@ impl<E: Environment, I: IntegerType, M: Magnitude> PowWrapped<Integer<E, M>> for
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> Metrics<dyn PowWrapped<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType, M: Magnitude> Metrics<dyn PowWrapped<Integer<M>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode, bool, bool);
 
     fn count(case: &Self::Case) -> Count {
         match (case.0, case.1) {
             (Mode::Constant, Mode::Constant) => Count::is(I::BITS, 0, 0, 0),
             (Mode::Constant, _) | (_, Mode::Constant) => {
-                let mul_count = count!(Integer<E, I>, MulWrapped<Integer<E, I>, Output=Integer<E, I>>, case);
+                let mul_count = count!(Integer<I>, MulWrapped<Integer<I>, Output = Integer<I>>, case);
                 (2 * M::BITS * mul_count) + Count::is(2 * I::BITS, 0, I::BITS, I::BITS)
             }
             (_, _) => {
-                let mul_count = count!(Integer<E, I>, MulWrapped<Integer<E, I>, Output=Integer<E, I>>, case);
+                let mul_count = count!(Integer<I>, MulWrapped<Integer<I>, Output = Integer<I>>, case);
                 (2 * M::BITS * mul_count) + Count::is(2 * I::BITS, 0, I::BITS, I::BITS)
             }
         }
     }
 }
 
-impl<E: Environment, I: IntegerType, M: Magnitude> OutputMode<dyn PowWrapped<Integer<E, M>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
-    type Case = (Mode, CircuitType<Integer<E, M>>);
+impl<I: IntegerType, M: Magnitude> OutputMode<dyn PowWrapped<Integer<M>, Output = Integer<I>>> for Integer<I> {
+    type Case = (Mode, CircuitType<Integer<M>>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match (case.0, (case.1.mode(), &case.1)) {
@@ -73,7 +71,7 @@ impl<E: Environment, I: IntegerType, M: Magnitude> OutputMode<dyn PowWrapped<Int
                     true => Mode::Constant,
                     false => Mode::Private,
                 },
-                _ => E::halt("The constant is required for the output mode of `pow_wrapped` with a constant."),
+                _ => Circuit::halt("The constant is required for the output mode of `pow_wrapped` with a constant."),
             },
             (_, _) => Mode::Private,
         }
@@ -92,13 +90,13 @@ mod tests {
 
     fn check_pow<I: IntegerType + RefUnwindSafe, M: Magnitude + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, M>,
+        first: console::Integer<I>,
+        second: console::Integer<M>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, M>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<M>::new(mode_b, second);
         let expected = first.wrapping_pow(&second.to_u32().unwrap());
         Circuit::scope(name, || {
             let candidate = a.pow_wrapped(&b);
@@ -157,8 +155,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in M::MIN..=M::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, M>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<M>::new(second);
 
                 let name = format!("Pow: ({first} ** {second})");
                 check_pow::<I, M>(&name, first, second, mode_a, mode_b);

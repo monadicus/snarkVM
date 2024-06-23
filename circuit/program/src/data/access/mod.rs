@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use crate::Identifier;
-use snarkvm_circuit_network::Aleo;
 use snarkvm_circuit_types::{environment::prelude::*, U32};
 
 use std::{
@@ -24,16 +23,16 @@ use std::{
 
 /// A helper type for accessing an entry in a register, struct, array, or record.
 #[derive(Clone)]
-pub enum Access<A: Aleo> {
+pub enum Access {
     /// Access a member of a register, struct, or record.
-    Member(Identifier<A>),
+    Member(Identifier),
     /// Access an element of an array.
-    Index(U32<A>),
+    Index(U32),
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for Access<A> {
-    type Primitive = console::Access<A::Network>;
+impl Inject for Access {
+    type Primitive = console::Access;
 
     /// Initializes a new access circuit from a primitive.
     /// Note: Access types are always `Mode::Constant`.
@@ -46,8 +45,8 @@ impl<A: Aleo> Inject for Access<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for Access<A> {
-    type Primitive = console::Access<A::Network>;
+impl Eject for Access {
+    type Primitive = console::Access;
 
     /// Ejects the mode of the access.
     fn eject_mode(&self) -> Mode {
@@ -67,7 +66,7 @@ impl<A: Aleo> Eject for Access<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Parser for Access<A> {
+impl Parser for Access {
     /// Parses a UTF-8 string into an access.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -79,7 +78,7 @@ impl<A: Aleo> Parser for Access<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> FromStr for Access<A> {
+impl FromStr for Access {
     type Err = Error;
 
     /// Parses a UTF-8 string into an identifier.
@@ -98,23 +97,23 @@ impl<A: Aleo> FromStr for Access<A> {
 }
 
 #[cfg(console)]
-impl<A: Aleo> Debug for Access<A> {
+impl Debug for Access {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Display for Access<A> {
+impl Display for Access {
     /// Prints the identifier as a string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", self.eject_value())
     }
 }
 
-impl<A: Aleo> Eq for Access<A> {}
+impl Eq for Access {}
 
-impl<A: Aleo> PartialEq for Access<A> {
+impl PartialEq for Access {
     /// Implements the `Eq` trait for the access.
     fn eq(&self, other: &Self) -> bool {
         self.eject_value() == other.eject_value()

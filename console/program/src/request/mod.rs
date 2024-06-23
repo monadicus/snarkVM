@@ -193,8 +193,8 @@ mod test_helpers {
 
                 // Compute the signed request.
                 let request =
-                    Request::sign::<CurrentNetwork>(&private_key, program_id, function_name, inputs.into_iter(), &input_types, root_tvk, is_root, rng).unwrap();
-                assert!(request.verify(&input_types, is_root));
+                    Request::sign(0, &private_key, program_id, function_name, inputs.into_iter(), &input_types, root_tvk, is_root, rng).unwrap();
+                assert!(request.verify(0, &input_types, is_root));
                 request
             })
             .collect()

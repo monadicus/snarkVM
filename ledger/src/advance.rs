@@ -19,7 +19,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     pub fn prepare_advance_to_next_quorum_block<R: Rng + CryptoRng>(
         &self,
         subdag: Subdag<N>,
-        transmissions: IndexMap<TransmissionID<N>, Transmission<N>>,
+        transmissions: IndexMap<TransmissionID, Transmission<N>>,
         rng: &mut R,
     ) -> Result<Block<N>> {
         // Retrieve the latest block as the previous block (for the next block).
@@ -49,9 +49,9 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     /// Returns a candidate for the next block in the ledger.
     pub fn prepare_advance_to_next_beacon_block<R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         candidate_ratifications: Vec<Ratify<N>>,
-        candidate_solutions: Vec<Solution<N>>,
+        candidate_solutions: Vec<Solution>,
         candidate_transactions: Vec<Transaction<N>>,
         rng: &mut R,
     ) -> Result<Block<N>> {
@@ -184,15 +184,14 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
         previous_block: &Block<N>,
         subdag: Option<&Subdag<N>>,
         candidate_ratifications: Vec<Ratify<N>>,
-        candidate_solutions: Vec<Solution<N>>,
+        candidate_solutions: Vec<Solution>,
         candidate_transactions: Vec<Transaction<N>>,
         rng: &mut R,
-    ) -> Result<(Header<N>, Ratifications<N>, Solutions<N>, Vec<SolutionID<N>>, Transactions<N>, Vec<N::TransactionID>)>
-    {
+    ) -> Result<(Header<N>, Ratifications<N>, Solutions<N>, Vec<SolutionID>, Transactions<N>, Vec<TransactionID>)> {
         // Construct the solutions.
         let (solutions, aborted_solutions, solutions_root, combined_proof_target) = match candidate_solutions.is_empty()
         {
-            true => (None, vec![], Field::<N>::zero(), 0u128),
+            true => (None, vec![], Field::zero(), 0u128),
             false => {
                 // Retrieve the latest epoch hash.
                 let latest_epoch_hash = self.latest_epoch_hash()?;
@@ -206,7 +205,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
 
                 // Check if there are any valid solutions.
                 match valid_candidate_solutions.is_empty() {
-                    true => (None, aborted_candidate_solutions, Field::<N>::zero(), 0u128),
+                    true => (None, aborted_candidate_solutions, Field::zero(), 0u128),
                     false => {
                         // Construct the solutions.
                         let solutions = PuzzleSolutions::new(valid_candidate_solutions)?;

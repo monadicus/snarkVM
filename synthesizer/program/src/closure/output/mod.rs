@@ -22,28 +22,28 @@ use console::{network::prelude::*, program::RegisterType};
 /// An output statement defines an output of a closure.
 /// An output statement is of the form `output {operand} as {register_type};`.
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct Output<N: Network> {
+pub struct Output {
     /// The output operand.
-    operand: Operand<N>,
+    operand: Operand,
     /// The output register type.
-    register_type: RegisterType<N>,
+    register_type: RegisterType,
 }
 
-impl<N: Network> Output<N> {
+impl Output {
     /// Returns the output register.
     #[inline]
-    pub const fn operand(&self) -> &Operand<N> {
+    pub const fn operand(&self) -> &Operand {
         &self.operand
     }
 
     /// Returns the output register type.
     #[inline]
-    pub const fn register_type(&self) -> &RegisterType<N> {
+    pub const fn register_type(&self) -> &RegisterType {
         &self.register_type
     }
 }
 
-impl<N: Network> TypeName for Output<N> {
+impl TypeName for Output {
     /// Returns the type name as a string.
     #[inline]
     fn type_name() -> &'static str {
@@ -60,6 +60,6 @@ mod tests {
 
     #[test]
     fn test_output_type_name() {
-        assert_eq!(Output::<CurrentNetwork>::type_name(), "output");
+        assert_eq!(Output::type_name(), "output");
     }
 }

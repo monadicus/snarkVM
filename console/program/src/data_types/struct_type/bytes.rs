@@ -79,8 +79,7 @@ mod tests {
 
     #[test]
     fn test_bytes() -> Result<()> {
-        let expected =
-            StructType::<CurrentNetwork>::from_str("struct message:\n    first as field;\n    second as field;")?;
+        let expected = StructType::from_str("struct message:\n    first as field;\n    second as field;")?;
         let candidate = StructType::from_bytes_le(&expected.to_bytes_le().unwrap()).unwrap();
         assert_eq!(expected, candidate);
         Ok(())

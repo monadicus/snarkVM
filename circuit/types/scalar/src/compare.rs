@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::{ConsoleField, ConsoleScalar};
+
 use super::*;
 
-impl<E: Environment> Compare<Scalar<E>> for Scalar<E> {
-    type Output = Boolean<E>;
+impl Compare<Scalar> for Scalar {
+    type Output = Boolean;
 
     /// Returns `true` if `self` is less than `other`.
     fn is_less_than(&self, other: &Self) -> Self::Output {
@@ -27,7 +29,7 @@ impl<E: Environment> Compare<Scalar<E>> for Scalar<E> {
         else {
             // If all scalar field elements are less than or equal to (MODULUS - 1)/2 on the base field,
             // we can perform an optimized check for `is_less_than` by casting the scalars onto the base field.
-            debug_assert!((-E::ScalarField::one()).to_bigint() <= E::BaseField::modulus_minus_one_div_two());
+            debug_assert!((-ConsoleScalar::one()).to_bigint() <= ConsoleField::modulus_minus_one_div_two());
 
             // Intuition: Check the parity of 2 * (`self` - `other`) mod MODULUS.
             //   - If `self` < `other`, then 2 * (`self` - `other`) mod MODULUS is odd.
@@ -36,7 +38,10 @@ impl<E: Environment> Compare<Scalar<E>> for Scalar<E> {
             // Compute 2 * (`self` - `other`).
             let outcome = (self.to_field() - other.to_field()).double();
             // Retrieve the LSB from the computation to determine even / odd parity.
-            outcome.to_bits_be().pop().unwrap_or_else(|| E::halt("Failed to retrieve the LSB from the field element."))
+            outcome
+                .to_bits_be()
+                .pop()
+                .unwrap_or_else(|| Circuit::halt("Failed to retrieve the LSB from the field element."))
         }
     }
 
@@ -76,11 +81,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element `a`.
             let expected_a = Uniform::rand(&mut rng);
-            let candidate_a = Scalar::<Circuit>::new(mode_a, expected_a);
+            let candidate_a = Scalar::new(mode_a, expected_a);
 
             // Sample a random element `b`.
             let expected_b = Uniform::rand(&mut rng);
-            let candidate_b = Scalar::<Circuit>::new(mode_b, expected_b);
+            let candidate_b = Scalar::new(mode_b, expected_b);
 
             // Perform the less than comparison.
             Circuit::scope(&format!("{mode_a} {mode_b} {i}"), || {

@@ -821,7 +821,7 @@ mod tests {
                 next_cumulative_weight,
                 next_last_coinbase_target,
                 next_last_coinbase_timestamp,
-            ) = to_next_targets::<CurrentNetwork>(
+            ) = to_next_targets(
                 latest_cumulative_proof_target,
                 combined_proof_target,
                 latest_coinbase_target,
@@ -874,7 +874,7 @@ mod tests {
                 next_cumulative_weight,
                 next_last_coinbase_target,
                 next_last_coinbase_timestamp,
-            ) = to_next_targets::<CurrentNetwork>(
+            ) = to_next_targets(
                 latest_cumulative_proof_target,
                 combined_proof_target,
                 latest_coinbase_target,

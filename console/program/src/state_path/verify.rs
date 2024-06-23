@@ -158,8 +158,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample the state path.
-            let state_path =
-                crate::state_path::test_helpers::sample_global_state_path::<CurrentNetwork>(None, rng).unwrap();
+            let state_path = crate::state_path::test_helpers::sample_global_state_path(None, rng).unwrap();
             // Sample the local state root.
             let local_state_root = Field::rand(rng);
 
@@ -176,8 +175,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample the state path.
-            let state_path =
-                crate::state_path::test_helpers::sample_local_state_path::<CurrentNetwork>(None, rng).unwrap();
+            let state_path = crate::state_path::test_helpers::sample_local_state_path(None, rng).unwrap();
             // Retrieve the local state root.
             let local_state_root = **state_path.transaction_id();
 
@@ -198,8 +196,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample the state path.
-            let state_path =
-                crate::state_path::test_helpers::sample_local_state_path::<CurrentNetwork>(None, rng).unwrap();
+            let state_path = crate::state_path::test_helpers::sample_local_state_path(None, rng).unwrap();
 
             // Initialize the state path using `new_local`.
             let new_local_state_path = StatePath::new_local(

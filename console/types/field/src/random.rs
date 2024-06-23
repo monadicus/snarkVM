@@ -24,11 +24,8 @@ impl Distribution<Field> for Standard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network_environment::Console;
 
     use std::collections::HashSet;
-
-    type CurrentEnvironment = Console;
 
     const ITERATIONS: usize = 100;
 
@@ -42,7 +39,7 @@ mod tests {
         // Note: This test technically has a `(1 + 2 + ... + ITERATIONS) / MODULUS` probability of being flaky.
         for _ in 0..ITERATIONS {
             // Sample a random value.
-            let field: Field<CurrentEnvironment> = Uniform::rand(&mut rng);
+            let field: Field = Uniform::rand(&mut rng);
             assert!(!set.contains(&field));
 
             // Add the new random value to the set.

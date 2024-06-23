@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<N: Network> BatchHeader<N> {
+impl BatchHeader {
     /// Returns the batch ID.
-    pub fn to_id(&self) -> Result<Field<N>> {
+    pub fn to_id(&self) -> Result<Field> {
         Self::compute_batch_id(
             self.author,
             self.round,
@@ -28,16 +28,16 @@ impl<N: Network> BatchHeader<N> {
     }
 }
 
-impl<N: Network> BatchHeader<N> {
+impl BatchHeader {
     /// Returns the batch ID.
     pub fn compute_batch_id(
-        author: Address<N>,
+        author: Address,
         round: u64,
         timestamp: i64,
-        committee_id: Field<N>,
-        transmission_ids: &IndexSet<TransmissionID<N>>,
-        previous_certificate_ids: &IndexSet<Field<N>>,
-    ) -> Result<Field<N>> {
+        committee_id: Field,
+        transmission_ids: &IndexSet<TransmissionID>,
+        previous_certificate_ids: &IndexSet<Field>,
+    ) -> Result<Field> {
         let mut preimage = Vec::new();
         // Insert the author.
         author.write_le(&mut preimage)?;

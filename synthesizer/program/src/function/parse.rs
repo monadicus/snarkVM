@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Parser
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Parser
     for FunctionCore<N, Instruction, Command>
 {
     /// Parses a string into a function.
@@ -71,7 +71,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Par
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> FromStr
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> FromStr
     for FunctionCore<N, Instruction, Command>
 {
     type Err = Error;
@@ -90,7 +90,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fro
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Debug
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Debug
     for FunctionCore<N, Instruction, Command>
 {
     /// Prints the function as a string.
@@ -99,7 +99,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Deb
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Display
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Display
     for FunctionCore<N, Instruction, Command>
 {
     /// Prints the function as a string.

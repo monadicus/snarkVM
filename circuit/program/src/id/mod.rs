@@ -20,22 +20,26 @@ mod to_bits;
 mod to_fields;
 
 use crate::Identifier;
-use snarkvm_circuit_network::Aleo;
-use snarkvm_circuit_types::{environment::prelude::*, Address, Boolean, Field};
+use snarkvm_circuit_types::{
+    environment::{prelude::*, Circuit},
+    Address,
+    Boolean,
+    Field,
+};
 
 /// A program ID is of the form `{name}.{network}`.
 /// If no `network`-level domain is specified, the default network is used.
 #[derive(Clone)]
-pub struct ProgramID<A: Aleo> {
+pub struct ProgramID {
     /// The program name.
-    name: Identifier<A>,
+    name: Identifier,
     /// The network-level domain (NLD).
-    network: Identifier<A>,
+    network: Identifier,
 }
 
 #[cfg(console)]
-impl<A: Aleo> Inject for ProgramID<A> {
-    type Primitive = console::ProgramID<A::Network>;
+impl Inject for ProgramID {
+    type Primitive = console::ProgramID;
 
     /// Injects a program ID with the given primitive.
     fn new(_: Mode, id: Self::Primitive) -> Self {
@@ -46,23 +50,23 @@ impl<A: Aleo> Inject for ProgramID<A> {
     }
 }
 
-impl<A: Aleo> ProgramID<A> {
+impl ProgramID {
     /// Returns the program name.
     #[inline]
-    pub const fn name(&self) -> &Identifier<A> {
+    pub const fn name(&self) -> &Identifier {
         &self.name
     }
 
     /// Returns the network-level domain (NLD).
     #[inline]
-    pub const fn network(&self) -> &Identifier<A> {
+    pub const fn network(&self) -> &Identifier {
         &self.network
     }
 }
 
 #[cfg(console)]
-impl<A: Aleo> Eject for ProgramID<A> {
-    type Primitive = console::ProgramID<A::Network>;
+impl Eject for ProgramID {
+    type Primitive = console::ProgramID;
 
     /// Ejects the mode of the program ID.
     fn eject_mode(&self) -> Mode {
@@ -73,13 +77,13 @@ impl<A: Aleo> Eject for ProgramID<A> {
     fn eject_value(&self) -> Self::Primitive {
         match console::ProgramID::try_from((self.name.eject_value(), self.network.eject_value())) {
             Ok(id) => id,
-            Err(error) => A::halt(format!("Failed to eject program ID: {error}")),
+            Err(error) => Circuit::halt(format!("Failed to eject program ID: {error}")),
         }
     }
 }
 
-impl<A: Aleo> Equal<Self> for ProgramID<A> {
-    type Output = Boolean<A>;
+impl Equal<Self> for ProgramID {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {

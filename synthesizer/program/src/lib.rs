@@ -104,7 +104,7 @@ enum ProgramDefinition {
 }
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct ProgramCore<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> {
+pub struct ProgramCore<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> {
     /// The ID of the program.
     id: ProgramID<N>,
     /// A map of the declared imports for the program.
@@ -123,7 +123,7 @@ pub struct ProgramCore<N: Network, Instruction: InstructionTrait<N>, Command: Co
     functions: IndexMap<Identifier<N>, FunctionCore<N, Instruction, Command>>,
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> ProgramCore<N, Instruction, Command> {
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> ProgramCore<N, Instruction, Command> {
     /// Initializes an empty program.
     #[inline]
     pub fn new(id: ProgramID<N>) -> Result<Self> {
@@ -285,7 +285,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Pro
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> ProgramCore<N, Instruction, Command> {
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> ProgramCore<N, Instruction, Command> {
     /// Adds a new import statement to the program.
     ///
     /// # Errors
@@ -563,7 +563,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Pro
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> ProgramCore<N, Instruction, Command> {
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> ProgramCore<N, Instruction, Command> {
     #[rustfmt::skip]
     const KEYWORDS: &'static [&'static str] = &[
         // Mode
@@ -659,7 +659,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Pro
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> TypeName
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> TypeName
     for ProgramCore<N, Instruction, Command>
 {
     /// Returns the type name as a string.

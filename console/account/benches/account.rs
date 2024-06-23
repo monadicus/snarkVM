@@ -16,18 +16,16 @@
 extern crate criterion;
 
 use snarkvm_console_account::{Address, PrivateKey, ViewKey};
-use snarkvm_console_network::{environment::prelude::*, MainnetV0};
+use snarkvm_console_network::environment::prelude::*;
 
 use criterion::Criterion;
-
-type CurrentNetwork = MainnetV0;
 
 fn account_private_key(c: &mut Criterion) {
     let rng = &mut TestRng::default();
 
     c.bench_function("account_private_key", move |b| {
         b.iter(|| {
-            let _private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+            let _private_key = PrivateKey::new(rng).unwrap();
         })
     });
 }
@@ -36,7 +34,7 @@ fn account_view_key(c: &mut Criterion) {
     let rng = &mut TestRng::default();
 
     c.bench_function("account_view_key", move |b| {
-        let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let private_key = PrivateKey::new(rng).unwrap();
 
         b.iter(|| {
             let _view_key = ViewKey::try_from(&private_key).unwrap();
@@ -48,7 +46,7 @@ fn account_address(c: &mut Criterion) {
     let rng = &mut TestRng::default();
 
     c.bench_function("account_address", move |b| {
-        let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+        let private_key = PrivateKey::new(rng).unwrap();
 
         b.iter(|| {
             let _address = Address::try_from(&private_key).unwrap();

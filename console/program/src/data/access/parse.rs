@@ -69,27 +69,26 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<()> {
-        assert_eq!(Access::parse(".data"), Ok(("", Access::<CurrentNetwork>::Member(Identifier::from_str("data")?))));
-        assert_eq!(Access::parse("[0u32]"), Ok(("", Access::<CurrentNetwork>::Index(U32::new(0)))));
+        assert_eq!(Access::parse(".data"), Ok(("", Access::Member(Identifier::from_str("data")?))));
+        assert_eq!(Access::parse("[0u32]"), Ok(("", Access::Index(U32::new(0)))));
         Ok(())
     }
 
     #[test]
     fn test_parse_fails() -> Result<()> {
         // Must be non-empty.
-        assert!(Access::<CurrentNetwork>::parse("").is_err());
-        assert!(Access::<CurrentNetwork>::parse(".").is_err());
-        assert!(Access::<CurrentNetwork>::parse("[]").is_err());
+        assert!(Access::parse("").is_err());
+        assert!(Access::parse(".").is_err());
+        assert!(Access::parse("[]").is_err());
 
         // Invalid accesses.
-        assert!(Access::<CurrentNetwork>::parse(".0").is_err());
-        assert!(Access::<CurrentNetwork>::parse("[index]").is_err());
-        assert!(Access::<CurrentNetwork>::parse("[0.0]").is_err());
-        assert!(Access::<CurrentNetwork>::parse("[999999999999]").is_err());
+        assert!(Access::parse(".0").is_err());
+        assert!(Access::parse("[index]").is_err());
+        assert!(Access::parse("[0.0]").is_err());
+        assert!(Access::parse("[999999999999]").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let access =
-            Access::<CurrentNetwork>::parse(".foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
+        let access = Access::parse(".foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy");
         assert!(access.is_err());
 
         Ok(())
@@ -97,8 +96,8 @@ mod tests {
 
     #[test]
     fn test_display() -> Result<()> {
-        assert_eq!(Access::<CurrentNetwork>::Member(Identifier::from_str("foo")?).to_string(), ".foo");
-        assert_eq!(Access::<CurrentNetwork>::Index(U32::new(0)).to_string(), "[0u32]");
+        assert_eq!(Access::Member(Identifier::from_str("foo")?).to_string(), ".foo");
+        assert_eq!(Access::Index(U32::new(0)).to_string(), "[0u32]");
         Ok(())
     }
 }

@@ -95,10 +95,10 @@ mod tests {
             for _ in 0..ITERATIONS {
                 let element = Uniform::rand(rng);
 
-                let candidate = Integer::<E, I>::new(element);
-                assert_eq!(format!("{element}{}", Integer::<E, I>::type_name()), format!("{candidate}"));
+                let candidate = Integer::<I>::new(element);
+                assert_eq!(format!("{element}{}", Integer::<I>::type_name()), format!("{candidate}"));
 
-                let candidate_recovered = Integer::<E, I>::from_str(&format!("{candidate}")).unwrap();
+                let candidate_recovered = Integer::<I>::from_str(&format!("{candidate}")).unwrap();
                 assert_eq!(candidate, candidate_recovered);
             }
         }

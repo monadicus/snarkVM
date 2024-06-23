@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> ToBits for Field<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for Field {
+    type Boolean = Boolean;
 
     /// Outputs the little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -28,8 +28,8 @@ impl<E: Environment> ToBits for Field<E> {
     }
 }
 
-impl<E: Environment> ToBits for &Field<E> {
-    type Boolean = Boolean<E>;
+impl ToBits for &Field {
+    type Boolean = Boolean;
 
     /// Outputs the unique, minimal little-endian bit representation of `self` *without* trailing zeros.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -42,7 +42,7 @@ impl<E: Environment> ToBits for &Field<E> {
             {
                 // Retrieve the modulus & subtract by 1 as we'll check `bits_le` is less than or *equal* to this value.
                 // (For advanced users) BaseField::MODULUS - 1 is equivalent to -1 in the field.
-                let modulus_minus_one = -E::BaseField::one();
+                let modulus_minus_one = -ConsoleField::one();
                 // Assert `bits_le <= (BaseField::MODULUS - 1)`, which is equivalent to `bits_le < BaseField::MODULUS`.
                 Boolean::assert_less_than_or_equal_constant(&bits_le, &modulus_minus_one.to_bits_le())
             }
@@ -61,10 +61,10 @@ impl<E: Environment> ToBits for &Field<E> {
     }
 }
 
-impl<E: Environment> Field<E> {
+impl Field {
     /// Outputs a non-unique little-endian bit representation of `self` *without* trailing zeros.
     #[doc(hidden)]
-    fn to_non_unique_bits_le(&self) -> Vec<Boolean<E>> {
+    fn to_non_unique_bits_le(&self) -> Vec<Boolean> {
         // Construct a vector of `Boolean`s comprising the bits of the field value.
         let bits_le = witness!(|self| self.to_bits_le());
 
@@ -77,13 +77,13 @@ impl<E: Environment> Field<E> {
         }
 
         // Ensure value * 1 == (2^i * b_i + ... + 2^0 * b_0)
-        E::assert_eq(self, accumulator);
+        Circuit::assert_eq(self, accumulator);
 
         bits_le
     }
 }
 
-impl<E: Environment> Metrics<dyn ToBits<Boolean = Boolean<E>>> for Field<E> {
+impl Metrics<dyn ToBits<Boolean = Boolean>> for Field {
     type Case = Mode;
 
     fn count(case: &Self::Case) -> Count {
@@ -94,7 +94,7 @@ impl<E: Environment> Metrics<dyn ToBits<Boolean = Boolean<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn ToBits<Boolean = Boolean<E>>> for Field<E> {
+impl OutputMode<dyn ToBits<Boolean = Boolean>> for Field {
     type Case = Mode;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -113,14 +113,14 @@ mod tests {
     const ITERATIONS: u64 = 100;
 
     fn check_to_bits_le(mode: Mode) {
-        let expected_number_of_bits = console::Field::<<Circuit as Environment>::Network>::size_in_bits();
+        let expected_number_of_bits = console::Field::size_in_bits();
 
         let mut rng = TestRng::default();
 
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Field::<Circuit>::new(mode, expected);
+            let candidate = Field::new(mode, expected);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate_bits = candidate.to_bits_le();
@@ -141,14 +141,14 @@ mod tests {
     }
 
     fn check_to_bits_be(mode: Mode) {
-        let expected_number_of_bits = console::Field::<<Circuit as Environment>::Network>::size_in_bits();
+        let expected_number_of_bits = console::Field::size_in_bits();
 
         let mut rng = TestRng::default();
 
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Field::<Circuit>::new(mode, expected);
+            let candidate = Field::new(mode, expected);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate_bits = candidate.to_bits_be();
@@ -201,7 +201,7 @@ mod tests {
     #[test]
     fn test_one() {
         /// Checks that the field element, when converted to little-endian bits, is well-formed.
-        fn check_bits_le(candidate: Field<Circuit>) {
+        fn check_bits_le(candidate: Field) {
             for (i, bit) in candidate.to_bits_le().iter().enumerate() {
                 match i == 0 {
                     true => assert!(bit.eject_value()),
@@ -211,7 +211,7 @@ mod tests {
         }
 
         /// Checks that the field element, when converted to big-endian bits, is well-formed.
-        fn check_bits_be(candidate: Field<Circuit>) {
+        fn check_bits_be(candidate: Field) {
             for (i, bit) in candidate.to_bits_be().iter().rev().enumerate() {
                 match i == 0 {
                     true => assert!(bit.eject_value()),
@@ -220,16 +220,16 @@ mod tests {
             }
         }
 
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let one = console::Field::one();
 
         // Constant
-        check_bits_le(Field::<Circuit>::new(Mode::Constant, one));
-        check_bits_be(Field::<Circuit>::new(Mode::Constant, one));
+        check_bits_le(Field::new(Mode::Constant, one));
+        check_bits_be(Field::new(Mode::Constant, one));
         // Public
-        check_bits_le(Field::<Circuit>::new(Mode::Public, one));
-        check_bits_be(Field::<Circuit>::new(Mode::Public, one));
+        check_bits_le(Field::new(Mode::Public, one));
+        check_bits_be(Field::new(Mode::Public, one));
         // Private
-        check_bits_le(Field::<Circuit>::new(Mode::Private, one));
-        check_bits_be(Field::<Circuit>::new(Mode::Private, one));
+        check_bits_le(Field::new(Mode::Private, one));
+        check_bits_be(Field::new(Mode::Private, one));
     }
 }

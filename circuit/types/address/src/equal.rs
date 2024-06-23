@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Equal<Self> for Address<E> {
-    type Output = Boolean<E>;
+impl Equal<Self> for Address {
+    type Output = Boolean;
 
     /// Returns `true` if `self` and `other` are equal.
     fn is_equal(&self, other: &Self) -> Self::Output {
@@ -46,8 +46,8 @@ mod tests {
     ) {
         for i in 0..ITERATIONS {
             // Sample two random elements.
-            let a = Address::<Circuit>::from_group(Group::new(mode_a, Uniform::rand(rng)));
-            let b = Address::<Circuit>::from_group(Group::new(mode_b, Uniform::rand(rng)));
+            let a = Address::from_group(Group::new(mode_a, Uniform::rand(rng)));
+            let b = Address::from_group(Group::new(mode_b, Uniform::rand(rng)));
 
             Circuit::scope(&format!("{mode_a} {mode_a} {i}"), || {
                 let equals = a.is_equal(&a);
@@ -73,8 +73,8 @@ mod tests {
     ) {
         for i in 0..ITERATIONS {
             // Sample two random elements.
-            let a = Address::<Circuit>::from_group(Group::new(mode_a, Uniform::rand(rng)));
-            let b = Address::<Circuit>::from_group(Group::new(mode_b, Uniform::rand(rng)));
+            let a = Address::from_group(Group::new(mode_a, Uniform::rand(rng)));
+            let b = Address::from_group(Group::new(mode_b, Uniform::rand(rng)));
 
             Circuit::scope(&format!("{mode_a} {mode_a} {i}"), || {
                 let equals = a.is_not_equal(&a);

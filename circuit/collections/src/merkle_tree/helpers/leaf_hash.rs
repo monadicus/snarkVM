@@ -16,7 +16,7 @@ use super::*;
 use snarkvm_circuit_algorithms::{Hash, Poseidon, BHP};
 
 /// A trait for a Merkle leaf hash function.
-pub trait LeafHash<E: Environment> {
+pub trait LeafHash {
     type Leaf;
     type Hash: FieldTrait;
 
@@ -24,9 +24,9 @@ pub trait LeafHash<E: Environment> {
     fn hash_leaf(&self, leaf: &Self::Leaf) -> Self::Hash;
 }
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash<E> for BHP<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Hash = Field<E>;
-    type Leaf = Vec<Boolean<E>>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash for BHP<NUM_WINDOWS, WINDOW_SIZE> {
+    type Hash = Field;
+    type Leaf = Vec<Boolean>;
 
     /// Returns the hash of the given leaf node.
     fn hash_leaf(&self, leaf: &Self::Leaf) -> Self::Hash {
@@ -39,9 +39,9 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> LeafHash<E> f
     }
 }
 
-impl<E: Environment, const RATE: usize> LeafHash<E> for Poseidon<E, RATE> {
-    type Hash = Field<E>;
-    type Leaf = Vec<Field<E>>;
+impl<const RATE: usize> LeafHash for Poseidon<RATE> {
+    type Hash = Field;
+    type Leaf = Vec<Field>;
 
     /// Returns the hash of the given leaf node.
     fn hash_leaf(&self, leaf: &Self::Leaf) -> Self::Hash {
@@ -69,8 +69,8 @@ mod tests {
     macro_rules! check_hash_leaf {
         ($hash:ident, $mode:ident, $num_inputs:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize the hash.
-            let native = snarkvm_console_algorithms::$hash::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit = $hash::<Circuit>::constant(native.clone());
+            let native = snarkvm_console_algorithms::$hash::setup(DOMAIN)?;
+            let circuit = $hash::constant(native.clone());
 
             let mut rng = TestRng::default();
 

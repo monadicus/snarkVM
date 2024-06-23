@@ -14,13 +14,13 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> Modulo<Self> for Integer<E, I> {
+impl<I: IntegerType> Modulo<Self> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn modulo(&self, other: &Integer<E, I>) -> Self::Output {
+    fn modulo(&self, other: &Integer<I>) -> Self::Output {
         match I::is_signed() {
-            true => E::halt("Attempted to take the modulus of a signed integer."),
+            true => Circuit::halt("Attempted to take the modulus of a signed integer."),
             // For unsigned integers, the modulo operation is equivalent to the remainder operation.
             false => self.rem_wrapped(other),
         }
@@ -40,13 +40,13 @@ mod tests {
 
     fn check_modulo<I: IntegerType + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, I>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<I>::new(mode_b, second);
 
         match I::is_signed() {
             true => check_operation_halts(&a, &b, Integer::modulo),
@@ -117,8 +117,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Mod: ({first} MOD {second})");
                 check_modulo::<I>(&name, first, second, mode_a, mode_b);

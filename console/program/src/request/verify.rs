@@ -19,9 +19,9 @@ impl Request {
     ///
     /// Verifies (challenge == challenge') && (address == address') && (serial_numbers == serial_numbers') where:
     ///     challenge' := HashToScalar(r * G, pk_sig, pr_sig, signer, \[tvk, tcm, function ID, input IDs\])
-    pub fn verify<N: Network>(&self, input_types: &[ValueType], is_root: bool) -> bool {
-        if *self.network_id != N::ID {
-            eprintln!("Invalid network ID. Expected {}, found {}", N::ID, *self.network_id);
+    pub fn verify(&self, network_id: u16, input_types: &[ValueType], is_root: bool) -> bool {
+        if *self.network_id != network_id {
+            eprintln!("Invalid network ID. Expected {network_id}, found {}", *self.network_id);
             return false;
         }
 
@@ -228,7 +228,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random private key and address.
-            let private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+            let private_key = PrivateKey::new(rng).unwrap();
             let address = Address::try_from(&private_key).unwrap();
 
             // Construct a program ID and function name.
@@ -264,6 +264,7 @@ mod tests {
 
             // Compute the signed request.
             let request = Request::sign(
+                0,
                 &private_key,
                 program_id,
                 function_name,
@@ -274,7 +275,7 @@ mod tests {
                 rng,
             )
             .unwrap();
-            assert!(request.verify(&input_types, is_root));
+            assert!(request.verify(0, &input_types, is_root));
         }
     }
 }

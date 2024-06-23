@@ -191,7 +191,7 @@ mod tests {
 }";
         let given =
             "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, _nonce: 0group.public }";
-        let (remainder, candidate) = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(given)?;
+        let (remainder, candidate) = Record::<Plaintext>::parse(given)?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -206,7 +206,7 @@ mod tests {
   _nonce: 0group.public
 }";
         let given = "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.public, foo: 5u8.constant, _nonce: 0group.public }";
-        let (remainder, candidate) = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(given)?;
+        let (remainder, candidate) = Record::<Plaintext>::parse(given)?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -235,7 +235,7 @@ mod tests {
   },
   _nonce: 2293253577170800572742339369209137467208538700597121244293392265726446806023group.public
 }";
-        let (remainder, candidate) = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(expected)?;
+        let (remainder, candidate) = Record::<Plaintext>::parse(expected)?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -260,7 +260,7 @@ mod tests {
   },
   _nonce: 0group.public
 }";
-        let (remainder, candidate) = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(expected)?;
+        let (remainder, candidate) = Record::<Plaintext>::parse(expected)?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -289,7 +289,7 @@ mod tests {
   },
   _nonce: 8102307625287186026775464343238779600702564007094834161216556016558567413871group.public
 }";
-        let (remainder, candidate) = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(expected)?;
+        let (remainder, candidate) = Record::<Plaintext>::parse(expected)?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -309,7 +309,7 @@ mod tests {
   ],
   _nonce: 0group.public
 }";
-        let (remainder, candidate) = Record::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(expected)?;
+        let (remainder, candidate) = Record::<Plaintext>::parse(expected)?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
@@ -320,12 +320,12 @@ mod tests {
     fn test_parse_fails() -> Result<()> {
         // Missing owner.
         let expected = "{ foo: 5u8.private, _nonce: 0group.public }";
-        assert!(Plaintext::<CurrentNetwork>::parse(expected).is_err());
+        assert!(Plaintext::parse(expected).is_err());
 
         // Missing nonce.
         let expected =
             "{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.public, foo: 5u8.private }";
-        assert!(Plaintext::<CurrentNetwork>::parse(expected).is_err());
+        assert!(Plaintext::parse(expected).is_err());
 
         // Entry 'd' contains members with different visibility.
         let expected = r"{
@@ -340,7 +340,7 @@ mod tests {
     },
     _nonce: 0group.public
 }";
-        assert!(Plaintext::<CurrentNetwork>::parse(expected).is_err());
+        assert!(Plaintext::parse(expected).is_err());
         Ok(())
     }
 }

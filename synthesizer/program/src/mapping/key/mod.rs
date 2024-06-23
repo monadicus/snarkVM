@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn test_key_type_name() -> Result<()> {
-        assert_eq!(MapKey::<CurrentNetwork>::type_name(), "key");
+        assert_eq!(MapKey::type_name(), "key");
         Ok(())
     }
 }

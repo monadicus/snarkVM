@@ -86,10 +86,8 @@ mod tests {
     use super::*;
     use snarkvm_console_network::MainnetV0;
 
-    type CurrentNetwork = MainnetV0;
-
-    fn sample_plaintext() -> Plaintext<CurrentNetwork> {
-        Plaintext::<CurrentNetwork>::from_str(
+    fn sample_plaintext() -> Plaintext {
+        Plaintext::from_str(
             r"{
     a: true,
     b: 123456789field,
@@ -104,8 +102,8 @@ mod tests {
         .unwrap()
     }
 
-    fn sample_mismatched_plaintext() -> Plaintext<CurrentNetwork> {
-        Plaintext::<CurrentNetwork>::from_str(
+    fn sample_mismatched_plaintext() -> Plaintext {
+        Plaintext::from_str(
             r"{
     a: false,
     b: 123456789field,

@@ -12,28 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> From<Vec<Field<A>>> for Ciphertext<A> {
+impl From<Vec<Field>> for Ciphertext {
     /// Initializes a ciphertext from a list of base field elements.
-    fn from(fields: Vec<Field<A>>) -> Self {
+    fn from(fields: Vec<Field>) -> Self {
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= A::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoV0::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => Self(fields),
-            false => A::halt("Ciphertext exceeds maximum allowed size"),
+            false => Circuit::halt("Ciphertext exceeds maximum allowed size"),
         }
     }
 }
 
-impl<A: Aleo> From<&[Field<A>]> for Ciphertext<A> {
+impl From<&[Field]> for Ciphertext {
     /// Initializes a ciphertext from a list of base field elements.
-    fn from(fields: &[Field<A>]) -> Self {
+    fn from(fields: &[Field]) -> Self {
         Self::from_fields(fields)
     }
 }
 
-impl<A: Aleo> FromFields for Ciphertext<A> {
-    type Field = Field<A>;
+impl FromFields for Ciphertext {
+    type Field = Field;
 
     /// Initializes a ciphertext from a list of base field elements.
     fn from_fields(fields: &[Self::Field]) -> Self {

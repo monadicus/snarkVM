@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Group<E> {
-    type Boolean = Boolean<E>;
+impl FromBits for Group {
+    type Boolean = Boolean;
 
     /// Initializes a new group element from the x-coordinate as a list of little-endian bits *without* trailing zeros.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
@@ -47,10 +47,10 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Group::<Circuit>::new(mode, expected).to_bits_le();
+            let candidate = Group::new(mode, expected).to_bits_le();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Group::<Circuit>::from_bits_le(&candidate);
+                let candidate = Group::from_bits_le(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });
@@ -64,10 +64,10 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let candidate = Group::<Circuit>::new(mode, expected).to_bits_be();
+            let candidate = Group::new(mode, expected).to_bits_be();
 
             Circuit::scope(&format!("{mode} {i}"), || {
-                let candidate = Group::<Circuit>::from_bits_be(&candidate);
+                let candidate = Group::from_bits_be(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             });

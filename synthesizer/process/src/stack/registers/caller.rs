@@ -17,49 +17,49 @@ use super::*;
 impl<N: Network, A: circuit::Aleo<Network = N>> RegistersSigner<N> for Registers<N, A> {
     /// Returns the transition signer.
     #[inline]
-    fn signer(&self) -> Result<Address<N>> {
+    fn signer(&self) -> Result<Address> {
         self.signer.ok_or_else(|| anyhow!("Signer address (console) is not set in the registers."))
     }
 
     /// Sets the transition signer.
     #[inline]
-    fn set_signer(&mut self, signer: Address<N>) {
+    fn set_signer(&mut self, signer: Address) {
         self.signer = Some(signer);
     }
 
     /// Returns the root transition view key.
     #[inline]
-    fn root_tvk(&self) -> Result<Field<N>> {
+    fn root_tvk(&self) -> Result<Field> {
         self.root_tvk.ok_or_else(|| anyhow!("Root tvk (console) is not set in the registers."))
     }
 
     /// Sets the root transition view key.
     #[inline]
-    fn set_root_tvk(&mut self, root_tvk: Field<N>) {
+    fn set_root_tvk(&mut self, root_tvk: Field) {
         self.root_tvk = Some(root_tvk);
     }
 
     /// Returns the transition caller.
     #[inline]
-    fn caller(&self) -> Result<Address<N>> {
+    fn caller(&self) -> Result<Address> {
         self.caller.ok_or_else(|| anyhow!("Caller address (console) is not set in the registers."))
     }
 
     /// Sets the transition caller.
     #[inline]
-    fn set_caller(&mut self, caller: Address<N>) {
+    fn set_caller(&mut self, caller: Address) {
         self.caller = Some(caller);
     }
 
     /// Returns the transition view key.
     #[inline]
-    fn tvk(&self) -> Result<Field<N>> {
+    fn tvk(&self) -> Result<Field> {
         self.tvk.ok_or_else(|| anyhow!("Transition view key (console) is not set in the registers."))
     }
 
     /// Sets the transition view key.
     #[inline]
-    fn set_tvk(&mut self, tvk: Field<N>) {
+    fn set_tvk(&mut self, tvk: Field) {
         self.tvk = Some(tvk);
     }
 }
@@ -67,49 +67,49 @@ impl<N: Network, A: circuit::Aleo<Network = N>> RegistersSigner<N> for Registers
 impl<N: Network, A: circuit::Aleo<Network = N>> RegistersSignerCircuit<N, A> for Registers<N, A> {
     /// Returns the transition signer, as a circuit.
     #[inline]
-    fn signer_circuit(&self) -> Result<circuit::Address<A>> {
+    fn signer_circuit(&self) -> Result<circuit::Address> {
         self.signer_circuit.clone().ok_or_else(|| anyhow!("Signer address (circuit) is not set in the registers."))
     }
 
     /// Sets the transition signer, as a circuit.
     #[inline]
-    fn set_signer_circuit(&mut self, signer_circuit: circuit::Address<A>) {
+    fn set_signer_circuit(&mut self, signer_circuit: circuit::Address) {
         self.signer_circuit = Some(signer_circuit);
     }
 
     /// Returns the root transition view key, as a circuit.
     #[inline]
-    fn root_tvk_circuit(&self) -> Result<circuit::Field<A>> {
+    fn root_tvk_circuit(&self) -> Result<circuit::Field> {
         self.root_tvk_circuit.clone().ok_or_else(|| anyhow!("Root tvk (circuit) is not set in the registers."))
     }
 
     /// Sets the root transition view key, as a circuit.
     #[inline]
-    fn set_root_tvk_circuit(&mut self, root_tvk_circuit: circuit::Field<A>) {
+    fn set_root_tvk_circuit(&mut self, root_tvk_circuit: circuit::Field) {
         self.root_tvk_circuit = Some(root_tvk_circuit);
     }
 
     /// Returns the transition caller, as a circuit.
     #[inline]
-    fn caller_circuit(&self) -> Result<circuit::Address<A>> {
+    fn caller_circuit(&self) -> Result<circuit::Address> {
         self.caller_circuit.clone().ok_or_else(|| anyhow!("Caller address (circuit) is not set in the registers."))
     }
 
     /// Sets the transition caller, as a circuit.
     #[inline]
-    fn set_caller_circuit(&mut self, caller_circuit: circuit::Address<A>) {
+    fn set_caller_circuit(&mut self, caller_circuit: circuit::Address) {
         self.caller_circuit = Some(caller_circuit);
     }
 
     /// Returns the transition view key, as a circuit.
     #[inline]
-    fn tvk_circuit(&self) -> Result<circuit::Field<A>> {
+    fn tvk_circuit(&self) -> Result<circuit::Field> {
         self.tvk_circuit.clone().ok_or_else(|| anyhow!("Transition view key (circuit) is not set in the registers."))
     }
 
     /// Sets the transition view key, as a circuit.
     #[inline]
-    fn set_tvk_circuit(&mut self, tvk_circuit: circuit::Field<A>) {
+    fn set_tvk_circuit(&mut self, tvk_circuit: circuit::Field) {
         self.tvk_circuit = Some(tvk_circuit);
     }
 }

@@ -14,9 +14,9 @@
 
 use super::*;
 
-impl<A: Aleo> PrivateKey<A> {
+impl PrivateKey {
     /// Returns the account compute key for this account private key.
-    pub fn to_compute_key(&self) -> ComputeKey<A> {
+    pub fn to_compute_key(&self) -> ComputeKey {
         ComputeKey::from_private_key(self)
     }
 }
@@ -42,7 +42,7 @@ mod tests {
             let (private_key, compute_key, _view_key, _address) = generate_account()?;
 
             // Initialize the private key.
-            let candidate = PrivateKey::<Circuit>::new(mode, private_key);
+            let candidate = PrivateKey::new(mode, private_key);
 
             Circuit::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_compute_key();

@@ -65,12 +65,12 @@ pub trait Environment:
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Console;
 
-pub type ConsoleAffine = EdwardsAffine;
-pub type ConsoleBigInteger = <ConsoleField as PrimeField>::BigInteger;
-pub type ConsoleField = <ConsoleAffine as AffineCurve>::BaseField;
-pub type ConsolePairingCurve = Bls12_377;
-pub type ConsoleProjective = <ConsoleAffine as AffineCurve>::Projective;
-pub type ConsoleScalar = <ConsoleAffine as AffineCurve>::ScalarField;
+pub type ConsoleAffine = <Console as Environment>::Affine;
+pub type ConsoleBigInteger = <Console as Environment>::BigInteger;
+pub type ConsoleField = <Console as Environment>::Field;
+pub type ConsolePairingCurve = <Console as Environment>::PairingCurve;
+pub type ConsoleProjective = <Console as Environment>::Projective;
+pub type ConsoleScalar = <Console as Environment>::Scalar;
 
 /// The coefficient `A` of the twisted Edwards curve.
 pub const CONSOLE_EDWARDS_A: ConsoleField = <EdwardsParameters as TwistedEdwardsParameters>::EDWARDS_A;

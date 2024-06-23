@@ -69,7 +69,7 @@ pub type TransitionPath = MerklePath<TRANSITION_DEPTH>;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use snarkvm_console_network::Network;
+    use snarkvm_console_network::{AleoNetwork, Network};
 
     type CurrentNetwork = snarkvm_console_network::MainnetV0;
 
@@ -77,7 +77,7 @@ mod tests {
     fn test_transaction_depth_is_correct() {
         // We ensure 2^TRANSACTION_DEPTH - 1 == MAX_FUNCTIONS.
         // The "- 1" is for the fee transition.
-        assert_eq!((2u32.checked_pow(TRANSACTION_DEPTH as u32).unwrap() - 1) as usize, CurrentNetwork::MAX_FUNCTIONS);
+        assert_eq!((2u32.checked_pow(TRANSACTION_DEPTH as u32).unwrap() - 1) as usize, AleoNetwork::MAX_FUNCTIONS);
     }
 
     #[test]
@@ -85,7 +85,7 @@ mod tests {
         // We ensure 2^TRANSITION_DEPTH == (MAX_INPUTS + MAX_OUTPUTS).
         assert_eq!(
             2u32.checked_pow(TRANSITION_DEPTH as u32).unwrap() as usize,
-            CurrentNetwork::MAX_INPUTS + CurrentNetwork::MAX_OUTPUTS
+            AleoNetwork::MAX_INPUTS + AleoNetwork::MAX_OUTPUTS
         );
     }
 }

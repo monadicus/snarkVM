@@ -12,25 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<E: Environment, const RATE: usize> HashToGroup for Poseidon<E, RATE> {
-    type Group = Group<E>;
-    type Input = Field<E>;
-    type Scalar = Scalar<E>;
+impl<const RATE: usize> HashToGroup for Poseidon<RATE> {
+    type Group = Group;
+    type Input = Field;
+    type Scalar = Scalar;
 
     /// Returns an affine group element from hashing the input.
     #[inline]
     fn hash_to_group(&self, input: &[Self::Input]) -> Self::Group {
         // Ensure that the input is not empty.
         if input.is_empty() {
-            E::halt("Input to hash to group cannot be empty")
+            Circuit::halt("Input to hash to group cannot be empty")
         }
         // Compute `HashMany(input, 2)`.
         match self.hash_many(input, 2).iter().collect_tuple() {
             // Compute the group element as `MapToGroup(h0) + MapToGroup(h1)`.
             Some((h0, h1)) => Elligator2::encode(h1) + Elligator2::encode(h0),
-            None => E::halt("Failed to compute the hash to group"),
+            None => Circuit::halt("Failed to compute the hash to group"),
         }
     }
 }
@@ -49,8 +51,8 @@ mod tests {
     macro_rules! check_hash_to_group {
         ($poseidon:ident, $mode:ident, $num_fields:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize Poseidon.
-            let native = console::$poseidon::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit = $poseidon::<Circuit>::constant(native.clone());
+            let native = console::$poseidon::setup(DOMAIN)?;
+            let circuit = $poseidon::constant(native.clone());
 
             let rng = &mut TestRng::default();
 
@@ -60,7 +62,7 @@ mod tests {
                 // Compute the expected hash.
                 let expected = console::HashToGroup::hash_to_group(&native, &input)?;
                 // Prepare the circuit input.
-                let circuit_input: Vec<Field<_>> = Inject::new(Mode::$mode, input);
+                let circuit_input: Vec<Field> = Inject::new(Mode::$mode, input);
 
                 Circuit::scope(format!("Poseidon HashToGroup {i}"), || {
                     // Perform the hash operation.
@@ -72,8 +74,8 @@ mod tests {
                     let candidate = candidate.eject_value();
                     assert!((*candidate).to_affine().is_on_curve());
                     assert!((*candidate).to_affine().is_in_correct_subgroup_assuming_on_curve());
-                    assert_ne!(console::Group::<<Circuit as Environment>::Network>::zero(), candidate);
-                    assert_ne!(console::Group::<<Circuit as Environment>::Network>::generator(), candidate);
+                    assert_ne!(console::Group::zero(), candidate);
+                    assert_ne!(console::Group::generator(), candidate);
 
                     let candidate_cofactor_inv = candidate.div_by_cofactor();
                     assert_eq!(candidate, candidate_cofactor_inv.mul_by_cofactor());

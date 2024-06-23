@@ -14,15 +14,15 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> MSB for Integer<E, I> {
-    type Boolean = Boolean<E>;
+impl<I: IntegerType> MSB for Integer<I> {
+    type Boolean = Boolean;
 
     /// Returns the MSB of the integer.
     fn msb(&self) -> &Self::Boolean {
         match self.bits_le.last() {
             Some(msb) => msb,
-            // Note: `E::halt` should never be invoked as `self.bits_le.len()` is greater than zero.
-            None => E::halt("Malformed integer detected while retrieving the MSB"),
+            // Note: `Circuit::halt` should never be invoked as `self.bits_le.len()` is greater than zero.
+            None => Circuit::halt("Malformed integer detected while retrieving the MSB"),
         }
     }
 }
@@ -34,7 +34,7 @@ mod tests {
 
     fn check_msb<I: IntegerType>() {
         // Set the value to check to console::Integer::MAX.
-        let value = Integer::<Circuit, I>::new(Mode::Private, console::Integer::MAX);
+        let value = Integer::<I>::new(Mode::Private, console::Integer::MAX);
 
         // Prepare the expected outputs.
         let expected_signed = false;

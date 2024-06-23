@@ -33,7 +33,7 @@ use console::{
 use indexmap::IndexSet;
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct FunctionCore<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> {
+pub struct FunctionCore<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> {
     /// The name of the function.
     name: Identifier<N>,
     /// The input statements, added in order of the input registers.
@@ -47,24 +47,24 @@ pub struct FunctionCore<N: Network, Instruction: InstructionTrait<N>, Command: C
     finalize_logic: Option<FinalizeCore<N, Command>>,
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> FunctionCore<N, Instruction, Command> {
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> FunctionCore<N, Instruction, Command> {
     /// Initializes a new function with the given name.
-    pub fn new(name: Identifier<N>) -> Self {
+    pub fn new(name: Identifier) -> Self {
         Self { name, inputs: IndexSet::new(), instructions: Vec::new(), outputs: IndexSet::new(), finalize_logic: None }
     }
 
     /// Returns the name of the function.
-    pub const fn name(&self) -> &Identifier<N> {
+    pub const fn name(&self) -> &Identifier {
         &self.name
     }
 
     /// Returns the function inputs.
-    pub const fn inputs(&self) -> &IndexSet<Input<N>> {
+    pub const fn inputs(&self) -> &IndexSet<Input> {
         &self.inputs
     }
 
     /// Returns the function input types.
-    pub fn input_types(&self) -> Vec<ValueType<N>> {
+    pub fn input_types(&self) -> Vec<ValueType> {
         self.inputs.iter().map(|input| input.value_type()).cloned().collect()
     }
 
@@ -74,12 +74,12 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fun
     }
 
     /// Returns the function outputs.
-    pub const fn outputs(&self) -> &IndexSet<Output<N>> {
+    pub const fn outputs(&self) -> &IndexSet<Output> {
         &self.outputs
     }
 
     /// Returns the function output types.
-    pub fn output_types(&self) -> Vec<ValueType<N>> {
+    pub fn output_types(&self) -> Vec<ValueType> {
         self.outputs.iter().map(|output| output.value_type()).cloned().collect()
     }
 
@@ -89,7 +89,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fun
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> FunctionCore<N, Instruction, Command> {
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> FunctionCore<N, Instruction, Command> {
     /// Adds the input statement to the function.
     ///
     /// # Errors
@@ -104,7 +104,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fun
         ensure!(self.outputs.is_empty(), "Cannot add inputs after outputs have been added");
 
         // Ensure the maximum number of inputs has not been exceeded.
-        ensure!(self.inputs.len() < N::MAX_INPUTS, "Cannot add more than {} inputs", N::MAX_INPUTS);
+        ensure!(self.inputs.len() < AleoNetwork::MAX_INPUTS, "Cannot add more than {} inputs", AleoNetwork::MAX_INPUTS);
         // Ensure the input statement was not previously added.
         ensure!(!self.inputs.contains(&input), "Cannot add duplicate input statement");
 
@@ -192,7 +192,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Fun
     }
 }
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> TypeName
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> TypeName
     for FunctionCore<N, Instruction, Command>
 {
     /// Returns the type name as a string.
@@ -217,7 +217,7 @@ mod tests {
         let mut function = Function::<CurrentNetwork>::new(name);
 
         // Ensure that an input can be added.
-        let input = Input::<CurrentNetwork>::from_str("input r0 as field.private;").unwrap();
+        let input = Input::from_str("input r0 as field.private;").unwrap();
         assert!(function.add_input(input.clone()).is_ok());
 
         // Ensure that adding a duplicate input will fail.
@@ -225,7 +225,7 @@ mod tests {
 
         // Ensure that adding more than the maximum number of inputs will fail.
         for i in 1..CurrentNetwork::MAX_INPUTS * 2 {
-            let input = Input::<CurrentNetwork>::from_str(&format!("input r{i} as field.private;")).unwrap();
+            let input = Input::from_str(&format!("input r{i} as field.private;")).unwrap();
 
             match function.inputs.len() < CurrentNetwork::MAX_INPUTS {
                 true => assert!(function.add_input(input).is_ok()),

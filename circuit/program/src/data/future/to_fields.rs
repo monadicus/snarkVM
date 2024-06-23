@@ -12,25 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+use snarkvm_circuit_network::AleoV0;
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> ToFields for Future<A> {
-    type Field = Field<A>;
+impl ToFields for Future {
+    type Field = Field;
 
     /// Returns the circuit future as a list of fields.
     #[inline]
-    fn to_fields(&self) -> Vec<Field<A>> {
+    fn to_fields(&self) -> Vec<Field> {
         // Encode the data as little-endian bits.
         let mut bits_le = self.to_bits_le();
         // Adds one final bit to the data, to serve as a terminus indicator.
         // During decryption, this final bit ensures we've reached the end.
         bits_le.push(Boolean::constant(true));
         // Pack the bits into field elements.
-        let fields = bits_le.chunks(A::BaseField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
+        let fields = bits_le.chunks(ConsoleField::size_in_data_bits()).map(Field::from_bits_le).collect::<Vec<_>>();
         // Ensure the number of field elements does not exceed the maximum allowed size.
-        match fields.len() <= A::MAX_DATA_SIZE_IN_FIELDS as usize {
+        match fields.len() <= AleoV0::MAX_DATA_SIZE_IN_FIELDS as usize {
             true => fields,
-            false => A::halt("Future exceeds maximum allowed size"),
+            false => Circuit::halt("Future exceeds maximum allowed size"),
         }
     }
 }

@@ -36,11 +36,11 @@ use console::{
 #[derive(Clone, PartialEq, Eq)]
 pub enum Transaction<N: Network> {
     /// The deploy transaction publishes an Aleo program to the network.
-    Deploy(N::TransactionID, ProgramOwner<N>, Box<Deployment<N>>, Fee<N>),
+    Deploy(TransactionID, ProgramOwner<N>, Box<Deployment<N>>, Fee<N>),
     /// The execute transaction represents a call to an Aleo program.
-    Execute(N::TransactionID, Execution<N>, Option<Fee<N>>),
+    Execute(TransactionID, Execution<N>, Option<Fee<N>>),
     /// The fee transaction represents a fee paid to the network, used for rejected transactions.
-    Fee(N::TransactionID, Fee<N>),
+    Fee(TransactionID, Fee<N>),
 }
 
 impl<N: Network> Transaction<N> {
@@ -174,7 +174,7 @@ impl<T, I1: DoubleEndedIterator<Item = T>, I2: DoubleEndedIterator<Item = T>, I3
 
 impl<N: Network> Transaction<N> {
     /// Returns the transaction ID.
-    pub const fn id(&self) -> N::TransactionID {
+    pub const fn id(&self) -> TransactionID {
         match self {
             Self::Deploy(id, ..) => *id,
             Self::Execute(id, ..) => *id,
@@ -239,12 +239,12 @@ impl<N: Network> Transaction<N> {
     }
 
     /// Returns `true` if the transaction contains the given serial number.
-    pub fn contains_serial_number(&self, serial_number: &Field<N>) -> bool {
+    pub fn contains_serial_number(&self, serial_number: &Field) -> bool {
         self.transitions().any(|transition| transition.contains_serial_number(serial_number))
     }
 
     /// Returns `true` if the transaction contains the given commitment.
-    pub fn contains_commitment(&self, commitment: &Field<N>) -> bool {
+    pub fn contains_commitment(&self, commitment: &Field) -> bool {
         self.transitions().any(|transition| transition.contains_commitment(commitment))
     }
 }
@@ -274,17 +274,17 @@ impl<N: Network> Transaction<N> {
     }
 
     /// Returns the transition for the given serial number, if it exists.
-    pub fn find_transition_for_serial_number(&self, serial_number: &Field<N>) -> Option<&Transition<N>> {
+    pub fn find_transition_for_serial_number(&self, serial_number: &Field) -> Option<&Transition<N>> {
         self.transitions().find(|transition| transition.contains_serial_number(serial_number))
     }
 
     /// Returns the transition for the given commitment, if it exists.
-    pub fn find_transition_for_commitment(&self, commitment: &Field<N>) -> Option<&Transition<N>> {
+    pub fn find_transition_for_commitment(&self, commitment: &Field) -> Option<&Transition<N>> {
         self.transitions().find(|transition| transition.contains_commitment(commitment))
     }
 
     /// Returns the record with the corresponding commitment, if it exists.
-    pub fn find_record(&self, commitment: &Field<N>) -> Option<&Record<N, Ciphertext<N>>> {
+    pub fn find_record(&self, commitment: &Field) -> Option<&Record<N, Ciphertext<N>>> {
         self.transitions().find_map(|transition| transition.find_record(commitment))
     }
 }
@@ -309,49 +309,49 @@ impl<N: Network> Transaction<N> {
     /* Input */
 
     /// Returns an iterator over the input IDs, for all transition inputs that are records.
-    pub fn input_ids(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn input_ids(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transitions().flat_map(Transition::input_ids)
     }
 
     /// Returns an iterator over the serial numbers, for all transition inputs that are records.
-    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transitions().flat_map(Transition::serial_numbers)
     }
 
     /// Returns an iterator over the tags, for all transition inputs that are records.
-    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn tags(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transitions().flat_map(Transition::tags)
     }
 
     /* Output */
 
     /// Returns an iterator over the output IDs, for all transition inputs that are records.
-    pub fn output_ids(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn output_ids(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transitions().flat_map(Transition::output_ids)
     }
 
     /// Returns an iterator over the commitments, for all transition outputs that are records.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field<N>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = &Field> {
         self.transitions().flat_map(Transition::commitments)
     }
 
     /// Returns an iterator over the records, for all transition outputs that are records.
-    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field<N>, &Record<N, Ciphertext<N>>)> {
+    pub fn records(&self) -> impl '_ + Iterator<Item = (&Field, &Record<N, Ciphertext<N>>)> {
         self.transitions().flat_map(Transition::records)
     }
 
     /// Returns an iterator over the nonces, for all transition outputs that are records.
-    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group<N>> {
+    pub fn nonces(&self) -> impl '_ + Iterator<Item = &Group> {
         self.transitions().flat_map(Transition::nonces)
     }
 
     /// Returns an iterator over the transition public keys, for all transitions.
-    pub fn transition_public_keys(&self) -> impl '_ + DoubleEndedIterator<Item = &Group<N>> {
+    pub fn transition_public_keys(&self) -> impl '_ + DoubleEndedIterator<Item = &Group> {
         self.transitions().map(Transition::tpk)
     }
 
     /// Returns an iterator over the transition commitments, for all transitions.
-    pub fn transition_commitments(&self) -> impl '_ + DoubleEndedIterator<Item = &Field<N>> {
+    pub fn transition_commitments(&self) -> impl '_ + DoubleEndedIterator<Item = &Field> {
         self.transitions().map(Transition::tcm)
     }
 }
@@ -374,32 +374,32 @@ impl<N: Network> Transaction<N> {
     }
 
     /// Returns a consuming iterator over the transition public keys, for all transitions.
-    pub fn into_transition_public_keys(self) -> impl DoubleEndedIterator<Item = Group<N>> {
+    pub fn into_transition_public_keys(self) -> impl DoubleEndedIterator<Item = Group> {
         self.into_transitions().map(Transition::into_tpk)
     }
 
     /// Returns a consuming iterator over the tags, for all transition inputs that are records.
-    pub fn into_tags(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_tags(self) -> impl Iterator<Item = Field> {
         self.into_transitions().flat_map(Transition::into_tags)
     }
 
     /// Returns a consuming iterator over the serial numbers, for all transition inputs that are records.
-    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_serial_numbers(self) -> impl Iterator<Item = Field> {
         self.into_transitions().flat_map(Transition::into_serial_numbers)
     }
 
     /// Returns a consuming iterator over the commitments, for all transition outputs that are records.
-    pub fn into_commitments(self) -> impl Iterator<Item = Field<N>> {
+    pub fn into_commitments(self) -> impl Iterator<Item = Field> {
         self.into_transitions().flat_map(Transition::into_commitments)
     }
 
     /// Returns a consuming iterator over the records, for all transition outputs that are records.
-    pub fn into_records(self) -> impl Iterator<Item = (Field<N>, Record<N, Ciphertext<N>>)> {
+    pub fn into_records(self) -> impl Iterator<Item = (Field, Record<N, Ciphertext<N>>)> {
         self.into_transitions().flat_map(Transition::into_records)
     }
 
     /// Returns a consuming iterator over the nonces, for all transition outputs that are records.
-    pub fn into_nonces(self) -> impl Iterator<Item = Group<N>> {
+    pub fn into_nonces(self) -> impl Iterator<Item = Group> {
         self.into_transitions().flat_map(Transition::into_nonces)
     }
 }

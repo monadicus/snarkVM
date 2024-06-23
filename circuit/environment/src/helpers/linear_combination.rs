@@ -487,13 +487,14 @@ impl<F: PrimeField> fmt::Display for LinearCombination<F> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use console::ConsoleField;
     use snarkvm_fields::{One as O, Zero as Z};
 
     use std::rc::Rc;
 
     #[test]
     fn test_zero() {
-        let zero = <Circuit as Environment>::BaseField::zero();
+        let zero = ConsoleField::zero();
 
         let candidate = LinearCombination::zero();
         assert_eq!(zero, candidate.constant);
@@ -503,7 +504,7 @@ mod tests {
 
     #[test]
     fn test_one() {
-        let one = <Circuit as Environment>::BaseField::one();
+        let one = ConsoleField::one();
 
         let candidate = LinearCombination::one();
         assert_eq!(one, candidate.constant);
@@ -513,7 +514,7 @@ mod tests {
 
     #[test]
     fn test_two() {
-        let one = <Circuit as Environment>::BaseField::one();
+        let one = ConsoleField::one();
         let two = one + one;
 
         let candidate = LinearCombination::one() + LinearCombination::one();
@@ -524,8 +525,8 @@ mod tests {
 
     #[test]
     fn test_is_constant() {
-        let zero = <Circuit as Environment>::BaseField::zero();
-        let one = <Circuit as Environment>::BaseField::one();
+        let zero = ConsoleField::zero();
+        let one = ConsoleField::one();
 
         let candidate = LinearCombination::zero();
         assert!(candidate.is_constant());
@@ -540,8 +541,8 @@ mod tests {
 
     #[test]
     fn test_mul() {
-        let zero = <Circuit as Environment>::BaseField::zero();
-        let one = <Circuit as Environment>::BaseField::one();
+        let zero = ConsoleField::zero();
+        let one = ConsoleField::one();
         let two = one + one;
         let four = two + two;
 
@@ -563,8 +564,8 @@ mod tests {
 
     #[test]
     fn test_debug() {
-        let one_public = &Circuit::new_variable(Mode::Public, <Circuit as Environment>::BaseField::one());
-        let one_private = &Circuit::new_variable(Mode::Private, <Circuit as Environment>::BaseField::one());
+        let one_public = &Circuit::new_variable(Mode::Public, ConsoleField::one());
+        let one_private = &Circuit::new_variable(Mode::Private, ConsoleField::one());
         {
             let expected = "Constant(1) + Public(1, 1) + Private(0, 1)";
 
@@ -630,14 +631,14 @@ mod tests {
     #[rustfmt::skip]
     #[test]
     fn test_num_additions() {
-        let one_public = &Circuit::new_variable(Mode::Public, <Circuit as Environment>::BaseField::one());
-        let one_private = &Circuit::new_variable(Mode::Private, <Circuit as Environment>::BaseField::one());
+        let one_public = &Circuit::new_variable(Mode::Public, ConsoleField::one());
+        let one_private = &Circuit::new_variable(Mode::Private, ConsoleField::one());
         let two_private = one_private + one_private;
 
-        let candidate = LinearCombination::<<Circuit as Environment>::BaseField>::zero();
+        let candidate = LinearCombination::<ConsoleField>::zero();
         assert_eq!(0, candidate.num_additions());
 
-        let candidate = LinearCombination::<<Circuit as Environment>::BaseField>::one();
+        let candidate = LinearCombination::<ConsoleField>::one();
         assert_eq!(0, candidate.num_additions());
 
         let candidate = LinearCombination::zero() + one_public;

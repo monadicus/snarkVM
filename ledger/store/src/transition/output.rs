@@ -30,23 +30,23 @@ use std::borrow::Cow;
 /// A trait for transition output storage.
 pub trait OutputStorage<N: Network>: Clone + Send + Sync {
     /// The mapping of `transition ID` to `output IDs`.
-    type IDMap: for<'a> Map<'a, N::TransitionID, Vec<Field<N>>>;
+    type IDMap: for<'a> Map<'a, N::TransitionID, Vec<Field>>;
     /// The mapping of `output ID` to `transition ID`.
-    type ReverseIDMap: for<'a> Map<'a, Field<N>, N::TransitionID>;
+    type ReverseIDMap: for<'a> Map<'a, Field, N::TransitionID>;
     /// The mapping of `plaintext hash` to `(optional) plaintext`.
-    type ConstantMap: for<'a> Map<'a, Field<N>, Option<Plaintext<N>>>;
+    type ConstantMap: for<'a> Map<'a, Field, Option<Plaintext<N>>>;
     /// The mapping of `plaintext hash` to `(optional) plaintext`.
-    type PublicMap: for<'a> Map<'a, Field<N>, Option<Plaintext<N>>>;
+    type PublicMap: for<'a> Map<'a, Field, Option<Plaintext<N>>>;
     /// The mapping of `ciphertext hash` to `(optional) ciphertext`.
-    type PrivateMap: for<'a> Map<'a, Field<N>, Option<Ciphertext<N>>>;
+    type PrivateMap: for<'a> Map<'a, Field, Option<Ciphertext<N>>>;
     /// The mapping of `commitment` to `(checksum, (optional) record ciphertext)`.
-    type RecordMap: for<'a> Map<'a, Field<N>, (Field<N>, Option<Record<N, Ciphertext<N>>>)>;
+    type RecordMap: for<'a> Map<'a, Field, (Field, Option<Record<N, Ciphertext<N>>>)>;
     /// The mapping of `record nonce` to `commitment`.
-    type RecordNonceMap: for<'a> Map<'a, Group<N>, Field<N>>;
+    type RecordNonceMap: for<'a> Map<'a, Group, Field>;
     /// The mapping of `external hash` to `()`. Note: This is **not** the record commitment.
-    type ExternalRecordMap: for<'a> Map<'a, Field<N>, ()>;
+    type ExternalRecordMap: for<'a> Map<'a, Field, ()>;
     /// The mapping of `future hash` to `(optional) future`.
-    type FutureMap: for<'a> Map<'a, Field<N>, Option<Future<N>>>;
+    type FutureMap: for<'a> Map<'a, Field, Option<Future<N>>>;
 
     /// Initializes the transition output storage.
     fn open<S: Clone + Into<StorageMode>>(storage: S) -> Result<Self>;
@@ -235,7 +235,7 @@ pub trait OutputStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the transition ID that contains the given `output ID`.
-    fn find_transition_id(&self, output_id: &Field<N>) -> Result<Option<N::TransitionID>> {
+    fn find_transition_id(&self, output_id: &Field) -> Result<Option<N::TransitionID>> {
         match self.reverse_id_map().get_confirmed(output_id)? {
             Some(Cow::Borrowed(transition_id)) => Ok(Some(*transition_id)),
             Some(Cow::Owned(transition_id)) => Ok(Some(transition_id)),
@@ -244,7 +244,7 @@ pub trait OutputStorage<N: Network>: Clone + Send + Sync {
     }
 
     /// Returns the output IDs for the given `transition ID`.
-    fn get_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field<N>>> {
+    fn get_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field>> {
         // Retrieve the output IDs.
         match self.id_map().get_confirmed(transition_id)? {
             Some(Cow::Borrowed(outputs)) => Ok(outputs.to_vec()),
@@ -410,7 +410,7 @@ impl<N: Network, O: OutputStorage<N>> OutputStore<N, O> {
 
 impl<N: Network, O: OutputStorage<N>> OutputStore<N, O> {
     /// Returns the output IDs for the given `transition ID`.
-    pub fn get_output_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field<N>>> {
+    pub fn get_output_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field>> {
         self.storage.get_ids(transition_id)
     }
 
@@ -424,7 +424,7 @@ impl<N: Network, O: OutputStorage<N>> OutputStore<N, O> {
     /// If the record exists, `Ok(Some(record))` is returned.
     /// If the record was purged, `Ok(None)` is returned.
     /// If the record does not exist, `Err(error)` is returned.
-    pub fn get_record(&self, commitment: &Field<N>) -> Result<Option<Record<N, Ciphertext<N>>>> {
+    pub fn get_record(&self, commitment: &Field) -> Result<Option<Record<N, Ciphertext<N>>>> {
         match self.record.get_confirmed(commitment) {
             Ok(Some(Cow::Borrowed((_, Some(record))))) => Ok(Some((*record).clone())),
             Ok(Some(Cow::Owned((_, Some(record))))) => Ok(Some(record)),
@@ -438,66 +438,66 @@ impl<N: Network, O: OutputStorage<N>> OutputStore<N, O> {
 
 impl<N: Network, O: OutputStorage<N>> OutputStore<N, O> {
     /// Returns the transition ID that contains the given `output ID`.
-    pub fn find_transition_id(&self, output_id: &Field<N>) -> Result<Option<N::TransitionID>> {
+    pub fn find_transition_id(&self, output_id: &Field) -> Result<Option<N::TransitionID>> {
         self.storage.find_transition_id(output_id)
     }
 }
 
 impl<N: Network, O: OutputStorage<N>> OutputStore<N, O> {
     /// Returns `true` if the given output ID exists.
-    pub fn contains_output_id(&self, output_id: &Field<N>) -> Result<bool> {
+    pub fn contains_output_id(&self, output_id: &Field) -> Result<bool> {
         self.storage.reverse_id_map().contains_key_confirmed(output_id)
     }
 
     /// Returns `true` if the given commitment exists.
-    pub fn contains_commitment(&self, commitment: &Field<N>) -> Result<bool> {
+    pub fn contains_commitment(&self, commitment: &Field) -> Result<bool> {
         self.record.contains_key_confirmed(commitment)
     }
 
     /// Returns `true` if the given checksum exists.
-    pub fn contains_checksum(&self, checksum: &Field<N>) -> bool {
+    pub fn contains_checksum(&self, checksum: &Field) -> bool {
         self.checksums().contains(checksum)
     }
 
     /// Returns `true` if the given nonce exists.
-    pub fn contains_nonce(&self, nonce: &Group<N>) -> Result<bool> {
+    pub fn contains_nonce(&self, nonce: &Group) -> Result<bool> {
         self.record_nonce.contains_key_confirmed(nonce)
     }
 }
 
 impl<N: Network, O: OutputStorage<N>> OutputStore<N, O> {
     /// Returns an iterator over the output IDs, for all transition outputs.
-    pub fn output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.storage.reverse_id_map().keys_confirmed()
     }
 
     /// Returns an iterator over the constant output IDs, for all transition outputs that are constant.
-    pub fn constant_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn constant_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.constant.keys_confirmed()
     }
 
     /// Returns an iterator over the public output IDs, for all transition outputs that are public.
-    pub fn public_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn public_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.public.keys_confirmed()
     }
 
     /// Returns an iterator over the private output IDs, for all transition outputs that are private.
-    pub fn private_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn private_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.private.keys_confirmed()
     }
 
     /// Returns an iterator over the commitments, for all transition outputs that are records.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.record.keys_confirmed()
     }
 
     /// Returns an iterator over the external record output IDs, for all transition outputs that are external records.
-    pub fn external_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn external_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.external_record.keys_confirmed()
     }
 
     /// Returns an iterator over the future output IDs, for all transition outputs that are future outputs.
-    pub fn future_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn future_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.future.keys_confirmed()
     }
 }
@@ -531,7 +531,7 @@ impl<N: Network, I: OutputStorage<N>> OutputStore<N, I> {
     }
 
     /// Returns an iterator over the checksums, for all transition outputs that are records.
-    pub fn checksums(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn checksums(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.record.values_confirmed().map(|output| match output {
             Cow::Borrowed((checksum, _)) => Cow::Borrowed(checksum),
             Cow::Owned((checksum, _)) => Cow::Owned(checksum),
@@ -539,12 +539,12 @@ impl<N: Network, I: OutputStorage<N>> OutputStore<N, I> {
     }
 
     /// Returns an iterator over the nonces, for all transition outputs that are records.
-    pub fn nonces(&self) -> impl '_ + Iterator<Item = Cow<'_, Group<N>>> {
+    pub fn nonces(&self) -> impl '_ + Iterator<Item = Cow<'_, Group>> {
         self.record_nonce.keys_confirmed()
     }
 
     /// Returns an iterator over the `(commitment, record)` pairs, for all transition outputs that are records.
-    pub fn records(&self) -> impl '_ + Iterator<Item = (Cow<'_, Field<N>>, Cow<'_, Record<N, Ciphertext<N>>>)> {
+    pub fn records(&self) -> impl '_ + Iterator<Item = (Cow<'_, Field>, Cow<'_, Record<N, Ciphertext<N>>>)> {
         self.record.iter_confirmed().flat_map(|(commitment, output)| match output {
             Cow::Borrowed((_, Some(record))) => Some((commitment, Cow::Borrowed(record))),
             Cow::Owned((_, Some(record))) => Some((commitment, Cow::Owned(record))),

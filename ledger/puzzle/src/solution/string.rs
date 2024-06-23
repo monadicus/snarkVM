@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromStr for Solution<N> {
+impl FromStr for Solution {
     type Err = Error;
 
     /// Initializes the solution from a JSON-string.
@@ -23,14 +23,14 @@ impl<N: Network> FromStr for Solution<N> {
     }
 }
 
-impl<N: Network> Debug for Solution<N> {
+impl Debug for Solution {
     /// Prints the solution as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
-impl<N: Network> Display for Solution<N> {
+impl Display for Solution {
     /// Displays the solution as a JSON-string.
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", serde_json::to_string(self).map_err::<fmt::Error, _>(ser::Error::custom)?)
@@ -40,14 +40,12 @@ impl<N: Network> Display for Solution<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use console::{account::PrivateKey, network::MainnetV0};
-
-    type CurrentNetwork = MainnetV0;
+    use console::account::PrivateKey;
 
     #[test]
     fn test_string() -> Result<()> {
         let mut rng = TestRng::default();
-        let private_key = PrivateKey::<CurrentNetwork>::new(&mut rng)?;
+        let private_key = PrivateKey::new(&mut rng)?;
         let address = Address::try_from(private_key)?;
 
         // Sample a new solution.

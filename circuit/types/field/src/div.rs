@@ -14,52 +14,52 @@
 
 use super::*;
 
-impl<E: Environment> Div<Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Div<Field> for Field {
+    type Output = Field;
 
-    fn div(self, other: Field<E>) -> Self::Output {
+    fn div(self, other: Field) -> Self::Output {
         self / &other
     }
 }
 
-impl<E: Environment> Div<&Field<E>> for Field<E> {
-    type Output = Field<E>;
+impl Div<&Field> for Field {
+    type Output = Field;
 
-    fn div(self, other: &Field<E>) -> Self::Output {
+    fn div(self, other: &Field) -> Self::Output {
         &self / other
     }
 }
 
-impl<E: Environment> Div<Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Div<Field> for &Field {
+    type Output = Field;
 
-    fn div(self, other: Field<E>) -> Self::Output {
+    fn div(self, other: Field) -> Self::Output {
         self / &other
     }
 }
 
-impl<E: Environment> Div<&Field<E>> for &Field<E> {
-    type Output = Field<E>;
+impl Div<&Field> for &Field {
+    type Output = Field;
 
-    fn div(self, other: &Field<E>) -> Self::Output {
+    fn div(self, other: &Field) -> Self::Output {
         let mut output = self.clone();
         output /= other;
         output
     }
 }
 
-impl<E: Environment> DivAssign<Self> for Field<E> {
+impl DivAssign<Self> for Field {
     fn div_assign(&mut self, other: Self) {
         *self /= &other;
     }
 }
 
-impl<E: Environment> DivAssign<&Self> for Field<E> {
+impl DivAssign<&Self> for Field {
     #[allow(clippy::suspicious_op_assign_impl)]
     fn div_assign(&mut self, other: &Self) {
         match other.is_constant() {
             // If `other` is a constant and zero, halt since the inverse of zero is undefined.
-            true if other.eject_value().is_zero() => E::halt("Attempted to divide by zero."),
+            true if other.eject_value().is_zero() => Circuit::halt("Attempted to divide by zero."),
             // If `other` is a constant and non-zero, we can perform multiplication and inversion for 0 constraints.
             // If `self` is a constant, we can perform multiplication and inversion for 1 constraint.
             // Otherwise, we can perform multiplication and inversion for 2 constraints.
@@ -68,7 +68,7 @@ impl<E: Environment> DivAssign<&Self> for Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn Div<Field<E>, Output = Field<E>>> for Field<E> {
+impl Metrics<dyn Div<Field, Output = Field>> for Field {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -80,8 +80,8 @@ impl<E: Environment> Metrics<dyn Div<Field<E>, Output = Field<E>>> for Field<E> 
     }
 }
 
-impl<E: Environment> OutputMode<dyn Div<Field<E>, Output = Field<E>>> for Field<E> {
-    type Case = (CircuitType<Field<E>>, CircuitType<Field<E>>);
+impl OutputMode<dyn Div<Field, Output = Field>> for Field {
+    type Case = (CircuitType<Field>, CircuitType<Field>);
 
     fn output_mode(case: &Self::Case) -> Mode {
         match (case.0.mode(), case.1.mode()) {
@@ -91,7 +91,7 @@ impl<E: Environment> OutputMode<dyn Div<Field<E>, Output = Field<E>>> for Field<
                     true => Mode::Public,
                     false => Mode::Private,
                 },
-                _ => E::halt("The constant is required to determine the output mode of Public + Constant"),
+                _ => Circuit::halt("The constant is required to determine the output mode of Public + Constant"),
             },
             (_, _) => Mode::Private,
         }
@@ -105,15 +105,9 @@ mod tests {
 
     const ITERATIONS: u64 = 1000;
 
-    fn check_div(
-        name: &str,
-        first: &console::Field<<Circuit as Environment>::Network>,
-        second: &console::Field<<Circuit as Environment>::Network>,
-        mode_a: Mode,
-        mode_b: Mode,
-    ) {
-        let a = &Field::<Circuit>::new(mode_a, *first);
-        let b = &Field::<Circuit>::new(mode_b, *second);
+    fn check_div(name: &str, first: &console::Field, second: &console::Field, mode_a: Mode, mode_b: Mode) {
+        let a = &Field::new(mode_a, *first);
+        let b = &Field::new(mode_b, *second);
 
         match second.is_zero() {
             true => match mode_b.is_constant() {
@@ -140,15 +134,9 @@ mod tests {
         }
     }
 
-    fn check_div_assign(
-        name: &str,
-        first: &console::Field<<Circuit as Environment>::Network>,
-        second: &console::Field<<Circuit as Environment>::Network>,
-        mode_a: Mode,
-        mode_b: Mode,
-    ) {
-        let a = &Field::<Circuit>::new(mode_a, *first);
-        let b = &Field::<Circuit>::new(mode_b, *second);
+    fn check_div_assign(name: &str, first: &console::Field, second: &console::Field, mode_a: Mode, mode_b: Mode) {
+        let a = &Field::new(mode_a, *first);
+        let b = &Field::new(mode_b, *second);
 
         match second.is_zero() {
             true => match mode_b.is_constant() {
@@ -190,14 +178,14 @@ mod tests {
             check_div_assign(&name, &first, &second, mode_a, mode_b);
 
             // Check division by one.
-            let one = console::Field::<<Circuit as Environment>::Network>::one();
+            let one = console::Field::one();
             let name = format!("Div By One {i}");
             check_div(&name, &first, &one, mode_a, mode_b);
             let name = format!("DivAssign By One {i}");
             check_div_assign(&name, &first, &one, mode_a, mode_b);
 
             // Check division by zero.
-            let zero = console::Field::<<Circuit as Environment>::Network>::zero();
+            let zero = console::Field::zero();
             let name = format!("Div By Zero {i}");
             check_div(&name, &first, &zero, mode_a, mode_b);
             let name = format!("DivAssign By Zero {i}");
@@ -252,23 +240,22 @@ mod tests {
 
     #[test]
     fn test_div_by_zero_fails() {
-        let zero = console::Field::<<Circuit as Environment>::Network>::zero();
-        let one = console::Field::<<Circuit as Environment>::Network>::one();
+        let zero = console::Field::zero();
+        let one = console::Field::one();
 
-        let result = std::panic::catch_unwind(|| Field::<Circuit>::one() / Field::zero());
+        let result = std::panic::catch_unwind(|| Field::one() / Field::zero());
         assert!(result.is_err()); // Probe further for specific error type here, if desired
 
-        let result =
-            std::panic::catch_unwind(|| Field::<Circuit>::new(Mode::Constant, one) / Field::new(Mode::Constant, zero));
+        let result = std::panic::catch_unwind(|| Field::new(Mode::Constant, one) / Field::new(Mode::Constant, zero));
         assert!(result.is_err()); // Probe further for specific error type here, if desired
 
         Circuit::scope("Public Div by Zero", || {
-            let _ = Field::<Circuit>::new(Mode::Public, one) / Field::new(Mode::Public, zero);
+            let _ = Field::new(Mode::Public, one) / Field::new(Mode::Public, zero);
             assert!(!Circuit::is_satisfied_in_scope());
         });
 
         Circuit::scope("Private Div by Zero", || {
-            let _ = Field::<Circuit>::new(Mode::Private, one) / Field::new(Mode::Private, zero);
+            let _ = Field::new(Mode::Private, one) / Field::new(Mode::Private, zero);
             assert!(!Circuit::is_satisfied_in_scope());
         });
     }

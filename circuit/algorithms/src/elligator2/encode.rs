@@ -12,30 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use console::ConsoleField;
+use environment::Circuit;
+
 use super::*;
 
-impl<E: Environment> Elligator2<E> {
+impl Elligator2 {
     /// Returns the encoded affine group element, given a field element.
     /// Note: Unlike the console implementation, this function does not return the sign bit.
-    pub fn encode(input: &Field<E>) -> Group<E> {
+    pub fn encode(input: &Field) -> Group {
         // Ensure D on the twisted Edwards curve is a quadratic nonresidue.
-        debug_assert!(console::Group::<E::Network>::EDWARDS_D.legendre().is_qnr());
+        debug_assert!(console::Group::EDWARDS_D.legendre().is_qnr());
 
         // Ensure the input is nonzero.
-        E::assert_neq(input, Field::<E>::zero());
+        Circuit::assert_neq(input, Field::zero());
 
         // Define `1` as a constant.
         let one = Field::one();
 
         // Define the Montgomery curve coefficients A and B.
-        let montgomery_a = Field::constant(console::Group::<E::Network>::MONTGOMERY_A);
-        let montgomery_b = Field::constant(console::Group::<E::Network>::MONTGOMERY_B);
+        let montgomery_a = Field::constant(console::Group::MONTGOMERY_A);
+        let montgomery_b = Field::constant(console::Group::MONTGOMERY_B);
         let montgomery_b_inverse = montgomery_b.inverse();
         let montgomery_b2 = montgomery_b.square();
         let montgomery_b3 = &montgomery_b2 * &montgomery_b;
 
         // Define the twisted Edwards curve coefficient D.
-        let edwards_d = Field::constant(console::Group::<E::Network>::EDWARDS_D);
+        let edwards_d = Field::constant(console::Group::EDWARDS_D);
 
         // Define the coefficients for the Weierstrass form: y^2 == x^3 + A * x^2 + B * x.
         let a = &montgomery_a * &montgomery_b_inverse;
@@ -43,9 +46,9 @@ impl<E: Environment> Elligator2<E> {
         let b = montgomery_b_inverse.square();
 
         // Define the MODULUS_MINUS_ONE_DIV_TWO as a constant.
-        let modulus_minus_one_div_two = match E::BaseField::from_bigint(E::BaseField::modulus_minus_one_div_two()) {
+        let modulus_minus_one_div_two = match ConsoleField::from_bigint(ConsoleField::modulus_minus_one_div_two()) {
             Some(modulus_minus_one_div_two) => Field::constant(console::Field::new(modulus_minus_one_div_two)),
-            None => E::halt("Failed to initialize MODULUS_MINUS_ONE_DIV_TWO as a constant"),
+            None => Circuit::halt("Failed to initialize MODULUS_MINUS_ONE_DIV_TWO as a constant"),
         };
 
         // Compute the mapping from Fq to E(Fq) as a Montgomery element (u, v).
@@ -54,7 +57,7 @@ impl<E: Environment> Elligator2<E> {
             let ur2 = edwards_d * input.square();
             let one_plus_ur2 = &one + &ur2;
             // Verify A^2 * ur^2 != B(1 + ur^2)^2.
-            E::assert_neq(a.square() * &ur2, &b * one_plus_ur2.square());
+            Circuit::assert_neq(a.square() * &ur2, &b * one_plus_ur2.square());
 
             // Let v = -A / (1 + ur^2).
             let v = -&a / one_plus_ur2;
@@ -72,7 +75,7 @@ impl<E: Environment> Elligator2<E> {
             let rhs = &x3 + (&a * &x2) + (&b * &x);
 
             // Witness the even square root of `rhs`.
-            let rhs_square_root: Field<E> = witness!(|rhs| {
+            let rhs_square_root: Field = witness!(|rhs| {
                 match rhs.square_root() {
                     Ok(sqrt) => {
                         // Get the least significant bit of the square root.
@@ -89,16 +92,16 @@ impl<E: Environment> Elligator2<E> {
             });
             // Verify that the square root is even.
             // Note that the unwrap is safe since the number of bits is always greater than zero,
-            E::assert(!rhs_square_root.to_bits_be().last().unwrap());
+            Circuit::assert(!rhs_square_root.to_bits_be().last().unwrap());
 
             let y = -&e * rhs_square_root;
 
             // Ensure v * e * x * y != 0.
-            E::assert_neq(&v * &e * &x * &y, Field::<E>::zero());
+            Circuit::assert_neq(&v * &e * &x * &y, Field::zero());
 
             // Ensure (x, y) is a valid Weierstrass element on: y^2 == x^3 + A * x^2 + B * x.
             let y2 = y.square();
-            E::assert_eq(&y2, rhs);
+            Circuit::assert_eq(&y2, rhs);
 
             // Convert the Weierstrass element (x, y) to Montgomery element (u, v).
             let u = x * &montgomery_b;
@@ -108,7 +111,7 @@ impl<E: Environment> Elligator2<E> {
             let u2 = &x2 * &montgomery_b2;
             let u3 = &x3 * &montgomery_b3;
             let v2 = &y2 * &montgomery_b3;
-            E::assert_eq(v2, u3 + (montgomery_a * u2) + &u);
+            Circuit::assert_eq(v2, u3 + (montgomery_a * u2) + &u);
 
             (u, v)
         };
@@ -142,10 +145,10 @@ mod tests {
             let given = Uniform::rand(&mut rng);
 
             // Compute the expected native result.
-            let (expected, _sign) = console::Elligator2::<<Circuit as Environment>::Network>::encode(&given).unwrap();
+            let (expected, _sign) = console::Elligator2::encode(&given).unwrap();
 
             // Initialize the input field element.
-            let input = Field::<Circuit>::new(mode, given);
+            let input = Field::new(mode, given);
 
             // Encode the input.
             Circuit::scope("Elligator2::encode", || {

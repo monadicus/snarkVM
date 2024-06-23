@@ -424,7 +424,7 @@ function main:
                 let caller0 = Address::try_from(&caller0_private_key).unwrap();
 
                 // Initialize caller 1.
-                let caller1_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+                let caller1_private_key = PrivateKey::new(rng).unwrap();
                 let caller1 = Address::try_from(&caller1_private_key).unwrap();
 
                 // Declare the function name.
@@ -445,7 +445,7 @@ function main:
                 let caller0_private_key = crate::cli::helpers::dotenv_private_key().unwrap();
 
                 // Initialize caller 1.
-                let caller1_private_key = PrivateKey::<CurrentNetwork>::new(rng).unwrap();
+                let caller1_private_key = PrivateKey::new(rng).unwrap();
                 let caller1 = Address::try_from(&caller1_private_key).unwrap();
 
                 // Declare the function name.

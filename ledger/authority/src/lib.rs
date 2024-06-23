@@ -55,17 +55,13 @@ use rand::{CryptoRng, Rng};
 
 #[derive(Clone, PartialEq, Eq)]
 pub enum Authority<N: Network> {
-    Beacon(Signature<N>),
+    Beacon(Signature),
     Quorum(Subdag<N>),
 }
 
 impl<N: Network> Authority<N> {
     /// Initializes a new beacon authority.
-    pub fn new_beacon<R: Rng + CryptoRng>(
-        private_key: &PrivateKey<N>,
-        block_hash: Field<N>,
-        rng: &mut R,
-    ) -> Result<Self> {
+    pub fn new_beacon<R: Rng + CryptoRng>(private_key: &PrivateKey, block_hash: Field, rng: &mut R) -> Result<Self> {
         // Sign the block hash.
         let signature = private_key.sign(&[block_hash], rng)?;
         // Return the beacon authority.
@@ -80,7 +76,7 @@ impl<N: Network> Authority<N> {
 
 impl<N: Network> Authority<N> {
     /// Initializes a new beacon authority from the given signature.
-    pub const fn from_beacon(signature: Signature<N>) -> Self {
+    pub const fn from_beacon(signature: Signature) -> Self {
         Self::Beacon(signature)
     }
 
@@ -106,7 +102,7 @@ impl<N: Network> Authority<N> {
     /// Returns address of the authority.
     /// If the authority is a beacon, the address of the signer is returned.
     /// If the authority is a quorum, the address of the leader is returned.
-    pub fn to_address(&self) -> Address<N> {
+    pub fn to_address(&self) -> Address {
         match self {
             Self::Beacon(signature) => signature.to_address(),
             Self::Quorum(subdag) => subdag.leader_address(),

@@ -12,20 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::{Aleo, AleoV0};
+use snarkvm_circuit_types::environment::Circuit;
+
 use super::*;
 
-impl<A: Aleo> Response<A> {
+impl Response {
     /// Initializes a response, given the number of inputs, tvk, tcm, outputs, output types, and output registers.
     pub fn from_outputs(
-        network_id: &U16<A>,
-        program_id: &ProgramID<A>,
-        function_name: &Identifier<A>,
+        network_id: &U16,
+        program_id: &ProgramID,
+        function_name: &Identifier,
         num_inputs: usize,
-        tvk: &Field<A>,
-        tcm: &Field<A>,
-        outputs: Vec<Value<A>>,
-        output_types: &[console::ValueType<A::Network>], // Note: Console type
-        output_registers: &[Option<console::Register<A::Network>>], // Note: Console type
+        tvk: &Field,
+        tcm: &Field,
+        outputs: Vec<Value>,
+        output_types: &[console::ValueType],            // Note: Console type
+        output_registers: &[Option<console::Register>], // Note: Console type
     ) -> Self {
         // Compute the function ID.
         let function_id = compute_function_id(network_id, program_id, function_name);
@@ -52,10 +55,10 @@ impl<A: Aleo> Response<A> {
                         // Hash the output to a field element.
                         match &output {
                             // Return the output ID.
-                            Value::Plaintext(..) => OutputID::constant(A::hash_psd8(&preimage)),
+                            Value::Plaintext(..) => OutputID::constant(AleoV0::hash_psd8(&preimage)),
                             // Ensure the output is a plaintext.
-                            Value::Record(..) => A::halt("Expected a plaintext output, found a record output"),
-                            Value::Future(..) => A::halt("Expected a plaintext output, found a future output"),
+                            Value::Record(..) => Circuit::halt("Expected a plaintext output, found a record output"),
+                            Value::Future(..) => Circuit::halt("Expected a plaintext output, found a future output"),
                         }
                     }
                     // For a public output, compute the hash (using `tcm`) of the output.
@@ -72,10 +75,10 @@ impl<A: Aleo> Response<A> {
                         // Hash the output to a field element.
                         match &output {
                             // Return the output ID.
-                            Value::Plaintext(..) => OutputID::public(A::hash_psd8(&preimage)),
+                            Value::Plaintext(..) => OutputID::public(AleoV0::hash_psd8(&preimage)),
                             // Ensure the output is a plaintext.
-                            Value::Record(..) => A::halt("Expected a plaintext output, found a record output"),
-                            Value::Future(..) => A::halt("Expected a plaintext output, found a future output"),
+                            Value::Record(..) => Circuit::halt("Expected a plaintext output, found a record output"),
+                            Value::Future(..) => Circuit::halt("Expected a plaintext output, found a future output"),
                         }
                     }
                     // For a private output, compute the ciphertext (using `tvk`) and hash the ciphertext.
@@ -83,16 +86,16 @@ impl<A: Aleo> Response<A> {
                         // Prepare the index as a constant field element.
                         let output_index = Field::constant(console::Field::from_u16((num_inputs + index) as u16));
                         // Compute the output view key as `Hash(function ID || tvk || index)`.
-                        let output_view_key = A::hash_psd4(&[function_id.clone(), tvk.clone(), output_index]);
+                        let output_view_key = AleoV0::hash_psd4(&[function_id.clone(), tvk.clone(), output_index]);
                         // Compute the ciphertext.
                         let ciphertext = match &output {
                             Value::Plaintext(plaintext) => plaintext.encrypt_symmetric(output_view_key),
                             // Ensure the output is a plaintext.
-                            Value::Record(..) => A::halt("Expected a plaintext output, found a record output"),
-                            Value::Future(..) => A::halt("Expected a plaintext output, found a future output"),
+                            Value::Record(..) => Circuit::halt("Expected a plaintext output, found a record output"),
+                            Value::Future(..) => Circuit::halt("Expected a plaintext output, found a future output"),
                         };
                         // Return the output ID.
-                        OutputID::private(A::hash_psd8(&ciphertext.to_fields()))
+                        OutputID::private(AleoV0::hash_psd8(&ciphertext.to_fields()))
                     }
                     // For a record output, compute the record commitment, and encrypt the record (using `tvk`).
                     console::ValueType::Record(record_name) => {
@@ -100,14 +103,14 @@ impl<A: Aleo> Response<A> {
                         let record = match &output {
                             Value::Record(record) => record,
                             // Ensure the output is a record.
-                            Value::Plaintext(..) => A::halt("Expected a record output, found a plaintext output"),
-                            Value::Future(..) => A::halt("Expected a record output, found a future output"),
+                            Value::Plaintext(..) => Circuit::halt("Expected a record output, found a plaintext output"),
+                            Value::Future(..) => Circuit::halt("Expected a record output, found a future output"),
                         };
 
                         // Retrieve the output register.
                         let output_register = match output_register {
                             Some(output_register) => output_register,
-                            None => A::halt("Expected a register to be paired with a record output"),
+                            None => Circuit::halt("Expected a register to be paired with a record output"),
                         };
 
                         // Compute the record commitment.
@@ -116,12 +119,12 @@ impl<A: Aleo> Response<A> {
                         // Prepare the index as a constant field element.
                         let output_index = Field::constant(console::Field::from_u64(output_register.locator()));
                         // Compute the encryption randomizer as `HashToScalar(tvk || index)`.
-                        let randomizer = A::hash_to_scalar_psd2(&[tvk.clone(), output_index]);
+                        let randomizer = AleoV0::hash_to_scalar_psd2(&[tvk.clone(), output_index]);
 
                         // Encrypt the record, using the randomizer.
                         let encrypted_record = record.encrypt(&randomizer);
                         // Compute the record checksum, as the hash of the encrypted record.
-                        let checksum = A::hash_bhp1024(&encrypted_record.to_bits_le());
+                        let checksum = AleoV0::hash_bhp1024(&encrypted_record.to_bits_le());
 
                         // Return the output ID.
                         OutputID::record(commitment, checksum)
@@ -139,10 +142,10 @@ impl<A: Aleo> Response<A> {
 
                         // Return the output ID.
                         match &output {
-                            Value::Record(..) => OutputID::external_record(A::hash_psd8(&preimage)),
+                            Value::Record(..) => OutputID::external_record(AleoV0::hash_psd8(&preimage)),
                             // Ensure the output is a record.
-                            Value::Plaintext(..) => A::halt("Expected a record output, found a plaintext output"),
-                            Value::Future(..) => A::halt("Expected a record output, found a future output"),
+                            Value::Plaintext(..) => Circuit::halt("Expected a record output, found a plaintext output"),
+                            Value::Future(..) => Circuit::halt("Expected a record output, found a future output"),
                         }
                     }
                     // For a future output, compute the hash (using `tcm`) of the output.
@@ -159,10 +162,10 @@ impl<A: Aleo> Response<A> {
                         // Hash the output to a field element.
                         match &output {
                             // Return the output ID.
-                            Value::Future(..) => OutputID::future(A::hash_psd8(&preimage)),
+                            Value::Future(..) => OutputID::future(AleoV0::hash_psd8(&preimage)),
                             // Ensure the output is a future.
-                            Value::Plaintext(..) => A::halt("Expected a future output, found a plaintext output"),
-                            Value::Record(..) => A::halt("Expected a future output, found a record output"),
+                            Value::Plaintext(..) => Circuit::halt("Expected a future output, found a plaintext output"),
+                            Value::Record(..) => Circuit::halt("Expected a future output, found a record output"),
                         }
                     }
                 }
@@ -178,6 +181,7 @@ impl<A: Aleo> Response<A> {
 mod tests {
     use super::*;
     use crate::Circuit;
+    use console::AleoNetwork;
     use snarkvm_utilities::{TestRng, Uniform};
 
     use anyhow::Result;
@@ -192,33 +196,28 @@ mod tests {
         num_private: u64,
         num_constraints: u64,
     ) -> Result<()> {
-        use console::Network;
-
         let rng = &mut TestRng::default();
 
         for i in 0..ITERATIONS {
             // Sample a `tvk`.
             let tvk = console::Field::rand(rng);
             // Compute the transition commitment as `Hash(tvk)`.
-            let tcm = <Circuit as Environment>::Network::hash_psd2(&[tvk])?;
+            let tcm = AleoNetwork::hash_psd2(&[tvk])?;
 
             // Compute the nonce.
             let index = console::Field::from_u64(8);
-            let randomizer = <Circuit as Environment>::Network::hash_to_scalar_psd2(&[tvk, index]).unwrap();
-            let nonce = <Circuit as Environment>::Network::g_scalar_multiply(&randomizer);
+            let randomizer = AleoNetwork::hash_to_scalar_psd2(&[tvk, index]).unwrap();
+            let nonce = AleoNetwork::g_scalar_multiply(&randomizer);
 
             // Construct the outputs.
-            let output_constant = console::Value::<<Circuit as Environment>::Network>::Plaintext(
-                console::Plaintext::from_str("{ token_amount: 9876543210u128 }").unwrap(),
-            );
-            let output_public = console::Value::<<Circuit as Environment>::Network>::Plaintext(
-                console::Plaintext::from_str("{ token_amount: 9876543210u128 }").unwrap(),
-            );
-            let output_private = console::Value::<<Circuit as Environment>::Network>::Plaintext(
-                console::Plaintext::from_str("{ token_amount: 9876543210u128 }").unwrap(),
-            );
-            let output_record = console::Value::<<Circuit as Environment>::Network>::Record(console::Record::from_str(&format!("{{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: {nonce}.public }}")).unwrap());
-            let output_external_record = console::Value::<<Circuit as Environment>::Network>::Record(console::Record::from_str("{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: 0group.public }").unwrap());
+            let output_constant =
+                console::Value::Plaintext(console::Plaintext::from_str("{ token_amount: 9876543210u128 }").unwrap());
+            let output_public =
+                console::Value::Plaintext(console::Plaintext::from_str("{ token_amount: 9876543210u128 }").unwrap());
+            let output_private =
+                console::Value::Plaintext(console::Plaintext::from_str("{ token_amount: 9876543210u128 }").unwrap());
+            let output_record = console::Value::Record(console::Record::from_str(&format!("{{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: {nonce}.public }}")).unwrap());
+            let output_external_record = console::Value::Record(console::Record::from_str("{ owner: aleo1d5hg2z3ma00382pngntdp68e74zv54jdxy249qhaujhks9c72yrs33ddah.private, token_amount: 100u64.private, _nonce: 0group.public }").unwrap());
             let outputs = vec![output_constant, output_public, output_private, output_record, output_external_record];
 
             // Construct the output types.
@@ -240,7 +239,7 @@ mod tests {
             ];
 
             // Construct a network ID.
-            let network_id = console::U16::new(<Circuit as Environment>::Network::ID);
+            let network_id = console::U16::new(0);
             // Construct a program ID.
             let program_id = console::ProgramID::from_str("test.aleo")?;
             // Construct a function name.
@@ -260,11 +259,11 @@ mod tests {
             )?;
 
             // Inject the network ID, program ID, function name, `tvk`, `tcm`, and outputs.
-            let network_id = U16::<Circuit>::constant(network_id);
-            let program_id = ProgramID::<Circuit>::new(mode, program_id);
-            let function_name = Identifier::<Circuit>::new(mode, function_name);
-            let tvk = Field::<Circuit>::new(mode, tvk);
-            let tcm = Field::<Circuit>::new(mode, tcm);
+            let network_id = U16::constant(network_id);
+            let program_id = ProgramID::new(mode, program_id);
+            let function_name = Identifier::new(mode, function_name);
+            let tvk = Field::new(mode, tvk);
+            let tcm = Field::new(mode, tcm);
             let outputs = Inject::new(mode, outputs);
 
             Circuit::scope(format!("Response {i}"), || {

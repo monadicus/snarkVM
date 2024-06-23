@@ -14,26 +14,26 @@
 
 use super::*;
 
-impl<A: Aleo> Literal<A> {
+impl Literal {
     /// Returns the number of bits of this literal.
-    pub fn size_in_bits(&self) -> U16<A> {
+    pub fn size_in_bits(&self) -> U16 {
         U16::constant(console::U16::new(match self {
-            Self::Address(..) => console::Address::<A::Network>::size_in_bits() as u16,
-            Self::Boolean(..) => console::Boolean::<A::Network>::size_in_bits() as u16,
-            Self::Field(..) => console::Field::<A::Network>::size_in_bits() as u16,
-            Self::Group(..) => console::Group::<A::Network>::size_in_bits() as u16,
-            Self::I8(..) => console::I8::<A::Network>::size_in_bits() as u16,
-            Self::I16(..) => console::I16::<A::Network>::size_in_bits() as u16,
-            Self::I32(..) => console::I32::<A::Network>::size_in_bits() as u16,
-            Self::I64(..) => console::I64::<A::Network>::size_in_bits() as u16,
-            Self::I128(..) => console::I128::<A::Network>::size_in_bits() as u16,
-            Self::U8(..) => console::U8::<A::Network>::size_in_bits() as u16,
-            Self::U16(..) => console::U16::<A::Network>::size_in_bits() as u16,
-            Self::U32(..) => console::U32::<A::Network>::size_in_bits() as u16,
-            Self::U64(..) => console::U64::<A::Network>::size_in_bits() as u16,
-            Self::U128(..) => console::U128::<A::Network>::size_in_bits() as u16,
-            Self::Scalar(..) => console::Scalar::<A::Network>::size_in_bits() as u16,
-            Self::Signature(..) => console::Signature::<A::Network>::size_in_bits() as u16,
+            Self::Address(..) => console::Address::size_in_bits() as u16,
+            Self::Boolean(..) => console::Boolean::size_in_bits() as u16,
+            Self::Field(..) => console::Field::size_in_bits() as u16,
+            Self::Group(..) => console::Group::size_in_bits() as u16,
+            Self::I8(..) => console::I8::size_in_bits() as u16,
+            Self::I16(..) => console::I16::size_in_bits() as u16,
+            Self::I32(..) => console::I32::size_in_bits() as u16,
+            Self::I64(..) => console::I64::size_in_bits() as u16,
+            Self::I128(..) => console::I128::size_in_bits() as u16,
+            Self::U8(..) => console::U8::size_in_bits() as u16,
+            Self::U16(..) => console::U16::size_in_bits() as u16,
+            Self::U32(..) => console::U32::size_in_bits() as u16,
+            Self::U64(..) => console::U64::size_in_bits() as u16,
+            Self::U128(..) => console::U128::size_in_bits() as u16,
+            Self::Scalar(..) => console::Scalar::size_in_bits() as u16,
+            Self::Signature(..) => console::Signature::size_in_bits() as u16,
             Self::String(string) => string.to_bits_le().len() as u16,
         }))
     }

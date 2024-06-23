@@ -63,7 +63,7 @@ fn bench_bonded_mappings(c: &mut Criterion) {
         .map(|i| {
             // Generate a staker address.
             let private_key = PrivateKey::try_from(Field::from_u64(i)).unwrap();
-            let staker_address = Address::<CurrentNetwork>::try_from(&private_key).unwrap();
+            let staker_address = Address::try_from(&private_key).unwrap();
 
             // Create the bonded state.
             let bonded_state = indexmap! {
@@ -75,11 +75,11 @@ fn bench_bonded_mappings(c: &mut Criterion) {
                 Value::Plaintext(Plaintext::Struct(bonded_state, Default::default())),
             )
         })
-        .collect::<Vec<(Plaintext<CurrentNetwork>, Value<CurrentNetwork>)>>();
+        .collect::<Vec<(Plaintext, Value<CurrentNetwork>)>>();
 
     // Get a key that exists within the bonded mapping.
     let private_key = PrivateKey::try_from(Field::from_u64(5)).unwrap();
-    let staker_address = Address::<CurrentNetwork>::try_from(&private_key).unwrap();
+    let staker_address = Address::try_from(&private_key).unwrap();
     let key = Plaintext::from(Literal::Address(staker_address));
 
     // Insert increasing numbers of entries into the bonded mapping and bench get_value_speculative and get_value_confirmed at each interval.

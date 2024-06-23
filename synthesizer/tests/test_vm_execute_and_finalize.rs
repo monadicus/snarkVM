@@ -356,7 +356,7 @@ fn run_test(test: &ProgramTest) -> serde_yaml::Mapping {
 fn initialize_vm<R: Rng + CryptoRng>(
     private_key: &PrivateKey<CurrentNetwork>,
     rng: &mut R,
-) -> (VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>>, Vec<Record<CurrentNetwork, Plaintext<CurrentNetwork>>>) {
+) -> (VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>>, Vec<Record<Plaintext>>) {
     // Initialize a VM.
     let vm: VM<CurrentNetwork, ConsensusMemory<CurrentNetwork>> =
         VM::from(ConsensusStore::open(None).unwrap()).unwrap();
@@ -380,12 +380,12 @@ fn initialize_vm<R: Rng + CryptoRng>(
 fn construct_fee_records<C: ConsensusStorage<CurrentNetwork>, R: Rng + CryptoRng>(
     vm: &VM<CurrentNetwork, C>,
     private_key: &PrivateKey<CurrentNetwork>,
-    records: Vec<Record<CurrentNetwork, Plaintext<CurrentNetwork>>>,
+    records: Vec<Record<Plaintext>>,
     num_fee_records: usize,
     rng: &mut R,
-) -> Vec<(Record<CurrentNetwork, Plaintext<CurrentNetwork>>, u64)> {
+) -> Vec<(Record<Plaintext>, u64)> {
     // Helper function to get the balance of a `credits.aleo` record.
-    let get_balance = |record: &Record<CurrentNetwork, Plaintext<CurrentNetwork>>| -> u64 {
+    let get_balance = |record: &Record<Plaintext>| -> u64 {
         match record.data().get(&Identifier::from_str("microcredits").unwrap()).unwrap() {
             Entry::Private(Plaintext::Literal(Literal::U64(amount), ..)) => **amount,
             _ => unreachable!("Invalid entry type for credits.aleo."),
@@ -504,10 +504,10 @@ fn construct_next_block<C: ConsensusStorage<CurrentNetwork>, R: Rng + CryptoRng>
 fn split<C: ConsensusStorage<CurrentNetwork>, R: Rng + CryptoRng>(
     vm: &VM<CurrentNetwork, C>,
     private_key: &PrivateKey<CurrentNetwork>,
-    record: Record<CurrentNetwork, Plaintext<CurrentNetwork>>,
+    record: Record<Plaintext>,
     amount: u64,
     rng: &mut R,
-) -> (Vec<Record<CurrentNetwork, Plaintext<CurrentNetwork>>>, Vec<Transaction<CurrentNetwork>>) {
+) -> (Vec<Record<Plaintext>>, Vec<Transaction<CurrentNetwork>>) {
     let inputs = vec![Value::Record(record), Value::Plaintext(Plaintext::from(Literal::U64(U64::new(amount))))];
     let transaction = vm.execute(private_key, ("credits.aleo", "split"), inputs.iter(), None, 0, None, rng).unwrap();
     let records = transaction

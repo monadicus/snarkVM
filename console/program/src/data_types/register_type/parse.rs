@@ -23,7 +23,7 @@ impl Parser for RegisterType {
             map(pair(Locator::parse, tag(".future")), |(locator, _)| Self::Future(locator)),
             map(pair(Locator::parse, tag(".record")), |(locator, _)| Self::ExternalRecord(locator)),
             map(pair(Identifier::parse, tag(".record")), |(identifier, _)| Self::Record(identifier)),
-            map(PlaintextType::parse, |plaintext_type| Self::Plaintext(plaintext_type)),
+            map(PlaintextType::parse, Self::Plaintext),
         ))(string)
     }
 }
@@ -78,31 +78,25 @@ mod tests {
     #[test]
     fn test_parse() -> Result<()> {
         // Literal type.
-        assert_eq!(
-            Ok(("", RegisterType::<CurrentNetwork>::Plaintext(PlaintextType::from_str("field")?))),
-            RegisterType::<CurrentNetwork>::parse("field")
-        );
+        assert_eq!(Ok(("", RegisterType::Plaintext(PlaintextType::from_str("field")?))), RegisterType::parse("field"));
 
         // Struct type.
         assert_eq!(
-            Ok(("", RegisterType::<CurrentNetwork>::Plaintext(PlaintextType::from_str("signature")?))),
-            RegisterType::<CurrentNetwork>::parse("signature")
+            Ok(("", RegisterType::Plaintext(PlaintextType::from_str("signature")?))),
+            RegisterType::parse("signature")
         );
         assert_eq!(
-            Ok(("", RegisterType::<CurrentNetwork>::Plaintext(PlaintextType::from_str("u8kldsafj")?))),
-            RegisterType::<CurrentNetwork>::parse("u8kldsafj")
+            Ok(("", RegisterType::Plaintext(PlaintextType::from_str("u8kldsafj")?))),
+            RegisterType::parse("u8kldsafj")
         );
 
         // Record type.
-        assert_eq!(
-            Ok(("", RegisterType::<CurrentNetwork>::Record(Identifier::from_str("token")?))),
-            RegisterType::<CurrentNetwork>::parse("token.record")
-        );
+        assert_eq!(Ok(("", RegisterType::Record(Identifier::from_str("token")?))), RegisterType::parse("token.record"));
 
         // ExternalRecord type.
         assert_eq!(
-            Ok(("", RegisterType::<CurrentNetwork>::ExternalRecord(Locator::from_str("token.aleo/token")?))),
-            RegisterType::<CurrentNetwork>::parse("token.aleo/token.record")
+            Ok(("", RegisterType::ExternalRecord(Locator::from_str("token.aleo/token")?))),
+            RegisterType::parse("token.aleo/token.record")
         );
 
         Ok(())
@@ -111,32 +105,31 @@ mod tests {
     #[test]
     fn test_parse_fails() -> Result<()> {
         // Must be non-empty.
-        assert!(RegisterType::<CurrentNetwork>::parse("").is_err());
+        assert!(RegisterType::parse("").is_err());
 
         // Invalid characters.
-        assert!(RegisterType::<CurrentNetwork>::parse("{}").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("_").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("__").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("___").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("-").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("--").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("---").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("*").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("**").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("***").is_err());
+        assert!(RegisterType::parse("{}").is_err());
+        assert!(RegisterType::parse("_").is_err());
+        assert!(RegisterType::parse("__").is_err());
+        assert!(RegisterType::parse("___").is_err());
+        assert!(RegisterType::parse("-").is_err());
+        assert!(RegisterType::parse("--").is_err());
+        assert!(RegisterType::parse("---").is_err());
+        assert!(RegisterType::parse("*").is_err());
+        assert!(RegisterType::parse("**").is_err());
+        assert!(RegisterType::parse("***").is_err());
 
         // Must not start with a number.
-        assert!(RegisterType::<CurrentNetwork>::parse("1").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("2").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("3").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("1foo").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("12").is_err());
-        assert!(RegisterType::<CurrentNetwork>::parse("111").is_err());
+        assert!(RegisterType::parse("1").is_err());
+        assert!(RegisterType::parse("2").is_err());
+        assert!(RegisterType::parse("3").is_err());
+        assert!(RegisterType::parse("1foo").is_err());
+        assert!(RegisterType::parse("12").is_err());
+        assert!(RegisterType::parse("111").is_err());
 
         // Must fit within the data capacity of a base field element.
-        let struct_ = RegisterType::<CurrentNetwork>::parse(
-            "foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy.private",
-        );
+        let struct_ =
+            RegisterType::parse("foo_bar_baz_qux_quux_quuz_corge_grault_garply_waldo_fred_plugh_xyzzy.private");
         assert!(struct_.is_err());
 
         Ok(())
@@ -144,13 +137,10 @@ mod tests {
 
     #[test]
     fn test_display() -> Result<()> {
-        assert_eq!(RegisterType::<CurrentNetwork>::from_str("field")?.to_string(), "field");
-        assert_eq!(RegisterType::<CurrentNetwork>::from_str("signature")?.to_string(), "signature");
-        assert_eq!(RegisterType::<CurrentNetwork>::from_str("token.record")?.to_string(), "token.record");
-        assert_eq!(
-            RegisterType::<CurrentNetwork>::from_str("token.aleo/token.record")?.to_string(),
-            "token.aleo/token.record"
-        );
+        assert_eq!(RegisterType::from_str("field")?.to_string(), "field");
+        assert_eq!(RegisterType::from_str("signature")?.to_string(), "signature");
+        assert_eq!(RegisterType::from_str("token.record")?.to_string(), "token.record");
+        assert_eq!(RegisterType::from_str("token.aleo/token.record")?.to_string(), "token.aleo/token.record");
         Ok(())
     }
 }

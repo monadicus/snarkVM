@@ -23,10 +23,10 @@ use indexmap::IndexMap;
 
 type Variant = u8;
 /// A helper type to represent the public balances.
-type PublicBalances<N> = IndexMap<Address<N>, u64>;
+type PublicBalances<N> = IndexMap<Address, u64>;
 /// A helper type to represent the bonded balances, as a
 /// mapping of `staker_address` to `(validator_address, withdrawal_address, amount)`.
-type BondedBalances<N> = IndexMap<Address<N>, (Address<N>, Address<N>, u64)>;
+type BondedBalances<N> = IndexMap<Address, (Address, Address, u64)>;
 
 // Note: The size of the `Ratify` object is 32 bytes.
 #[derive(Clone, PartialEq, Eq)]

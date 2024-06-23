@@ -77,14 +77,14 @@ mod tests {
     #[test]
     fn test_serde_json() {
         for case in TEST_CASES.iter() {
-            check_serde_json(ProgramID::<CurrentNetwork>::from_str(case).unwrap());
+            check_serde_json(ProgramID::from_str(case).unwrap());
         }
     }
 
     #[test]
     fn test_bincode() {
         for case in TEST_CASES.iter() {
-            check_bincode(ProgramID::<CurrentNetwork>::from_str(case).unwrap());
+            check_bincode(ProgramID::from_str(case).unwrap());
         }
     }
 }

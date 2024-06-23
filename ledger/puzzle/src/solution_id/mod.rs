@@ -21,22 +21,20 @@ pub use string::SOLUTION_ID_PREFIX;
 use console::{account::Address, network::prelude::*};
 use snarkvm_algorithms::crypto_hash::sha256d_to_u64;
 
-use core::marker::PhantomData;
-
 /// The solution ID.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-pub struct SolutionID<N: Network>(u64, PhantomData<N>);
+pub struct SolutionID(u64);
 
-impl<N: Network> From<u64> for SolutionID<N> {
+impl From<u64> for SolutionID {
     /// Initializes a new instance of the solution ID.
     fn from(nonce: u64) -> Self {
-        Self(nonce, PhantomData)
+        Self(nonce)
     }
 }
 
-impl<N: Network> SolutionID<N> {
+impl SolutionID {
     /// Initializes the solution ID from the given epoch hash, address, and counter.
-    pub fn new(epoch_hash: N::BlockHash, address: Address<N>, counter: u64) -> Result<Self> {
+    pub fn new(epoch_hash: BlockHash, address: Address, counter: u64) -> Result<Self> {
         // Construct the nonce as sha256d(epoch_hash_bytes_le[0..8] || address || counter).
         let mut bytes_le = Vec::new();
         let lower_bytes = &epoch_hash.to_bytes_le()?[0..8];
@@ -47,7 +45,7 @@ impl<N: Network> SolutionID<N> {
     }
 }
 
-impl<N: Network> Deref for SolutionID<N> {
+impl Deref for SolutionID {
     type Target = u64;
 
     fn deref(&self) -> &Self::Target {

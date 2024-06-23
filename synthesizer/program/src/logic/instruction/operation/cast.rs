@@ -516,7 +516,7 @@ impl<N: Network, const VARIANT: u8> CastOperation<N, VARIANT> {
                 }
 
                 // Initialize the record owner.
-                let owner: circuit::Owner<A, circuit::Plaintext<A>> = match &inputs[0] {
+                let owner: circuit::Owner<circuit::Plaintext> = match &inputs[0] {
                     // Ensure the entry is an address.
                     circuit::Value::Plaintext(circuit::Plaintext::Literal(circuit::Literal::Address(owner), ..)) => {
                         match record_type.owner().is_public() {
@@ -571,7 +571,7 @@ impl<N: Network, const VARIANT: u8> CastOperation<N, VARIANT> {
                 let nonce = A::g_scalar_multiply(&randomizer);
 
                 // Construct the record.
-                let record = circuit::Record::<A, circuit::Plaintext<A>>::from_plaintext(owner, entries, nonce)?;
+                let record = circuit::Record::<A, circuit::Plaintext>::from_plaintext(owner, entries, nonce)?;
                 // Store the record.
                 registers.store_circuit(stack, &self.destination, circuit::Value::Record(record))
             }

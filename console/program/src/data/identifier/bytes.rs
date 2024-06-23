@@ -68,7 +68,7 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric identifier, that always starts with an alphabetic character.
-            let expected = sample_identifier::<CurrentNetwork>(&mut rng)?;
+            let expected = sample_identifier(&mut rng)?;
 
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
@@ -79,6 +79,6 @@ mod tests {
 
     #[test]
     fn test_zero_identifier_fails() {
-        assert!(Identifier::<CurrentNetwork>::read_le(&[0u8; 1][..]).is_err())
+        assert!(Identifier::read_le(&[0u8; 1][..]).is_err())
     }
 }

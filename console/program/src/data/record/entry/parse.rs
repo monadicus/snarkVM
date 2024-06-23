@@ -292,15 +292,13 @@ mod tests {
     use super::*;
     use snarkvm_console_network::MainnetV0;
 
-    type CurrentNetwork = MainnetV0;
-
     #[test]
     fn test_parse() -> Result<()> {
         // Sanity check.
         let expected = r"{
   foo: 5u8.private
 }";
-        let (remainder, candidate) = Entry::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse("{ foo: 5u8.private }")?;
+        let (remainder, candidate) = Entry::<Plaintext>::parse("{ foo: 5u8.private }")?;
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
 
@@ -329,7 +327,7 @@ mod tests {
     }
   }
 }";
-        let (remainder, candidate) = Entry::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(
+        let (remainder, candidate) = Entry::<Plaintext>::parse(
             "{ foo: 5u8.public, bar: { baz: 10field.public, qux: {quux:{corge :{grault:  {garply:{waldo:{fred:{plugh:{xyzzy: { thud: true.public}} }}}  }}}}}}",
         )?;
         println!("\nExpected: {expected}\n\nFound: {candidate}\n");
@@ -342,8 +340,7 @@ mod tests {
   10u8.private,
   15u8.private
 ]";
-        let (remainder, candidate) =
-            Entry::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse("[ 5u8.private, 10u8.private, 15u8.private ]")?;
+        let (remainder, candidate) = Entry::<Plaintext>::parse("[ 5u8.private, 10u8.private, 15u8.private ]")?;
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
 
@@ -359,9 +356,8 @@ mod tests {
     baz: 15u8.public
   }
 ]";
-        let (remainder, candidate) = Entry::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(
-            "[ { foo: 5u8.public }, { bar: 10u8.public }, { baz: 15u8.public } ]",
-        )?;
+        let (remainder, candidate) =
+            Entry::<Plaintext>::parse("[ { foo: 5u8.public }, { bar: 10u8.public }, { baz: 15u8.public } ]")?;
         assert_eq!(expected, candidate.to_string());
         assert_eq!("", remainder);
 
@@ -384,7 +380,7 @@ mod tests {
     }
   ]
 }";
-        let (remainder, candidate) = Entry::<CurrentNetwork, Plaintext<CurrentNetwork>>::parse(
+        let (remainder, candidate) = Entry::<Plaintext>::parse(
             "{ foo: [ 5u8.public, 10u8.public, 15u8.public ], bar: [ { foo: 5u8.public }, { bar: 10u8.public }, { baz: 15u8.public } ] }",
         )?;
         assert_eq!(expected, candidate.to_string());

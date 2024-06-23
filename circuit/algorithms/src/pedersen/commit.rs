@@ -14,10 +14,10 @@
 
 use super::*;
 
-impl<E: Environment, const NUM_BITS: u8> Commit for Pedersen<E, NUM_BITS> {
-    type Input = Boolean<E>;
-    type Output = Field<E>;
-    type Randomizer = Scalar<E>;
+impl<const NUM_BITS: u8> Commit for Pedersen<NUM_BITS> {
+    type Input = Boolean;
+    type Output = Field;
+    type Randomizer = Scalar;
 
     /// Returns the Pedersen commitment of the given input and randomizer as a field element.
     fn commit(&self, input: &[Self::Input], randomizer: &Self::Randomizer) -> Self::Output {
@@ -25,25 +25,25 @@ impl<E: Environment, const NUM_BITS: u8> Commit for Pedersen<E, NUM_BITS> {
     }
 }
 
-impl<E: Environment, const NUM_BITS: u8>
-    Metrics<dyn Commit<Input = Boolean<E>, Output = Field<E>, Randomizer = Scalar<E>>> for Pedersen<E, NUM_BITS>
+impl<const NUM_BITS: u8> Metrics<dyn Commit<Input = Boolean, Output = Field, Randomizer = Scalar>>
+    for Pedersen<NUM_BITS>
 {
     type Case = (Vec<Mode>, Vec<Mode>);
 
     fn count(case: &Self::Case) -> Count {
         let (input_modes, randomizer_modes) = case;
         let uncompressed_count =
-            count!(Pedersen<E, NUM_BITS>, HashUncompressed<Input = Boolean<E>, Output = Group<E>>, input_modes);
+            count!(Pedersen<NUM_BITS>, HashUncompressed<Input = Boolean, Output = Group>, input_modes);
         let uncompressed_mode =
-            output_mode!(Pedersen<E, NUM_BITS>, HashUncompressed<Input = Boolean<E>, Output = Group<E>>, input_modes);
+            output_mode!(Pedersen<NUM_BITS>, HashUncompressed<Input = Boolean, Output = Group>, input_modes);
 
         // Compute the const of constructing the group elements.
         let group_initialize_count = randomizer_modes
             .iter()
             .map(|mode| {
                 count!(
-                    Group<E>,
-                    Ternary<Boolean = Boolean<E>, Output = Group<E>>,
+                    Group,
+                    Ternary<Boolean = Boolean, Output = Group>,
                     &(*mode, Mode::Constant, Mode::Constant)
                 )
             })
@@ -69,8 +69,8 @@ impl<E: Environment, const NUM_BITS: u8>
         // Calculate the cost of summing the group elements.
         let (_, summation_count) =
             modes.fold((uncompressed_mode, Count::zero()), |(prev_mode, cumulative), curr_mode| {
-                let mode = output_mode!(Group<E>, Add<Group<E>, Output = Group<E>>, &(prev_mode, curr_mode));
-                let sum_count = count!(Group<E>, Add<Group<E>, Output = Group<E>>, &(prev_mode, curr_mode));
+                let mode = output_mode!(Group, Add<Group, Output = Group>, &(prev_mode, curr_mode));
+                let sum_count = count!(Group, Add<Group, Output = Group>, &(prev_mode, curr_mode));
                 (mode, cumulative + sum_count)
             });
 
@@ -79,8 +79,8 @@ impl<E: Environment, const NUM_BITS: u8>
     }
 }
 
-impl<E: Environment, const NUM_BITS: u8>
-    OutputMode<dyn Commit<Input = Boolean<E>, Output = Field<E>, Randomizer = Scalar<E>>> for Pedersen<E, NUM_BITS>
+impl<const NUM_BITS: u8> OutputMode<dyn Commit<Input = Boolean, Output = Field, Randomizer = Scalar>>
+    for Pedersen<NUM_BITS>
 {
     type Case = (Vec<Mode>, Vec<Mode>);
 
@@ -108,8 +108,8 @@ mod tests {
         use console::Commit as C;
 
         // Initialize Pedersen.
-        let native = console::Pedersen::<<Circuit as Environment>::Network, NUM_BITS>::setup(MESSAGE);
-        let circuit = Pedersen::<Circuit, NUM_BITS>::constant(native.clone());
+        let native = console::Pedersen::<NUM_BITS>::setup(MESSAGE);
+        let circuit = Pedersen::<NUM_BITS>::constant(native.clone());
 
         for i in 0..ITERATIONS {
             // Sample a random input.
@@ -119,9 +119,9 @@ mod tests {
             // Compute the expected commitment.
             let expected = native.commit(&input, &randomizer).expect("Failed to commit native input");
             // Prepare the circuit input.
-            let circuit_input: Vec<Boolean<_>> = Inject::new(mode, input);
+            let circuit_input: Vec<Boolean> = Inject::new(mode, input);
             // Prepare the circuit randomizer.
-            let circuit_randomizer: Scalar<_> = Inject::new(mode, randomizer);
+            let circuit_randomizer: Scalar = Inject::new(mode, randomizer);
 
             Circuit::scope(format!("Pedersen {mode} {i}"), || {
                 // Perform the commit operation.
@@ -133,13 +133,13 @@ mod tests {
                 let randomizer_modes =
                     circuit_randomizer.to_bits_le().iter().map(|b| b.eject_mode()).collect::<Vec<_>>();
                 assert_count!(
-                    Pedersen<Circuit, NUM_BITS>,
-                    Commit<Input = Boolean<Circuit>, Output = Field<Circuit>, Randomizer = Scalar<Circuit>>,
+                    Pedersen<NUM_BITS>,
+                    Commit<Input = Boolean, Output = Field, Randomizer = Scalar>,
                     &(input_modes.clone(), randomizer_modes.clone())
                 );
                 assert_output_mode!(
-                    Pedersen<Circuit, NUM_BITS>,
-                    Commit<Input = Boolean<Circuit>, Output = Field<Circuit>, Randomizer = Scalar<Circuit>>,
+                    Pedersen<NUM_BITS>,
+                    Commit<Input = Boolean, Output = Field, Randomizer = Scalar>,
                     &(input_modes, randomizer_modes),
                     candidate
                 );
@@ -148,9 +148,9 @@ mod tests {
     }
 
     fn check_homomorphic_addition<
-        C: Display + Eject + Add<Output = C> + ToBits<Boolean = Boolean<Circuit>>,
-        P: Commit<Input = Boolean<Circuit>, Randomizer = Scalar<Circuit>, Output = Field<Circuit>>
-            + CommitUncompressed<Input = Boolean<Circuit>, Randomizer = Scalar<Circuit>, Output = Group<Circuit>>,
+        C: Display + Eject + Add<Output = C> + ToBits<Boolean = Boolean>,
+        P: Commit<Input = Boolean, Randomizer = Scalar, Output = Field>
+            + CommitUncompressed<Input = Boolean, Randomizer = Scalar, Output = Group>,
     >(
         pedersen: &P,
         first: C,
@@ -160,8 +160,8 @@ mod tests {
         println!("Checking homomorphic addition on {first} + {second}");
 
         // Sample the circuit randomizers.
-        let first_randomizer: Scalar<_> = Inject::new(Mode::Private, Uniform::rand(rng));
-        let second_randomizer: Scalar<_> = Inject::new(Mode::Private, Uniform::rand(rng));
+        let first_randomizer: Scalar = Inject::new(Mode::Private, Uniform::rand(rng));
+        let second_randomizer: Scalar = Inject::new(Mode::Private, Uniform::rand(rng));
 
         // Compute the expected commitment, by committing them individually and summing their results.
         let a = pedersen.commit_uncompressed(&first.to_bits_le(), &first_randomizer);
@@ -218,22 +218,22 @@ mod tests {
 
         for _ in 0..ITERATIONS {
             // Sample two random unsigned integers, with the MSB set to 0.
-            let first = U8::<Circuit>::new(Mode::Private, console::U8::new(u8::rand(&mut rng) >> 1));
+            let first = U8::new(Mode::Private, console::U8::new(u8::rand(&mut rng) >> 1));
             let second = U8::new(Mode::Private, console::U8::new(u8::rand(&mut rng) >> 1));
             check_homomorphic_addition(&pedersen, first, second, &mut rng);
 
             // Sample two random unsigned integers, with the MSB set to 0.
-            let first = U16::<Circuit>::new(Mode::Private, console::U16::new(u16::rand(&mut rng) >> 1));
+            let first = U16::new(Mode::Private, console::U16::new(u16::rand(&mut rng) >> 1));
             let second = U16::new(Mode::Private, console::U16::new(u16::rand(&mut rng) >> 1));
             check_homomorphic_addition(&pedersen, first, second, &mut rng);
 
             // Sample two random unsigned integers, with the MSB set to 0.
-            let first = U32::<Circuit>::new(Mode::Private, console::U32::new(u32::rand(&mut rng) >> 1));
+            let first = U32::new(Mode::Private, console::U32::new(u32::rand(&mut rng) >> 1));
             let second = U32::new(Mode::Private, console::U32::new(u32::rand(&mut rng) >> 1));
             check_homomorphic_addition(&pedersen, first, second, &mut rng);
 
             // Sample two random unsigned integers, with the MSB set to 0.
-            let first = U64::<Circuit>::new(Mode::Private, console::U64::new(u64::rand(&mut rng) >> 1));
+            let first = U64::new(Mode::Private, console::U64::new(u64::rand(&mut rng) >> 1));
             let second = U64::new(Mode::Private, console::U64::new(u64::rand(&mut rng) >> 1));
             check_homomorphic_addition(&pedersen, first, second, &mut rng);
         }
@@ -242,8 +242,8 @@ mod tests {
     #[test]
     fn test_pedersen_homomorphism_private() {
         fn check_pedersen_homomorphism<
-            P: Commit<Input = Boolean<Circuit>, Randomizer = Scalar<Circuit>, Output = Field<Circuit>>
-                + CommitUncompressed<Input = Boolean<Circuit>, Randomizer = Scalar<Circuit>, Output = Group<Circuit>>,
+            P: Commit<Input = Boolean, Randomizer = Scalar, Output = Field>
+                + CommitUncompressed<Input = Boolean, Randomizer = Scalar, Output = Group>,
         >(
             pedersen: &P,
         ) {
@@ -251,27 +251,27 @@ mod tests {
 
             for _ in 0..ITERATIONS {
                 // Sample two random unsigned integers, with the MSB set to 0.
-                let first = U8::<Circuit>::new(Mode::Private, console::U8::new(u8::rand(&mut rng) >> 1));
+                let first = U8::new(Mode::Private, console::U8::new(u8::rand(&mut rng) >> 1));
                 let second = U8::new(Mode::Private, console::U8::new(u8::rand(&mut rng) >> 1));
                 check_homomorphic_addition(pedersen, first, second, &mut rng);
 
                 // Sample two random unsigned integers, with the MSB set to 0.
-                let first = U16::<Circuit>::new(Mode::Private, console::U16::new(u16::rand(&mut rng) >> 1));
+                let first = U16::new(Mode::Private, console::U16::new(u16::rand(&mut rng) >> 1));
                 let second = U16::new(Mode::Private, console::U16::new(u16::rand(&mut rng) >> 1));
                 check_homomorphic_addition(pedersen, first, second, &mut rng);
 
                 // Sample two random unsigned integers, with the MSB set to 0.
-                let first = U32::<Circuit>::new(Mode::Private, console::U32::new(u32::rand(&mut rng) >> 1));
+                let first = U32::new(Mode::Private, console::U32::new(u32::rand(&mut rng) >> 1));
                 let second = U32::new(Mode::Private, console::U32::new(u32::rand(&mut rng) >> 1));
                 check_homomorphic_addition(pedersen, first, second, &mut rng);
 
                 // Sample two random unsigned integers, with the MSB set to 0.
-                let first = U64::<Circuit>::new(Mode::Private, console::U64::new(u64::rand(&mut rng) >> 1));
+                let first = U64::new(Mode::Private, console::U64::new(u64::rand(&mut rng) >> 1));
                 let second = U64::new(Mode::Private, console::U64::new(u64::rand(&mut rng) >> 1));
                 check_homomorphic_addition(pedersen, first, second, &mut rng);
 
                 // Sample two random unsigned integers, with the MSB set to 0.
-                let first = U128::<Circuit>::new(Mode::Private, console::U128::new(u128::rand(&mut rng) >> 1));
+                let first = U128::new(Mode::Private, console::U128::new(u128::rand(&mut rng) >> 1));
                 let second = U128::new(Mode::Private, console::U128::new(u128::rand(&mut rng) >> 1));
                 check_homomorphic_addition(pedersen, first, second, &mut rng);
             }

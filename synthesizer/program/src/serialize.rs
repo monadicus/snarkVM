@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Serialize
+impl<N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Serialize
     for ProgramCore<N, Instruction, Command>
 {
     /// Serializes the program into string or bytes.
@@ -26,7 +26,7 @@ impl<N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Ser
     }
 }
 
-impl<'de, N: Network, Instruction: InstructionTrait<N>, Command: CommandTrait<N>> Deserialize<'de>
+impl<'de, N: Network, Instruction: InstructionTrait, Command: CommandTrait<N>> Deserialize<'de>
     for ProgramCore<N, Instruction, Command>
 {
     /// Deserializes the program from a string or bytes.

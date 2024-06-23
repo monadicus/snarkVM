@@ -46,18 +46,19 @@ pub mod sub_wrapped;
 pub mod ternary;
 pub mod xor;
 
-pub type I8<E> = Integer<E, i8>;
-pub type I16<E> = Integer<E, i16>;
-pub type I32<E> = Integer<E, i32>;
-pub type I64<E> = Integer<E, i64>;
-pub type I128<E> = Integer<E, i128>;
+pub type I8 = Integer<i8>;
+pub type I16 = Integer<i16>;
+pub type I32 = Integer<i32>;
+pub type I64 = Integer<i64>;
+pub type I128 = Integer<i128>;
 
-pub type U8<E> = Integer<E, u8>;
-pub type U16<E> = Integer<E, u16>;
-pub type U32<E> = Integer<E, u32>;
-pub type U64<E> = Integer<E, u64>;
-pub type U128<E> = Integer<E, u128>;
+pub type U8 = Integer<u8>;
+pub type U16 = Integer<u16>;
+pub type U32 = Integer<u32>;
+pub type U64 = Integer<u64>;
+pub type U128 = Integer<u128>;
 
+use console::ConsoleField;
 #[cfg(test)]
 use snarkvm_circuit_environment::{
     assert_count,
@@ -70,7 +71,7 @@ use snarkvm_circuit_environment::{
 #[cfg(test)]
 use snarkvm_utilities::{TestRng, Uniform};
 
-use snarkvm_circuit_environment::prelude::*;
+use snarkvm_circuit_environment::{prelude::*, Circuit};
 use snarkvm_circuit_types_boolean::Boolean;
 use snarkvm_circuit_types_field::Field;
 use snarkvm_circuit_types_scalar::Scalar;
@@ -78,29 +79,29 @@ use snarkvm_circuit_types_scalar::Scalar;
 use core::marker::PhantomData;
 
 #[derive(Clone)]
-pub struct Integer<E: Environment, I: IntegerType> {
-    bits_le: Vec<Boolean<E>>,
+pub struct Integer<I: IntegerType> {
+    bits_le: Vec<Boolean>,
     phantom: PhantomData<I>,
 }
 
-impl<E: Environment, I: IntegerType> IntegerTrait<I, U8<E>, U16<E>, U32<E>> for Integer<E, I> {}
+impl<I: IntegerType> IntegerTrait<I, U8, U16, U32> for Integer<I> {}
 
-impl<E: Environment, I: IntegerType> IntegerCore<I> for Integer<E, I> {}
+impl<I: IntegerType> IntegerCore<I> for Integer<I> {}
 
 // TODO (@pranav) Document
-impl<E: Environment, I: IntegerType> Integer<E, I> {
+impl<I: IntegerType> Integer<I> {
     pub fn size_in_bits() -> u16 {
         I::BITS as u16
     }
 
-    pub fn cast_as_dual(self) -> Integer<E, I::Dual> {
-        Integer::<E, I::Dual> { bits_le: self.bits_le, phantom: Default::default() }
+    pub fn cast_as_dual(self) -> Integer<I::Dual> {
+        Integer::<I::Dual> { bits_le: self.bits_le, phantom: Default::default() }
     }
 }
 
 #[cfg(console)]
-impl<E: Environment, I: IntegerType> Inject for Integer<E, I> {
-    type Primitive = console::Integer<E::Network, I>;
+impl<I: IntegerType> Inject for Integer<I> {
+    type Primitive = console::Integer<I>;
 
     /// Initializes a new integer.
     fn new(mode: Mode, value: Self::Primitive) -> Self {
@@ -115,8 +116,8 @@ impl<E: Environment, I: IntegerType> Inject for Integer<E, I> {
 }
 
 #[cfg(console)]
-impl<E: Environment, I: IntegerType> Eject for Integer<E, I> {
-    type Primitive = console::Integer<E::Network, I>;
+impl<I: IntegerType> Eject for Integer<I> {
+    type Primitive = console::Integer<I>;
 
     /// Ejects the mode of the integer.
     fn eject_mode(&self) -> Mode {
@@ -133,7 +134,7 @@ impl<E: Environment, I: IntegerType> Eject for Integer<E, I> {
 }
 
 #[cfg(console)]
-impl<E: Environment, I: IntegerType> Parser for Integer<E, I> {
+impl<I: IntegerType> Parser for Integer<I> {
     /// Parses a string into an integer circuit.
     #[inline]
     fn parse(string: &str) -> ParserResult<Self> {
@@ -150,7 +151,7 @@ impl<E: Environment, I: IntegerType> Parser for Integer<E, I> {
 }
 
 #[cfg(console)]
-impl<E: Environment, I: IntegerType> FromStr for Integer<E, I> {
+impl<I: IntegerType> FromStr for Integer<I> {
     type Err = Error;
 
     /// Parses a string into an integer circuit.
@@ -169,39 +170,39 @@ impl<E: Environment, I: IntegerType> FromStr for Integer<E, I> {
 }
 
 #[cfg(console)]
-impl<E: Environment, I: IntegerType> TypeName for Integer<E, I> {
+impl<I: IntegerType> TypeName for Integer<I> {
     /// Returns the type name of the circuit as a string.
     #[inline]
     fn type_name() -> &'static str {
-        console::Integer::<E::Network, I>::type_name()
+        console::Integer::<I>::type_name()
     }
 }
 
 #[cfg(console)]
-impl<E: Environment, I: IntegerType> Debug for Integer<E, I> {
+impl<I: IntegerType> Debug for Integer<I> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         Display::fmt(self, f)
     }
 }
 
 #[cfg(console)]
-impl<E: Environment, I: IntegerType> Display for Integer<E, I> {
+impl<I: IntegerType> Display for Integer<I> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}.{}", self.eject_value(), self.eject_mode())
     }
 }
 
-impl<E: Environment, I: IntegerType> From<Integer<E, I>> for LinearCombination<E::BaseField> {
-    fn from(integer: Integer<E, I>) -> Self {
+impl<I: IntegerType> From<Integer<I>> for LinearCombination<ConsoleField> {
+    fn from(integer: Integer<I>) -> Self {
         From::from(&integer)
     }
 }
 
-impl<E: Environment, I: IntegerType> From<&Integer<E, I>> for LinearCombination<E::BaseField> {
-    fn from(integer: &Integer<E, I>) -> Self {
+impl<I: IntegerType> From<&Integer<I>> for LinearCombination<ConsoleField> {
+    fn from(integer: &Integer<I>) -> Self {
         // Reconstruct the bits as a linear combination representing the original field value.
-        let mut accumulator = E::zero();
-        let mut coefficient = E::BaseField::one();
+        let mut accumulator = Circuit::zero();
+        let mut coefficient = ConsoleField::one();
         for bit in &integer.bits_le {
             accumulator += LinearCombination::from(bit) * coefficient;
             coefficient = coefficient.double();
@@ -229,15 +230,15 @@ mod tests {
             let expected = Uniform::rand(rng);
 
             Circuit::scope(format!("New {mode}"), || {
-                let candidate = Integer::<Circuit, I>::new(mode, expected);
+                let candidate = Integer::<I>::new(mode, expected);
                 assert_eq!(mode, candidate.eject_mode());
                 assert_eq!(expected, candidate.eject_value());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
             })
         }
         // Check that the minimum and maximum integer bounds are correct.
-        assert_eq!(console::Integer::MIN, Integer::<Circuit, I>::new(mode, console::Integer::MIN).eject_value());
-        assert_eq!(console::Integer::MAX, Integer::<Circuit, I>::new(mode, console::Integer::MAX).eject_value());
+        assert_eq!(console::Integer::MIN, Integer::<I>::new(mode, console::Integer::MIN).eject_value());
+        assert_eq!(console::Integer::MAX, Integer::<I>::new(mode, console::Integer::MAX).eject_value());
     }
 
     fn check_parse<I: IntegerType>(
@@ -250,10 +251,10 @@ mod tests {
     ) {
         for _ in 0..ITERATIONS {
             let value = Uniform::rand(rng);
-            let expected = Integer::<Circuit, I>::new(mode, value);
+            let expected = Integer::<I>::new(mode, value);
 
             Circuit::scope(format!("Parse {mode}"), || {
-                let (_, candidate) = Integer::<Circuit, I>::parse(&format!("{expected}")).unwrap();
+                let (_, candidate) = Integer::<I>::parse(&format!("{expected}")).unwrap();
                 assert_eq!((mode, value), candidate.eject());
                 assert_eq!(expected.eject_mode(), candidate.eject_mode());
                 assert_eq!(expected.eject_value(), candidate.eject_value());
@@ -264,15 +265,15 @@ mod tests {
 
     fn check_display<I: IntegerType>() {
         // Constant
-        let candidate = Integer::<Circuit, I>::new(Mode::Constant, console::Integer::one() + console::Integer::one());
+        let candidate = Integer::<I>::new(Mode::Constant, console::Integer::one() + console::Integer::one());
         assert_eq!(format!("2{}.constant", I::type_name()), format!("{candidate}"));
 
         // Public
-        let candidate = Integer::<Circuit, I>::new(Mode::Public, console::Integer::one() + console::Integer::one());
+        let candidate = Integer::<I>::new(Mode::Public, console::Integer::one() + console::Integer::one());
         assert_eq!(format!("2{}.public", I::type_name()), format!("{candidate}"));
 
         // Private
-        let candidate = Integer::<Circuit, I>::new(Mode::Private, console::Integer::one() + console::Integer::one());
+        let candidate = Integer::<I>::new(Mode::Private, console::Integer::one() + console::Integer::one());
         assert_eq!(format!("2{}.private", I::type_name()), format!("{candidate}"));
     }
 

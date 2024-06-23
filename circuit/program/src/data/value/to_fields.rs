@@ -14,12 +14,12 @@
 
 use super::*;
 
-impl<A: Aleo> ToFields for Value<A> {
-    type Field = Field<A>;
+impl ToFields for Value {
+    type Field = Field;
 
     /// Returns the circuit value as a list of fields.
     #[inline]
-    fn to_fields(&self) -> Vec<Field<A>> {
+    fn to_fields(&self) -> Vec<Field> {
         match self {
             Self::Plaintext(plaintext) => plaintext.to_fields(),
             Self::Record(record) => record.to_fields(),

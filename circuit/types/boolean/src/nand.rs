@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Nand<Self> for Boolean<E> {
-    type Output = Boolean<E>;
+impl Nand<Self> for Boolean {
+    type Output = Boolean;
 
     /// Returns `NOT (a AND b)`.
     fn nand(&self, other: &Self) -> Self::Output {
@@ -39,16 +39,16 @@ impl<E: Environment> Nand<Self> for Boolean<E> {
             // Note: The constraint below will ensure `output` is either 0 or 1,
             // assuming `self` and `other` are well-formed (they are either 0 or 1).
             let output = Boolean(
-                E::new_variable(Mode::Private, match !(self.eject_value() & other.eject_value()) {
-                    true => E::BaseField::one(),
-                    false => E::BaseField::zero(),
+                Circuit::new_variable(Mode::Private, match !(self.eject_value() & other.eject_value()) {
+                    true => ConsoleField::one(),
+                    false => ConsoleField::zero(),
                 })
                 .into(),
             );
 
             // Ensure `self` * `other` = (1 - `output`)
             // `output` is `1` iff `self` or `other` is `0`, otherwise `output` is `0`.
-            E::enforce(|| (self, other, E::one() - &output.0));
+            Circuit::enforce(|| (self, other, Circuit::one() - &output.0));
 
             output
         }
@@ -63,8 +63,8 @@ mod tests {
     fn check_nand(
         name: &str,
         expected: bool,
-        a: Boolean<Circuit>,
-        b: Boolean<Circuit>,
+        a: Boolean,
+        b: Boolean,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -81,26 +81,26 @@ mod tests {
     fn test_constant_nand_constant() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, false);
-        let b = Boolean::<Circuit>::new(Mode::Constant, false);
+        let a = Boolean::new(Mode::Constant, false);
+        let b = Boolean::new(Mode::Constant, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 0, 0);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, false);
-        let b = Boolean::<Circuit>::new(Mode::Constant, true);
+        let a = Boolean::new(Mode::Constant, false);
+        let b = Boolean::new(Mode::Constant, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 0, 0);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, true);
-        let b = Boolean::<Circuit>::new(Mode::Constant, false);
+        let a = Boolean::new(Mode::Constant, true);
+        let b = Boolean::new(Mode::Constant, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 0, 0);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Constant, true);
-        let b = Boolean::<Circuit>::new(Mode::Constant, true);
+        let a = Boolean::new(Mode::Constant, true);
+        let b = Boolean::new(Mode::Constant, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 0, 0);
     }
 
@@ -108,26 +108,26 @@ mod tests {
     fn test_constant_nand_public() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, false);
-        let b = Boolean::<Circuit>::new(Mode::Public, false);
+        let a = Boolean::new(Mode::Constant, false);
+        let b = Boolean::new(Mode::Public, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 0, 0);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, false);
-        let b = Boolean::<Circuit>::new(Mode::Public, true);
+        let a = Boolean::new(Mode::Constant, false);
+        let b = Boolean::new(Mode::Public, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 0, 0);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, true);
-        let b = Boolean::<Circuit>::new(Mode::Public, false);
+        let a = Boolean::new(Mode::Constant, true);
+        let b = Boolean::new(Mode::Public, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 0, 0);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Constant, true);
-        let b = Boolean::<Circuit>::new(Mode::Public, true);
+        let a = Boolean::new(Mode::Constant, true);
+        let b = Boolean::new(Mode::Public, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 0, 0);
     }
 
@@ -135,26 +135,26 @@ mod tests {
     fn test_constant_nand_private() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, false);
-        let b = Boolean::<Circuit>::new(Mode::Private, false);
+        let a = Boolean::new(Mode::Constant, false);
+        let b = Boolean::new(Mode::Private, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 0, 0);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, false);
-        let b = Boolean::<Circuit>::new(Mode::Private, true);
+        let a = Boolean::new(Mode::Constant, false);
+        let b = Boolean::new(Mode::Private, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 0, 0);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Constant, true);
-        let b = Boolean::<Circuit>::new(Mode::Private, false);
+        let a = Boolean::new(Mode::Constant, true);
+        let b = Boolean::new(Mode::Private, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 0, 0);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Constant, true);
-        let b = Boolean::<Circuit>::new(Mode::Private, true);
+        let a = Boolean::new(Mode::Constant, true);
+        let b = Boolean::new(Mode::Private, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 0, 0);
     }
 
@@ -162,26 +162,26 @@ mod tests {
     fn test_public_nand_constant() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, false);
-        let b = Boolean::<Circuit>::new(Mode::Constant, false);
+        let a = Boolean::new(Mode::Public, false);
+        let b = Boolean::new(Mode::Constant, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 0, 0);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, false);
-        let b = Boolean::<Circuit>::new(Mode::Constant, true);
+        let a = Boolean::new(Mode::Public, false);
+        let b = Boolean::new(Mode::Constant, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 0, 0);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, true);
-        let b = Boolean::<Circuit>::new(Mode::Constant, false);
+        let a = Boolean::new(Mode::Public, true);
+        let b = Boolean::new(Mode::Constant, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 0, 0);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Public, true);
-        let b = Boolean::<Circuit>::new(Mode::Constant, true);
+        let a = Boolean::new(Mode::Public, true);
+        let b = Boolean::new(Mode::Constant, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 0, 0);
     }
 
@@ -189,26 +189,26 @@ mod tests {
     fn test_public_nand_public() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, false);
-        let b = Boolean::<Circuit>::new(Mode::Public, false);
+        let a = Boolean::new(Mode::Public, false);
+        let b = Boolean::new(Mode::Public, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 1, 1);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, false);
-        let b = Boolean::<Circuit>::new(Mode::Public, true);
+        let a = Boolean::new(Mode::Public, false);
+        let b = Boolean::new(Mode::Public, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 1, 1);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, true);
-        let b = Boolean::<Circuit>::new(Mode::Public, false);
+        let a = Boolean::new(Mode::Public, true);
+        let b = Boolean::new(Mode::Public, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 1, 1);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Public, true);
-        let b = Boolean::<Circuit>::new(Mode::Public, true);
+        let a = Boolean::new(Mode::Public, true);
+        let b = Boolean::new(Mode::Public, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 1, 1);
     }
 
@@ -216,26 +216,26 @@ mod tests {
     fn test_public_nand_private() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, false);
-        let b = Boolean::<Circuit>::new(Mode::Private, false);
+        let a = Boolean::new(Mode::Public, false);
+        let b = Boolean::new(Mode::Private, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 1, 1);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, false);
-        let b = Boolean::<Circuit>::new(Mode::Private, true);
+        let a = Boolean::new(Mode::Public, false);
+        let b = Boolean::new(Mode::Private, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 1, 1);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Public, true);
-        let b = Boolean::<Circuit>::new(Mode::Private, false);
+        let a = Boolean::new(Mode::Public, true);
+        let b = Boolean::new(Mode::Private, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 1, 1);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Public, true);
-        let b = Boolean::<Circuit>::new(Mode::Private, true);
+        let a = Boolean::new(Mode::Public, true);
+        let b = Boolean::new(Mode::Private, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 1, 1);
     }
 
@@ -243,26 +243,26 @@ mod tests {
     fn test_private_nand_constant() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, false);
-        let b = Boolean::<Circuit>::new(Mode::Constant, false);
+        let a = Boolean::new(Mode::Private, false);
+        let b = Boolean::new(Mode::Constant, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 0, 0);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, false);
-        let b = Boolean::<Circuit>::new(Mode::Constant, true);
+        let a = Boolean::new(Mode::Private, false);
+        let b = Boolean::new(Mode::Constant, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 0, 0);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, true);
-        let b = Boolean::<Circuit>::new(Mode::Constant, false);
+        let a = Boolean::new(Mode::Private, true);
+        let b = Boolean::new(Mode::Constant, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 0, 0);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Private, true);
-        let b = Boolean::<Circuit>::new(Mode::Constant, true);
+        let a = Boolean::new(Mode::Private, true);
+        let b = Boolean::new(Mode::Constant, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 0, 0);
     }
 
@@ -270,26 +270,26 @@ mod tests {
     fn test_private_nand_public() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, false);
-        let b = Boolean::<Circuit>::new(Mode::Public, false);
+        let a = Boolean::new(Mode::Private, false);
+        let b = Boolean::new(Mode::Public, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 1, 1);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, false);
-        let b = Boolean::<Circuit>::new(Mode::Public, true);
+        let a = Boolean::new(Mode::Private, false);
+        let b = Boolean::new(Mode::Public, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 1, 1);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, true);
-        let b = Boolean::<Circuit>::new(Mode::Public, false);
+        let a = Boolean::new(Mode::Private, true);
+        let b = Boolean::new(Mode::Public, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 1, 1);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Private, true);
-        let b = Boolean::<Circuit>::new(Mode::Public, true);
+        let a = Boolean::new(Mode::Private, true);
+        let b = Boolean::new(Mode::Public, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 1, 1);
     }
 
@@ -297,26 +297,26 @@ mod tests {
     fn test_private_nand_private() {
         // false NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, false);
-        let b = Boolean::<Circuit>::new(Mode::Private, false);
+        let a = Boolean::new(Mode::Private, false);
+        let b = Boolean::new(Mode::Private, false);
         check_nand("false NAND false", expected, a, b, 0, 0, 1, 1);
 
         // false NAND true
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, false);
-        let b = Boolean::<Circuit>::new(Mode::Private, true);
+        let a = Boolean::new(Mode::Private, false);
+        let b = Boolean::new(Mode::Private, true);
         check_nand("false NAND true", expected, a, b, 0, 0, 1, 1);
 
         // true NAND false
         let expected = true;
-        let a = Boolean::<Circuit>::new(Mode::Private, true);
-        let b = Boolean::<Circuit>::new(Mode::Private, false);
+        let a = Boolean::new(Mode::Private, true);
+        let b = Boolean::new(Mode::Private, false);
         check_nand("true NAND false", expected, a, b, 0, 0, 1, 1);
 
         // true NAND true
         let expected = false;
-        let a = Boolean::<Circuit>::new(Mode::Private, true);
-        let b = Boolean::<Circuit>::new(Mode::Private, true);
+        let a = Boolean::new(Mode::Private, true);
+        let b = Boolean::new(Mode::Private, true);
         check_nand("true NAND true", expected, a, b, 0, 0, 1, 1);
     }
 }

@@ -42,9 +42,9 @@ impl<N: Network> Stack<N> {
     /// Returns a record for the given record name.
     pub(crate) fn sample_record_internal<R: Rng + CryptoRng>(
         &self,
-        burner_address: &Address<N>,
+        burner_address: &Address,
         record_name: &Identifier<N>,
-        nonce: Group<N>,
+        nonce: Group,
         depth: usize,
         rng: &mut R,
     ) -> Result<Record<N, Plaintext<N>>> {

@@ -33,7 +33,7 @@ use indexmap::IndexSet;
 
 /// TODO (howardwu): Remove this.
 /// Returns the mapping ID for the given `program ID` and `mapping name`.
-fn to_mapping_id<N: Network>(program_id: &ProgramID<N>, mapping_name: &Identifier<N>) -> Result<Field<N>> {
+fn to_mapping_id<N: Network>(program_id: &ProgramID<N>, mapping_name: &Identifier<N>) -> Result<Field> {
     // Construct the preimage.
     let mut preimage = Vec::new();
     program_id.write_bits_le(&mut preimage);
@@ -44,11 +44,7 @@ fn to_mapping_id<N: Network>(program_id: &ProgramID<N>, mapping_name: &Identifie
 }
 
 /// Returns the key ID for the given `program ID`, `mapping name`, and `key`.
-fn to_key_id<N: Network>(
-    program_id: &ProgramID<N>,
-    mapping_name: &Identifier<N>,
-    key: &Plaintext<N>,
-) -> Result<Field<N>> {
+fn to_key_id<N: Network>(program_id: &ProgramID<N>, mapping_name: &Identifier<N>, key: &Plaintext<N>) -> Result<Field> {
     // Construct the preimage.
     let mut preimage = Vec::new();
     program_id.write_bits_le(&mut preimage);
@@ -455,7 +451,7 @@ pub trait FinalizeStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the confirmed checksum of the finalize storage.
-    fn get_checksum_confirmed(&self) -> Result<Field<N>> {
+    fn get_checksum_confirmed(&self) -> Result<Field> {
         // Compute all mapping checksums.
         let preimage: std::collections::BTreeMap<_, _> = self
             .key_value_map()
@@ -488,7 +484,7 @@ pub trait FinalizeStorage<N: Network>: 'static + Clone + Send + Sync {
     }
 
     /// Returns the pending checksum of the finalize storage.
-    fn get_checksum_pending(&self) -> Result<Field<N>> {
+    fn get_checksum_pending(&self) -> Result<Field> {
         // Compute all mapping checksums.
         let preimage: std::collections::BTreeMap<_, _> = self
             .key_value_map()
@@ -763,7 +759,7 @@ impl<N: Network, P: FinalizeStorage<N>> FinalizeStore<N, P> {
     }
 
     /// Returns the confirmed checksum of the finalize store.
-    pub fn get_checksum_confirmed(&self) -> Result<Field<N>> {
+    pub fn get_checksum_confirmed(&self) -> Result<Field> {
         self.storage.get_checksum_confirmed()
     }
 }
@@ -968,7 +964,7 @@ mod tests {
     #[test]
     fn test_initialize_insert_remove() {
         // Initialize a program ID and mapping name.
-        let program_id = ProgramID::<CurrentNetwork>::from_str("hello.aleo").unwrap();
+        let program_id = ProgramID::from_str("hello.aleo").unwrap();
         let mapping_name = Identifier::from_str("account").unwrap();
 
         // Initialize a new finalize store.
@@ -981,7 +977,7 @@ mod tests {
     #[test]
     fn test_initialize_update_remove() {
         // Initialize a program ID and mapping name.
-        let program_id = ProgramID::<CurrentNetwork>::from_str("hello.aleo").unwrap();
+        let program_id = ProgramID::from_str("hello.aleo").unwrap();
         let mapping_name = Identifier::from_str("account").unwrap();
 
         // Initialize a new finalize store.
@@ -994,7 +990,7 @@ mod tests {
     #[test]
     fn test_remove_key_value() {
         // Initialize a program ID and mapping name.
-        let program_id = ProgramID::<CurrentNetwork>::from_str("hello.aleo").unwrap();
+        let program_id = ProgramID::from_str("hello.aleo").unwrap();
         let mapping_name = Identifier::from_str("account").unwrap();
 
         // Initialize a new finalize store.
@@ -1083,7 +1079,7 @@ mod tests {
     #[test]
     fn test_remove_mapping() {
         // Initialize a program ID and mapping name.
-        let program_id = ProgramID::<CurrentNetwork>::from_str("hello.aleo").unwrap();
+        let program_id = ProgramID::from_str("hello.aleo").unwrap();
         let mapping_name = Identifier::from_str("account").unwrap();
 
         // Initialize a new finalize store.
@@ -1147,7 +1143,7 @@ mod tests {
     #[test]
     fn test_remove_program() {
         // Initialize a program ID and mapping name.
-        let program_id = ProgramID::<CurrentNetwork>::from_str("hello.aleo").unwrap();
+        let program_id = ProgramID::from_str("hello.aleo").unwrap();
         let mapping_name = Identifier::from_str("account").unwrap();
 
         // Initialize a new finalize store.
@@ -1211,7 +1207,7 @@ mod tests {
     #[test]
     fn test_must_initialize_first() {
         // Initialize a program ID and mapping name.
-        let program_id = ProgramID::<CurrentNetwork>::from_str("hello.aleo").unwrap();
+        let program_id = ProgramID::from_str("hello.aleo").unwrap();
         let mapping_name = Identifier::from_str("account").unwrap();
 
         // Initialize a new finalize store.
@@ -1287,7 +1283,7 @@ mod tests {
             .expect("Failed to parse NUM_ITEMS as u128");
 
         // Initialize a program ID and mapping name.
-        let program_id = ProgramID::<CurrentNetwork>::from_str("hello.aleo").unwrap();
+        let program_id = ProgramID::from_str("hello.aleo").unwrap();
         let mapping_name = Identifier::from_str("account").unwrap();
 
         // Initialize a new finalize store.

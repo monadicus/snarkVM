@@ -195,7 +195,7 @@ impl<N: Network> ConfirmedTransaction<N> {
     }
 
     /// Returns `true` if the confirmed transaction represents the given unconfirmed transaction ID.
-    pub fn contains_unconfirmed_transaction_id(&self, unconfirmed_transaction_id: &N::TransactionID) -> bool {
+    pub fn contains_unconfirmed_transaction_id(&self, unconfirmed_transaction_id: &TransactionID) -> bool {
         self.to_unconfirmed_transaction_id().map_or(false, |id| &id == unconfirmed_transaction_id)
     }
 }
@@ -263,7 +263,7 @@ impl<N: Network> ConfirmedTransaction<N> {
 
     /// Returns the finalize ID, by computing the root of a (small) Merkle tree comprised of
     /// the ordered finalize operations for the transaction.
-    pub fn to_finalize_id(&self) -> Result<Field<N>> {
+    pub fn to_finalize_id(&self) -> Result<Field> {
         // Prepare the leaves.
         let leaves = self.finalize_operations().iter().map(ToBits::to_bits_le).collect::<Vec<_>>();
         // Compute the finalize ID.
@@ -272,7 +272,7 @@ impl<N: Network> ConfirmedTransaction<N> {
     }
 
     /// Returns the rejected ID, if the confirmed transaction is rejected.
-    pub fn to_rejected_id(&self) -> Result<Option<Field<N>>> {
+    pub fn to_rejected_id(&self) -> Result<Option<Field>> {
         match self {
             ConfirmedTransaction::AcceptedDeploy(..) | ConfirmedTransaction::AcceptedExecute(..) => Ok(None),
             ConfirmedTransaction::RejectedDeploy(_, _, rejected, _) => Ok(Some(rejected.to_id()?)),
@@ -292,7 +292,7 @@ impl<N: Network> ConfirmedTransaction<N> {
     /// Returns the unconfirmed transaction ID, which is defined as the transaction ID prior to confirmation.
     /// When a transaction is rejected, its fee transition is used to construct the confirmed transaction ID,
     /// changing the original transaction ID.
-    pub fn to_unconfirmed_transaction_id(&self) -> Result<N::TransactionID> {
+    pub fn to_unconfirmed_transaction_id(&self) -> Result<TransactionID> {
         match self {
             Self::AcceptedDeploy(_, transaction, _) => Ok(transaction.id()),
             Self::AcceptedExecute(_, transaction, _) => Ok(transaction.id()),

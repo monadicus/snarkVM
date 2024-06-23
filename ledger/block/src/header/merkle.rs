@@ -16,7 +16,7 @@ use super::*;
 
 impl<N: Network> Header<N> {
     /// Returns the block header root.
-    pub fn to_root(&self) -> Result<Field<N>> {
+    pub fn to_root(&self) -> Result<Field> {
         Ok(*self.to_tree()?.root())
     }
 
@@ -27,7 +27,7 @@ impl<N: Network> Header<N> {
     }
 
     /// Returns the Merkle leaf for the given ID in the header.
-    pub fn to_leaf(&self, id: &Field<N>) -> Result<HeaderLeaf<N>> {
+    pub fn to_leaf(&self, id: &Field) -> Result<HeaderLeaf<N>> {
         // If the ID is the previous state root, return the 0th leaf.
         if id == &*self.previous_state_root {
             Ok(HeaderLeaf::<N>::new(0, *self.previous_state_root))
@@ -95,7 +95,7 @@ mod tests {
 
     const ITERATIONS: u64 = 1_000;
 
-    fn check_path<N: Network>(header_path: HeaderPath<N>, root: Field<N>, leaf: &HeaderLeaf<N>) -> Result<()> {
+    fn check_path<N: Network>(header_path: HeaderPath<N>, root: Field, leaf: &HeaderLeaf<N>) -> Result<()> {
         // Ensure that the path is valid for the corresponding root and leaf.
         assert!(N::verify_merkle_path_bhp(&header_path, &root, &leaf.to_bits_le()));
 
@@ -114,7 +114,7 @@ mod tests {
             let coinbase_target = u64::rand(rng);
             let proof_target = rng.gen_range(0..coinbase_target);
 
-            let header = Header::<CurrentNetwork>::from(
+            let header = Header::from(
                 Into::<<CurrentNetwork as Network>::StateRoot>::into(Field::rand(rng)),
                 Field::rand(rng),
                 Field::rand(rng),

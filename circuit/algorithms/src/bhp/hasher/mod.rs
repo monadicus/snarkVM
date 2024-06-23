@@ -24,18 +24,18 @@ use snarkvm_circuit_types::prelude::*;
 const BHP_CHUNK_SIZE: usize = 3;
 
 /// The x-coordinate and y-coordinate of each base on the Montgomery curve.
-type BaseLookups<E> = (Vec<Field<E>>, Vec<Field<E>>);
+type BaseLookups = (Vec<Field>, Vec<Field>);
 
 /// BHP is a collision-resistant hash function that takes a variable-length input.
 /// The BHP hasher is used to process one internal iteration of the BHP hash function.
-pub struct BHPHasher<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> {
+pub struct BHPHasher<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> {
     /// The bases for the BHP hash.
-    bases: Vec<Vec<BaseLookups<E>>>,
+    bases: Vec<Vec<BaseLookups>>,
     /// The random base for the BHP commitment.
-    random_base: Vec<Group<E>>,
+    random_base: Vec<Group>,
 }
 
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> BHPHasher<E, NUM_WINDOWS, WINDOW_SIZE> {
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> BHPHasher<NUM_WINDOWS, WINDOW_SIZE> {
     /// The BHP lookup size per iteration.
     const BHP_LOOKUP_SIZE: usize = 4;
     /// The maximum number of input bits.
@@ -45,19 +45,19 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> BHPHasher<E, 
 
     #[cfg(test)]
     /// Returns the bases.
-    pub(crate) fn bases(&self) -> &Vec<Vec<BaseLookups<E>>> {
+    pub(crate) fn bases(&self) -> &Vec<Vec<BaseLookups>> {
         &self.bases
     }
 
     /// Returns the random base window.
-    pub(crate) fn random_base(&self) -> &Vec<Group<E>> {
+    pub(crate) fn random_base(&self) -> &Vec<Group> {
         &self.random_base
     }
 }
 
 #[cfg(console)]
-impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Inject for BHPHasher<E, NUM_WINDOWS, WINDOW_SIZE> {
-    type Primitive = console::BHP<E::Network, NUM_WINDOWS, WINDOW_SIZE>;
+impl<const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Inject for BHPHasher<NUM_WINDOWS, WINDOW_SIZE> {
+    type Primitive = console::BHP<NUM_WINDOWS, WINDOW_SIZE>;
 
     /// Initializes a new instance of a BHP circuit with the given BHP variant.
     fn new(_mode: Mode, bhp: Self::Primitive) -> Self {
@@ -87,13 +87,13 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Inject for BH
                 }
                 powers
             })
-            .collect::<Vec<Vec<BaseLookups<E>>>>();
+            .collect::<Vec<Vec<BaseLookups>>>();
         assert_eq!(bases.len(), NUM_WINDOWS as usize, "Incorrect number of BHP windows ({})", bases.len());
         bases.iter().for_each(|window| assert_eq!(window.len(), WINDOW_SIZE as usize));
 
         // Initialize the random base.
         let random_base = Vec::constant(bhp.random_base().iter().copied().collect());
-        assert_eq!(random_base.len(), console::Scalar::<E::Network>::size_in_bits());
+        assert_eq!(random_base.len(), console::Scalar::size_in_bits());
 
         Self { bases, random_base }
     }
@@ -102,7 +102,7 @@ impl<E: Environment, const NUM_WINDOWS: u8, const WINDOW_SIZE: u8> Inject for BH
 #[cfg(all(test, console))]
 mod tests {
     use super::*;
-    use snarkvm_circuit_types::environment::{Circuit, Eject};
+    use snarkvm_circuit_types::environment::Eject;
 
     use anyhow::Result;
 
@@ -112,8 +112,8 @@ mod tests {
     #[test]
     fn test_setup_constant() -> Result<()> {
         for _ in 0..ITERATIONS {
-            let native = console::BHP::<<Circuit as Environment>::Network, 8, 32>::setup(MESSAGE)?;
-            let circuit = BHPHasher::<Circuit, 8, 32>::new(Mode::Constant, native.clone());
+            let native = console::BHP::<8, 32>::setup(MESSAGE)?;
+            let circuit = BHPHasher::<8, 32>::new(Mode::Constant, native.clone());
 
             native.bases().iter().zip(circuit.bases.iter()).for_each(|(native_bases, circuit_bases)| {
                 native_bases.iter().zip(circuit_bases).for_each(|(native_base, circuit_base_lookups)| {

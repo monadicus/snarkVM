@@ -21,7 +21,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns an iterator over the solution IDs, for all blocks in `self`.
-    pub fn solution_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, SolutionID<N>>> {
+    pub fn solution_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, SolutionID>> {
         self.vm.block_store().solution_ids()
     }
 
@@ -38,7 +38,7 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     }
 
     /// Returns an iterator over the transaction IDs, for all transactions in `self`.
-    pub fn transaction_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, N::TransactionID>> {
+    pub fn transaction_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, TransactionID>> {
         self.vm.transaction_store().transaction_ids()
     }
 
@@ -52,46 +52,46 @@ impl<N: Network, C: ConsensusStorage<N>> Ledger<N, C> {
     /* Input */
 
     /// Returns an iterator over the input IDs, for all transition inputs.
-    pub fn input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.vm.transition_store().input_ids()
     }
 
     /// Returns an iterator over the serial numbers, for all transition inputs that are records.
-    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.vm.transition_store().serial_numbers()
     }
 
     /// Returns an iterator over the tags, for all transition inputs that are records.
-    pub fn tags(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn tags(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.vm.transition_store().tags()
     }
 
     /* Output */
 
     /// Returns an iterator over the output IDs, for all transition outputs that are records.
-    pub fn output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.vm.transition_store().output_ids()
     }
 
     /// Returns an iterator over the commitments, for all transition outputs that are records.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.vm.transition_store().commitments()
     }
 
     /// Returns an iterator over the nonces, for all transition outputs that are records.
-    pub fn nonces(&self) -> impl '_ + Iterator<Item = Cow<'_, Group<N>>> {
+    pub fn nonces(&self) -> impl '_ + Iterator<Item = Cow<'_, Group>> {
         self.vm.transition_store().nonces()
     }
 
     /// Returns an iterator over the `(commitment, record)` pairs, for all transition outputs that are records.
-    pub fn records(&self) -> impl '_ + Iterator<Item = (Cow<'_, Field<N>>, Cow<'_, Record<N, Ciphertext<N>>>)> {
+    pub fn records(&self) -> impl '_ + Iterator<Item = (Cow<'_, Field>, Cow<'_, Record<N, Ciphertext<N>>>)> {
         self.vm.transition_store().records()
     }
 
     /* Metadata */
 
     /// Returns an iterator over the transition public keys, for all transactions.
-    pub fn transition_public_keys(&self) -> impl '_ + Iterator<Item = Cow<'_, Group<N>>> {
+    pub fn transition_public_keys(&self) -> impl '_ + Iterator<Item = Cow<'_, Group>> {
         self.vm.transition_store().tpks()
     }
 }

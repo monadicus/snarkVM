@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment> Compare<Field<E>> for Field<E> {
-    type Output = Boolean<E>;
+impl Compare<Field> for Field {
+    type Output = Boolean;
 
     /// Returns `true` if `self` is less than `other`.
     fn is_less_than(&self, other: &Self) -> Self::Output {
@@ -102,8 +102,8 @@ mod tests {
     fn check_is_less_than(
         name: &str,
         expected: bool,
-        a: &Field<Circuit>,
-        b: &Field<Circuit>,
+        a: &Field,
+        b: &Field,
         num_constants: u64,
         num_public: u64,
         num_private: u64,
@@ -140,15 +140,15 @@ mod tests {
             let first = Uniform::rand(&mut rng);
             let second = Uniform::rand(&mut rng);
 
-            let a = Field::<Circuit>::new(mode_a, first);
-            let b = Field::<Circuit>::new(mode_b, second);
+            let a = Field::new(mode_a, first);
+            let b = Field::new(mode_b, second);
             let expected = first < second;
             let name = format!("{mode_a} {mode_b} {i}");
             check_is_less_than(&name, expected, &a, &b, num_constants, num_public, num_private, num_constraints);
 
             // Check `first` is not less than `first`.
-            let a = Field::<Circuit>::new(mode_a, first);
-            let b = Field::<Circuit>::new(mode_b, first);
+            let a = Field::new(mode_a, first);
+            let b = Field::new(mode_b, first);
             check_is_less_than(
                 "first !< first",
                 false,

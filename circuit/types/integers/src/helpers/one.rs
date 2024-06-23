@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> One for Integer<E, I> {
-    type Boolean = Boolean<E>;
+impl<I: IntegerType> One for Integer<I> {
+    type Boolean = Boolean;
 
     fn one() -> Self {
         Integer::constant(console::Integer::one())
@@ -26,7 +26,7 @@ impl<E: Environment, I: IntegerType> One for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn One<Boolean = Boolean<E>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn One<Boolean = Boolean>> for Integer<I> {
     type Case = ();
 
     fn count(_case: &Self::Case) -> Count {
@@ -34,7 +34,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn One<Boolean = Boolean<E>>> for 
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn One<Boolean = Boolean<E>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn One<Boolean = Boolean>> for Integer<I> {
     type Case = ();
 
     fn output_mode(_case: &Self::Case) -> Mode {
@@ -50,15 +50,15 @@ mod tests {
     fn check_one<I: IntegerType>() {
         Circuit::scope("One", || {
             assert_scope!(0, 0, 0, 0);
-            let candidate = Integer::<Circuit, I>::one();
+            let candidate = Integer::<I>::one();
             assert_eq!(console::Integer::one(), candidate.eject_value());
             assert_count!(One<Boolean>() => Integer<I>, &());
             assert_output_mode!(One<Boolean>() => Integer<I>, &(), candidate);
         });
         // Should equal 1.
-        assert!(Integer::<Circuit, I>::one().is_one().eject_value());
+        assert!(Integer::<I>::one().is_one().eject_value());
         // Should not equal 0.
-        assert!(!Integer::<Circuit, I>::one().is_zero().eject_value());
+        assert!(!Integer::<I>::one().is_zero().eject_value());
         // Reset the circuit.
         Circuit::reset();
     }

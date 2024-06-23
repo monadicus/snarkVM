@@ -44,15 +44,15 @@ pub trait TransitionStorage<N: Network>: Clone + Send + Sync {
     /// The transition outputs.
     type OutputStorage: OutputStorage<N>;
     /// The transition public keys.
-    type TPKMap: for<'a> Map<'a, N::TransitionID, Group<N>>;
+    type TPKMap: for<'a> Map<'a, N::TransitionID, Group>;
     /// The mapping of `transition public key` to `transition ID`.
-    type ReverseTPKMap: for<'a> Map<'a, Group<N>, N::TransitionID>;
+    type ReverseTPKMap: for<'a> Map<'a, Group, N::TransitionID>;
     /// The transition commitments.
-    type TCMMap: for<'a> Map<'a, N::TransitionID, Field<N>>;
+    type TCMMap: for<'a> Map<'a, N::TransitionID, Field>;
     /// The mapping of `transition commitment` to `transition ID`.
-    type ReverseTCMMap: for<'a> Map<'a, Field<N>, N::TransitionID>;
+    type ReverseTCMMap: for<'a> Map<'a, Field, N::TransitionID>;
     /// The signer commitments.
-    type SCMMap: for<'a> Map<'a, N::TransitionID, Field<N>>;
+    type SCMMap: for<'a> Map<'a, N::TransitionID, Field>;
 
     /// Initializes the transition storage.
     fn open<S: Clone + Into<StorageMode>>(storage: S) -> Result<Self>;
@@ -376,7 +376,7 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
 
 impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     /// Returns the transition ID that contains the given `input ID` or `output ID`.
-    pub fn find_transition_id(&self, id: &Field<N>) -> Result<N::TransitionID> {
+    pub fn find_transition_id(&self, id: &Field) -> Result<N::TransitionID> {
         // Start by checking the output IDs (which is the more likely case).
         if let Some(transition_id) = self.outputs.find_transition_id(id)? {
             return Ok(transition_id);
@@ -413,7 +413,7 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     }
 
     /// Returns the input IDs for the given `transition ID`.
-    pub fn get_input_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field<N>>> {
+    pub fn get_input_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field>> {
         self.inputs.get_input_ids(transition_id)
     }
 
@@ -423,7 +423,7 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     }
 
     /// Returns the output IDs for the given `transition ID`.
-    pub fn get_output_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field<N>>> {
+    pub fn get_output_ids(&self, transition_id: &N::TransitionID) -> Result<Vec<Field>> {
         self.outputs.get_output_ids(transition_id)
     }
 
@@ -437,7 +437,7 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     /// If the record exists, `Ok(Some(record))` is returned.
     /// If the record was purged, `Ok(None)` is returned.
     /// If the record does not exist, `Err(error)` is returned.
-    pub fn get_record(&self, commitment: &Field<N>) -> Result<Option<Record<N, Ciphertext<N>>>> {
+    pub fn get_record(&self, commitment: &Field) -> Result<Option<Record<N, Ciphertext<N>>>> {
         self.outputs.get_record(commitment)
     }
 }
@@ -451,51 +451,51 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     /* Input */
 
     /// Returns `true` if the given input ID exists.
-    pub fn contains_input_id(&self, input_id: &Field<N>) -> Result<bool> {
+    pub fn contains_input_id(&self, input_id: &Field) -> Result<bool> {
         self.inputs.contains_input_id(input_id)
     }
 
     /// Returns `true` if the given serial number exists.
-    pub fn contains_serial_number(&self, serial_number: &Field<N>) -> Result<bool> {
+    pub fn contains_serial_number(&self, serial_number: &Field) -> Result<bool> {
         self.inputs.contains_serial_number(serial_number)
     }
 
     /// Returns `true` if the given tag exists.
-    pub fn contains_tag(&self, tag: &Field<N>) -> Result<bool> {
+    pub fn contains_tag(&self, tag: &Field) -> Result<bool> {
         self.inputs.contains_tag(tag)
     }
 
     /* Output */
 
     /// Returns `true` if the given output ID exists.
-    pub fn contains_output_id(&self, output_id: &Field<N>) -> Result<bool> {
+    pub fn contains_output_id(&self, output_id: &Field) -> Result<bool> {
         self.outputs.contains_output_id(output_id)
     }
 
     /// Returns `true` if the given commitment exists.
-    pub fn contains_commitment(&self, commitment: &Field<N>) -> Result<bool> {
+    pub fn contains_commitment(&self, commitment: &Field) -> Result<bool> {
         self.outputs.contains_commitment(commitment)
     }
 
     /// Returns `true` if the given checksum exists.
-    pub fn contains_checksum(&self, checksum: &Field<N>) -> bool {
+    pub fn contains_checksum(&self, checksum: &Field) -> bool {
         self.outputs.contains_checksum(checksum)
     }
 
     /// Returns `true` if the given nonce exists.
-    pub fn contains_nonce(&self, nonce: &Group<N>) -> Result<bool> {
+    pub fn contains_nonce(&self, nonce: &Group) -> Result<bool> {
         self.outputs.contains_nonce(nonce)
     }
 
     /* Metadata */
 
     /// Returns `true` if the given transition public key exists.
-    pub fn contains_tpk(&self, tpk: &Group<N>) -> Result<bool> {
+    pub fn contains_tpk(&self, tpk: &Group) -> Result<bool> {
         self.reverse_tpk.contains_key_confirmed(tpk)
     }
 
     /// Returns `true` if the given transition commitment exists.
-    pub fn contains_tcm(&self, tcm: &Field<N>) -> Result<bool> {
+    pub fn contains_tcm(&self, tcm: &Field) -> Result<bool> {
         self.reverse_tcm.contains_key_confirmed(tcm)
     }
 }
@@ -509,64 +509,64 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     /* Input */
 
     /// Returns an iterator over the input IDs, for all transition inputs.
-    pub fn input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.inputs.input_ids()
     }
 
     /// Returns an iterator over the constant input IDs, for all transition inputs that are constant.
-    pub fn constant_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn constant_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.inputs.constant_input_ids()
     }
 
     /// Returns an iterator over the public input IDs, for all transition inputs that are public.
-    pub fn public_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn public_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.inputs.public_input_ids()
     }
 
     /// Returns an iterator over the private input IDs, for all transition inputs that are private.
-    pub fn private_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn private_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.inputs.private_input_ids()
     }
 
     /// Returns an iterator over the serial numbers, for all transition inputs that are records.
-    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn serial_numbers(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.inputs.serial_numbers()
     }
 
     /// Returns an iterator over the external record input IDs, for all transition inputs that are external records.
-    pub fn external_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn external_input_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.inputs.external_input_ids()
     }
 
     /* Output */
 
     /// Returns an iterator over the output IDs, for all transition outputs.
-    pub fn output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.outputs.output_ids()
     }
 
     /// Returns an iterator over the constant output IDs, for all transition outputs that are constant.
-    pub fn constant_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn constant_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.outputs.constant_output_ids()
     }
 
     /// Returns an iterator over the public output IDs, for all transition outputs that are public.
-    pub fn public_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn public_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.outputs.public_output_ids()
     }
 
     /// Returns an iterator over the private output IDs, for all transition outputs that are private.
-    pub fn private_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn private_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.outputs.private_output_ids()
     }
 
     /// Returns an iterator over the commitments, for all transition outputs that are records.
-    pub fn commitments(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn commitments(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.outputs.commitments()
     }
 
     /// Returns an iterator over the external record output IDs, for all transition outputs that are external records.
-    pub fn external_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn external_output_ids(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.outputs.external_output_ids()
     }
 }
@@ -590,7 +590,7 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     }
 
     /// Returns an iterator over the tags, for all transition inputs that are records.
-    pub fn tags(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn tags(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.inputs.tags()
     }
 
@@ -612,34 +612,34 @@ impl<N: Network, T: TransitionStorage<N>> TransitionStore<N, T> {
     }
 
     /// Returns an iterator over the checksums, for all transition outputs that are records.
-    pub fn checksums(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn checksums(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.outputs.checksums()
     }
 
     /// Returns an iterator over the nonces, for all transition outputs that are records.
-    pub fn nonces(&self) -> impl '_ + Iterator<Item = Cow<'_, Group<N>>> {
+    pub fn nonces(&self) -> impl '_ + Iterator<Item = Cow<'_, Group>> {
         self.outputs.nonces()
     }
 
     /// Returns an iterator over the `(commitment, record)` pairs, for all transition outputs that are records.
-    pub fn records(&self) -> impl '_ + Iterator<Item = (Cow<'_, Field<N>>, Cow<'_, Record<N, Ciphertext<N>>>)> {
+    pub fn records(&self) -> impl '_ + Iterator<Item = (Cow<'_, Field>, Cow<'_, Record<N, Ciphertext<N>>>)> {
         self.outputs.records()
     }
 
     /* Metadata */
 
     /// Returns an iterator over the transition public keys, for all transitions.
-    pub fn tpks(&self) -> impl '_ + Iterator<Item = Cow<'_, Group<N>>> {
+    pub fn tpks(&self) -> impl '_ + Iterator<Item = Cow<'_, Group>> {
         self.tpk.values_confirmed()
     }
 
     /// Returns an iterator over the transition commitments, for all transitions.
-    pub fn tcms(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn tcms(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.tcm.values_confirmed()
     }
 
     /// Returns an iterator over the signer commitments, for all transitions.
-    pub fn scms(&self) -> impl '_ + Iterator<Item = Cow<'_, Field<N>>> {
+    pub fn scms(&self) -> impl '_ + Iterator<Item = Cow<'_, Field>> {
         self.scm.values_confirmed()
     }
 }

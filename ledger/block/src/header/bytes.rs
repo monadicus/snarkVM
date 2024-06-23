@@ -27,11 +27,11 @@ impl<N: Network> FromBytes for Header<N> {
 
         // Read from the buffer.
         let previous_state_root = N::StateRoot::read_le(&mut reader)?;
-        let transactions_root = Field::<N>::read_le(&mut reader)?;
-        let finalize_root = Field::<N>::read_le(&mut reader)?;
-        let ratifications_root = Field::<N>::read_le(&mut reader)?;
-        let solutions_root = Field::<N>::read_le(&mut reader)?;
-        let subdag_root = Field::<N>::read_le(&mut reader)?;
+        let transactions_root = Field::read_le(&mut reader)?;
+        let finalize_root = Field::read_le(&mut reader)?;
+        let ratifications_root = Field::read_le(&mut reader)?;
+        let solutions_root = Field::read_le(&mut reader)?;
+        let subdag_root = Field::read_le(&mut reader)?;
         let metadata = Metadata::read_le(&mut reader)?;
 
         // Construct the block header.
@@ -81,7 +81,7 @@ mod tests {
             // Check the byte representation.
             let expected_bytes = expected.to_bytes_le()?;
             assert_eq!(expected, Header::read_le(&expected_bytes[..])?);
-            assert!(Header::<CurrentNetwork>::read_le(&expected_bytes[1..]).is_err());
+            assert!(Header::read_le(&expected_bytes[1..]).is_err());
         }
         Ok(())
     }

@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<N: Network> FromBytes for SolutionID<N> {
+impl FromBytes for SolutionID {
     /// Reads the solution ID from the buffer.
     fn read_le<R: Read>(mut reader: R) -> IoResult<Self> {
         let nonce = u64::read_le(&mut reader)?;
@@ -23,7 +23,7 @@ impl<N: Network> FromBytes for SolutionID<N> {
     }
 }
 
-impl<N: Network> ToBytes for SolutionID<N> {
+impl ToBytes for SolutionID {
     /// Writes the solution ID to the buffer.
     fn write_le<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.0.write_le(&mut writer)
@@ -33,21 +33,18 @@ impl<N: Network> ToBytes for SolutionID<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use console::network::MainnetV0;
-
-    type CurrentNetwork = MainnetV0;
 
     #[test]
     fn test_bytes() -> Result<()> {
         let mut rng = TestRng::default();
         // Sample a new solution ID.
-        let expected = SolutionID::<CurrentNetwork>::from(rng.gen::<u64>());
+        let expected = SolutionID::from(rng.gen::<u64>());
 
         // Check the byte representation.
         let expected_bytes = expected.to_bytes_le()?;
         assert_eq!(expected_bytes.len(), 8);
         assert_eq!(expected, SolutionID::read_le(&expected_bytes[..])?);
-        assert!(SolutionID::<CurrentNetwork>::read_le(&expected_bytes[1..]).is_err());
+        assert!(SolutionID::read_le(&expected_bytes[1..]).is_err());
 
         Ok(())
     }

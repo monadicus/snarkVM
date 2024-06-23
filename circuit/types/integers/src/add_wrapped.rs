@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> AddWrapped<Self> for Integer<E, I> {
+impl<I: IntegerType> AddWrapped<Self> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn add_wrapped(&self, other: &Integer<E, I>) -> Self::Output {
+    fn add_wrapped(&self, other: &Integer<I>) -> Self::Output {
         // Determine the variable mode.
         if self.is_constant() && other.is_constant() {
             // Compute the sum and return the new constant.
@@ -40,7 +40,7 @@ impl<E: Environment, I: IntegerType> AddWrapped<Self> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn AddWrapped<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn AddWrapped<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -51,9 +51,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn AddWrapped<Integer<E, I>, Outpu
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn AddWrapped<Integer<E, I>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType> OutputMode<dyn AddWrapped<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -75,12 +73,12 @@ mod tests {
 
     fn check_add<I: IntegerType>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
+        let a = Integer::<I>::new(mode_a, first);
         let b = Integer::new(mode_b, second);
         let expected = first.wrapping_add(&second);
         Circuit::scope(name, || {
@@ -122,8 +120,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Add: ({first} + {second})");
                 check_add::<I>(&name, first, second, mode_a, mode_b);

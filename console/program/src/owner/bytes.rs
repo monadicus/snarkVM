@@ -61,7 +61,7 @@ mod tests {
         // Check the byte representation.
         let expected_bytes = expected.to_bytes_le()?;
         assert_eq!(expected, ProgramOwner::read_le(&expected_bytes[..])?);
-        assert!(ProgramOwner::<CurrentNetwork>::read_le(&expected_bytes[1..]).is_err());
+        assert!(ProgramOwner::read_le(&expected_bytes[1..]).is_err());
         Ok(())
     }
 }

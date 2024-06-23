@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> ToBits for ProgramID<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for ProgramID {
+    type Boolean = Boolean;
 
     /// Returns the little-endian bits of the program ID.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -28,8 +28,8 @@ impl<A: Aleo> ToBits for ProgramID<A> {
     }
 }
 
-impl<A: Aleo> ToBits for &ProgramID<A> {
-    type Boolean = Boolean<A>;
+impl ToBits for &ProgramID {
+    type Boolean = Boolean;
 
     /// Returns the little-endian bits of the program ID.
     fn write_bits_le(&self, vec: &mut Vec<Self::Boolean>) {
@@ -56,12 +56,10 @@ mod tests {
     fn check_to_bits_le(mode: Mode) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_name_string = sample_lowercase_console_identifier_as_string::<Circuit>()?;
-            let expected = console::ProgramID::<<Circuit as Environment>::Network>::from_str(&format!(
-                "{expected_name_string}.aleo"
-            ))?;
+            let expected_name_string = sample_lowercase_console_identifier_as_string()?;
+            let expected = console::ProgramID::from_str(&format!("{expected_name_string}.aleo"))?;
 
-            let candidate = ProgramID::<Circuit>::new(mode, expected);
+            let candidate = ProgramID::new(mode, expected);
             assert_eq!(expected.to_bits_le(), candidate.to_bits_le().eject_value());
         }
         Ok(())
@@ -70,12 +68,10 @@ mod tests {
     fn check_to_bits_be(mode: Mode) -> Result<()> {
         for _ in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_name_string = sample_lowercase_console_identifier_as_string::<Circuit>()?;
-            let expected = console::ProgramID::<<Circuit as Environment>::Network>::from_str(&format!(
-                "{expected_name_string}.aleo"
-            ))?;
+            let expected_name_string = sample_lowercase_console_identifier_as_string()?;
+            let expected = console::ProgramID::from_str(&format!("{expected_name_string}.aleo"))?;
 
-            let candidate = ProgramID::<Circuit>::new(mode, expected);
+            let candidate = ProgramID::new(mode, expected);
             assert_eq!(expected.to_bits_be(), candidate.to_bits_be().eject_value());
         }
         Ok(())

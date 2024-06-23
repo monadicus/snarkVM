@@ -16,7 +16,7 @@ use super::*;
 
 impl<N: Network> Transactions<N> {
     /// Returns the finalize root of the transactions.
-    pub fn to_finalize_root(&self, ratified_finalize_operations: Vec<FinalizeOperation<N>>) -> Result<Field<N>> {
+    pub fn to_finalize_root(&self, ratified_finalize_operations: Vec<FinalizeOperation<N>>) -> Result<Field> {
         // Prepare the ratified finalize ID - a Merkle tree composed of the ratified finalize operations.
         let ratified_finalize_id = *N::merkle_tree_bhp::<FINALIZE_ID_DEPTH>(
             &ratified_finalize_operations.iter().map(ToBits::to_bits_le).collect::<Vec<_>>(),
@@ -39,12 +39,12 @@ impl<N: Network> Transactions<N> {
 
 impl<N: Network> Transactions<N> {
     /// Returns the transactions root, by computing the root for a Merkle tree of the transaction IDs.
-    pub fn to_transactions_root(&self) -> Result<Field<N>> {
+    pub fn to_transactions_root(&self) -> Result<Field> {
         Ok(*self.to_tree()?.root())
     }
 
     /// Returns the Merkle path for the transactions leaf.
-    pub fn to_path(&self, transaction_id: N::TransactionID) -> Result<TransactionsPath<N>> {
+    pub fn to_path(&self, transaction_id: TransactionID) -> Result<TransactionsPath<N>> {
         match self.transactions.get_index_of(&transaction_id) {
             Some(transaction_index) => self.to_tree()?.prove(transaction_index, &transaction_id.to_bits_le()),
             None => bail!("The transaction '{transaction_id}' is not in the block transactions"),
@@ -58,7 +58,7 @@ impl<N: Network> Transactions<N> {
 
     /// Returns the Merkle tree for the given transactions.
     fn transactions_tree(
-        transactions: &IndexMap<N::TransactionID, ConfirmedTransaction<N>>,
+        transactions: &IndexMap<TransactionID, ConfirmedTransaction<N>>,
     ) -> Result<TransactionsTree<N>> {
         // Ensure the number of transactions is within the allowed range.
         ensure!(
@@ -87,7 +87,7 @@ mod tests {
         // Note: This test uses 'checked_sub' to ensure the depth is not zero.
         assert_eq!(
             2usize.pow(TRANSACTIONS_DEPTH as u32).checked_sub(1).expect("Invalid depth"),
-            Transactions::<CurrentNetwork>::MAX_TRANSACTIONS
+            Transactions::MAX_TRANSACTIONS
         );
     }
 }

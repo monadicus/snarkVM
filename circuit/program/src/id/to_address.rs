@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::{Aleo, AleoV0};
+
 use super::*;
 
-impl<A: Aleo> ProgramID<A> {
+impl ProgramID {
     /// Returns the program address for this program ID.
-    pub fn to_address(&self) -> Address<A> {
+    pub fn to_address(&self) -> Address {
         // Compute the program address as `HashToGroup(program_id)`.
-        let group = A::hash_to_group_psd4(&[self.name().to_field(), self.network().to_field()]);
+        let group = AleoV0::hash_to_group_psd4(&[self.name().to_field(), self.network().to_field()]);
         // Return the program address.
         Address::from_group(group)
     }
@@ -42,13 +44,11 @@ mod tests {
     ) -> Result<()> {
         for i in 0..ITERATIONS {
             // Sample a random fixed-length alphanumeric string, that always starts with an alphabetic character.
-            let expected_name_string = sample_lowercase_console_identifier_as_string::<Circuit>()?;
-            let expected_program_id = console::ProgramID::<<Circuit as Environment>::Network>::from_str(&format!(
-                "{expected_name_string}.aleo"
-            ))?;
+            let expected_name_string = sample_lowercase_console_identifier_as_string()?;
+            let expected_program_id = console::ProgramID::from_str(&format!("{expected_name_string}.aleo"))?;
             let expected = expected_program_id.to_address()?;
 
-            let program_id = ProgramID::<Circuit>::new(mode, expected_program_id);
+            let program_id = ProgramID::new(mode, expected_program_id);
 
             Circuit::scope(format!("{mode}"), || {
                 let candidate = program_id.to_address();

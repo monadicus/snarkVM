@@ -12,23 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> Record<A, Plaintext<A>> {
+impl Record<Plaintext> {
     /// Returns the record commitment.
-    pub fn to_commitment(&self, program_id: &ProgramID<A>, record_name: &Identifier<A>) -> Field<A> {
+    pub fn to_commitment(&self, program_id: &ProgramID, record_name: &Identifier) -> Field {
         // Construct the input as `(program_id || record_name || record)`.
         let mut input = program_id.to_bits_le();
         record_name.write_bits_le(&mut input);
         self.write_bits_le(&mut input);
         // Compute the BHP hash of the program record.
-        A::hash_bhp1024(&input)
+        AleoV0::hash_bhp1024(&input)
     }
 }
 
-impl<A: Aleo> Record<A, Ciphertext<A>> {
+impl Record<Ciphertext> {
     /// Returns the record commitment.
-    pub fn to_commitment(&self, _program_id: &ProgramID<A>, _record_name: &Identifier<A>) -> Field<A> {
-        A::halt("Illegal operation: Record::to_commitment() cannot be invoked on the `Ciphertext` variant.")
+    pub fn to_commitment(&self, _program_id: &ProgramID, _record_name: &Identifier) -> Field {
+        Circuit::halt("Illegal operation: Record::to_commitment() cannot be invoked on the `Ciphertext` variant.")
     }
 }

@@ -14,16 +14,16 @@
 
 use super::*;
 
-impl<E: Environment> FromBits for Field<E> {
-    type Boolean = Boolean<E>;
+impl FromBits for Field {
+    type Boolean = Boolean;
 
     /// Initializes a new base field element from a list of **little-endian** bits.
-    ///   - If `bits_le` is longer than `E::BaseField::size_in_bits()`, the excess bits are enforced to be `0`s.
-    ///   - If `bits_le` is shorter than `E::BaseField::size_in_bits()`, it is padded with `0`s up to base field size.
+    ///   - If `bits_le` is longer than `ConsoleField::size_in_bits()`, the excess bits are enforced to be `0`s.
+    ///   - If `bits_le` is shorter than `ConsoleField::size_in_bits()`, it is padded with `0`s up to base field size.
     fn from_bits_le(bits_le: &[Self::Boolean]) -> Self {
         // Retrieve the data and base field size.
-        let size_in_data_bits = E::BaseField::size_in_data_bits();
-        let size_in_bits = E::BaseField::size_in_bits();
+        let size_in_data_bits = ConsoleField::size_in_data_bits();
+        let size_in_bits = ConsoleField::size_in_bits();
 
         // Ensure the list of booleans is within the allowed size in bits.
         let num_bits = bits_le.len();
@@ -36,7 +36,7 @@ impl<E: Environment> FromBits for Field<E> {
         if num_bits > size_in_data_bits {
             // Retrieve the modulus & subtract by 1 as we'll check `bits_le` is less than or *equal* to this value.
             // (For advanced users) BaseField::MODULUS - 1 is equivalent to -1 in the field.
-            let modulus_minus_one = -E::BaseField::one();
+            let modulus_minus_one = -ConsoleField::one();
 
             // As `bits_le[size_in_bits..]` is guaranteed to be zero from the above logic,
             // and `bits_le` is greater than `size_in_data_bits`, it is safe to truncate `bits_le` to `size_in_bits`.
@@ -61,7 +61,7 @@ impl<E: Environment> FromBits for Field<E> {
 
         // Store the little-endian bits in the output.
         if output.bits_le.set(bits_le).is_err() {
-            E::halt("Detected corrupt internal state for the bits of a field element")
+            Circuit::halt("Detected corrupt internal state for the bits of a field element")
         }
 
         output
@@ -78,7 +78,7 @@ impl<E: Environment> FromBits for Field<E> {
     }
 }
 
-impl<E: Environment> Metrics<dyn FromBits<Boolean = Boolean<E>>> for Field<E> {
+impl Metrics<dyn FromBits<Boolean = Boolean>> for Field {
     type Case = Vec<Mode>;
 
     fn count(_modes: &Self::Case) -> Count {
@@ -86,7 +86,7 @@ impl<E: Environment> Metrics<dyn FromBits<Boolean = Boolean<E>>> for Field<E> {
     }
 }
 
-impl<E: Environment> OutputMode<dyn FromBits<Boolean = Boolean<E>>> for Field<E> {
+impl OutputMode<dyn FromBits<Boolean = Boolean>> for Field {
     type Case = Vec<Mode>;
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -110,11 +110,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let given_bits = Field::<Circuit>::new(mode, expected).to_bits_le();
+            let given_bits = Field::new(mode, expected).to_bits_le();
             let expected_size_in_bits = given_bits.len();
 
             Circuit::scope(format!("{mode} {i}"), || {
-                let candidate = Field::<Circuit>::from_bits_le(&given_bits);
+                let candidate = Field::from_bits_le(&given_bits);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().expect("Caching failed").len());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
@@ -129,7 +129,7 @@ mod tests {
             let candidate = [given_bits, vec![Boolean::new(mode, false); i as usize]].concat();
 
             Circuit::scope(&format!("Excess {mode} {i}"), || {
-                let candidate = Field::<Circuit>::from_bits_le(&candidate);
+                let candidate = Field::from_bits_le(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().expect("Caching failed").len());
                 match mode.is_constant() {
@@ -155,11 +155,11 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random element.
             let expected = Uniform::rand(&mut rng);
-            let given_bits = Field::<Circuit>::new(mode, expected).to_bits_be();
+            let given_bits = Field::new(mode, expected).to_bits_be();
             let expected_size_in_bits = given_bits.len();
 
             Circuit::scope(format!("{mode} {i}"), || {
-                let candidate = Field::<Circuit>::from_bits_be(&given_bits);
+                let candidate = Field::from_bits_be(&given_bits);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().expect("Caching failed").len());
                 assert_scope!(num_constants, num_public, num_private, num_constraints);
@@ -174,7 +174,7 @@ mod tests {
             let candidate = [vec![Boolean::new(mode, false); i as usize], given_bits].concat();
 
             Circuit::scope(&format!("Excess {mode} {i}"), || {
-                let candidate = Field::<Circuit>::from_bits_be(&candidate);
+                let candidate = Field::from_bits_be(&candidate);
                 assert_eq!(expected, candidate.eject_value());
                 assert_eq!(expected_size_in_bits, candidate.bits_le.get().expect("Caching failed").len());
                 match mode.is_constant() {

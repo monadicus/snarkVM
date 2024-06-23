@@ -18,7 +18,7 @@ impl<N: Network> Package<N> {
     /// Runs a program function with the given inputs.
     pub fn run<A: crate::circuit::Aleo<Network = N, BaseField = N::Field>, R: Rng + CryptoRng>(
         &self,
-        private_key: &PrivateKey<N>,
+        private_key: &PrivateKey,
         function_name: Identifier<N>,
         inputs: &[Value<N>],
         rng: &mut R,

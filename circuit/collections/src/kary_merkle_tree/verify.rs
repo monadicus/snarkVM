@@ -14,7 +14,7 @@
 
 use super::*;
 
-impl<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> KaryMerklePath<E, PH, DEPTH, ARITY> {
+impl<PH: PathHash, const DEPTH: u8, const ARITY: u8> KaryMerklePath<PH, DEPTH, ARITY> {
     /// Returns `true` if the Merkle path is valid for the given root and leaf.
     pub fn verify<LH: LeafHash<Hash = PH::Hash>>(
         &self,
@@ -22,37 +22,37 @@ impl<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> KaryMerk
         path_hasher: &PH,
         root: &PH::Hash,
         leaf: &LH::Leaf,
-    ) -> Boolean<E> {
+    ) -> Boolean {
         // Ensure the leaf index is within the tree depth.
         if (*self.leaf_index.eject_value() as u128) >= (ARITY as u128).pow(DEPTH as u32) {
-            E::halt("Found an out of bounds Merkle leaf index")
+            Circuit::halt("Found an out of bounds Merkle leaf index")
         }
         // Ensure the path length matches the expected depth.
         else if self.siblings.len() != DEPTH as usize {
-            E::halt("Found an incorrect Merkle path length")
+            Circuit::halt("Found an incorrect Merkle path length")
         }
 
         // Ensure the Merkle path has the correct arity.
         for sibling in &self.siblings {
             if sibling.len() != ARITY.saturating_sub(1) as usize {
-                return E::halt("Merkle path is not the correct depth");
+                return Circuit::halt("Merkle path is not the correct depth");
             }
         }
 
         // Initialize a tracker for the current hash, by computing the leaf hash to start.
         let mut current_hash = leaf_hasher.hash_leaf(leaf);
 
-        let arity = U64::<E>::new(Mode::Constant, console::U64::new(ARITY as u64));
+        let arity = U64::new(Mode::Constant, console::U64::new(ARITY as u64));
 
         let indicator_indexes = (0..DEPTH).map(|i| {
-            let index = U16::<E>::new(Mode::Constant, console::U16::new(i as u16));
+            let index = U16::new(Mode::Constant, console::U16::new(i as u16));
             &self.leaf_index / (arity.clone().pow(index)) % arity.clone()
         });
 
         // Initialize the zero index.
-        let zero_index = U64::<E>::zero();
+        let zero_index = U64::zero();
         // Initialize the last index.
-        let last_index = U64::<E>::new(Mode::Constant, console::U64::new(ARITY.saturating_sub(1) as u64));
+        let last_index = U64::new(Mode::Constant, console::U64::new(ARITY.saturating_sub(1) as u64));
 
         // Check levels between leaf level and root.
         for (indicator_index, sibling_hashes) in indicator_indexes.zip_eq(&self.siblings) {
@@ -68,7 +68,7 @@ impl<E: Environment, PH: PathHash<E>, const DEPTH: u8, const ARITY: u8> KaryMerk
             // Calculate the middle children.
             for i in 1..sibling_hashes.len() {
                 // Index of the current sibling
-                let index = U64::<E>::new(Mode::Constant, console::U64::new(i as u64));
+                let index = U64::new(Mode::Constant, console::U64::new(i as u64));
 
                 // When the index is less than the indicator index, use the current index. Otherwise, use the previous index.
                 let option_a = PH::Hash::ternary(
@@ -117,16 +117,14 @@ mod tests {
     macro_rules! check_verify {
         ($lh:ident, $ph:ident, $mode:ident, $depth:expr, $arity:expr, $num_inputs:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize the leaf hasher.
-            let native_leaf_hasher =
-                snarkvm_console_algorithms::$lh::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit_leaf_hasher = $lh::<Circuit>::constant(native_leaf_hasher.clone());
+            let native_leaf_hasher = snarkvm_console_algorithms::$lh::setup(DOMAIN)?;
+            let circuit_leaf_hasher = $lh::constant(native_leaf_hasher.clone());
 
             let mut rng = TestRng::default();
 
             // Initialize the path hasher.
-            let native_path_hasher =
-                snarkvm_console_algorithms::$ph::<<Circuit as Environment>::Network>::setup(DOMAIN)?;
-            let circuit_path_hasher = $ph::<Circuit>::constant(native_path_hasher.clone());
+            let native_path_hasher = snarkvm_console_algorithms::$ph::setup(DOMAIN)?;
+            let circuit_path_hasher = $ph::constant(native_path_hasher.clone());
 
             for i in 0..ITERATIONS {
                 // Determine the number of leaves.
@@ -147,8 +145,7 @@ mod tests {
                     let merkle_path = merkle_tree.prove(index, merkle_leaf)?;
 
                     // Initialize the Merkle path.
-                    let path =
-                        KaryMerklePath::<Circuit, $ph<Circuit>, $depth, $arity>::new(Mode::$mode, merkle_path.clone());
+                    let path = KaryMerklePath::<$ph, $depth, $arity>::new(Mode::$mode, merkle_path.clone());
 
                     assert_eq!(merkle_path, path.eject_value());
                     // Initialize the Merkle root.
@@ -197,13 +194,13 @@ mod tests {
         ($lh:ident, $ph:ident, $mode:ident, $depth:expr, $arity:expr, $num_inputs:expr, ($num_constants:expr, $num_public:expr, $num_private:expr, $num_constraints:expr)) => {{
             // Initialize the leaf hasher.
             let native_leaf_hasher = snarkvm_console_algorithms::$lh::default();
-            let circuit_leaf_hasher = $lh::<Circuit>::new();
+            let circuit_leaf_hasher = $lh::new();
 
             let mut rng = TestRng::default();
 
             // Initialize the path hasher.
             let native_path_hasher = snarkvm_console_algorithms::$ph::default();
-            let circuit_path_hasher = $ph::<Circuit>::new();
+            let circuit_path_hasher = $ph::new();
 
             for i in 0..ITERATIONS {
                 // Determine the number of leaves.
@@ -224,12 +221,11 @@ mod tests {
                     let merkle_path = merkle_tree.prove(index, merkle_leaf)?;
 
                     // Initialize the Merkle path.
-                    let path =
-                        KaryMerklePath::<Circuit, $ph<Circuit>, $depth, $arity>::new(Mode::$mode, merkle_path.clone());
+                    let path = KaryMerklePath::<$ph, $depth, $arity>::new(Mode::$mode, merkle_path.clone());
 
                     assert_eq!(merkle_path, path.eject_value());
                     // Initialize the Merkle root.
-                    let root = <$ph<Circuit> as PathHash<Circuit>>::Hash::new(Mode::$mode, *merkle_tree.root());
+                    let root = <$ph as PathHash>::Hash::new(Mode::$mode, *merkle_tree.root());
                     // Initialize the Merkle leaf.
                     let leaf: Vec<_> = Inject::new(Mode::$mode, merkle_leaf.clone());
 
@@ -241,8 +237,7 @@ mod tests {
                     Circuit::reset();
 
                     // Initialize an incorrect Merkle root.
-                    let incorrect_root =
-                        <$ph<Circuit> as PathHash<Circuit>>::Hash::new(Mode::$mode, Default::default());
+                    let incorrect_root = <$ph as PathHash>::Hash::new(Mode::$mode, Default::default());
 
                     Circuit::scope(format!("Verify (Incorrect Root) {}", Mode::$mode), || {
                         let candidate = path.verify(&circuit_leaf_hasher, &circuit_path_hasher, &incorrect_root, &leaf);

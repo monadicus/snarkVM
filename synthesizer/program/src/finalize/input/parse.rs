@@ -95,27 +95,24 @@ mod tests {
     #[test]
     fn test_input_parse() -> Result<()> {
         // Literal
-        let input = Input::<CurrentNetwork>::parse("input r0 as field.public;").unwrap().1;
-        assert_eq!(input.register(), &Register::<CurrentNetwork>::Locator(0));
-        assert_eq!(input.finalize_type(), &FinalizeType::<CurrentNetwork>::from_str("field.public")?);
+        let input = Input::parse("input r0 as field.public;").unwrap().1;
+        assert_eq!(input.register(), &Register::Locator(0));
+        assert_eq!(input.finalize_type(), &FinalizeType::from_str("field.public")?);
 
         // Struct
-        let input = Input::<CurrentNetwork>::parse("input r1 as signature.public;").unwrap().1;
-        assert_eq!(input.register(), &Register::<CurrentNetwork>::Locator(1));
-        assert_eq!(input.finalize_type(), &FinalizeType::<CurrentNetwork>::from_str("signature.public")?);
+        let input = Input::parse("input r1 as signature.public;").unwrap().1;
+        assert_eq!(input.register(), &Register::Locator(1));
+        assert_eq!(input.finalize_type(), &FinalizeType::from_str("signature.public")?);
 
         // Record
-        let input = Input::<CurrentNetwork>::parse("input r2 as token.public;").unwrap().1;
-        assert_eq!(input.register(), &Register::<CurrentNetwork>::Locator(2));
-        assert_eq!(input.finalize_type(), &FinalizeType::<CurrentNetwork>::from_str("token.public")?);
+        let input = Input::parse("input r2 as token.public;").unwrap().1;
+        assert_eq!(input.register(), &Register::Locator(2));
+        assert_eq!(input.finalize_type(), &FinalizeType::from_str("token.public")?);
 
         // Future
-        let input = Input::<CurrentNetwork>::parse("input r3 as credits.aleo/mint_public.future;").unwrap().1;
-        assert_eq!(input.register(), &Register::<CurrentNetwork>::Locator(3));
-        assert_eq!(
-            input.finalize_type(),
-            &FinalizeType::<CurrentNetwork>::from_str("credits.aleo/mint_public.future")?
-        );
+        let input = Input::parse("input r3 as credits.aleo/mint_public.future;").unwrap().1;
+        assert_eq!(input.register(), &Register::Locator(3));
+        assert_eq!(input.finalize_type(), &FinalizeType::from_str("credits.aleo/mint_public.future")?);
 
         Ok(())
     }
@@ -123,15 +120,15 @@ mod tests {
     #[test]
     fn test_input_display() -> Result<()> {
         // Literal
-        let input = Input::<CurrentNetwork>::from_str("input r0 as field.public;")?;
+        let input = Input::from_str("input r0 as field.public;")?;
         assert_eq!("input r0 as field.public;", input.to_string());
 
         // Struct
-        let input = Input::<CurrentNetwork>::from_str("input r1 as signature.public;")?;
+        let input = Input::from_str("input r1 as signature.public;")?;
         assert_eq!("input r1 as signature.public;", input.to_string());
 
         // Record
-        let input = Input::<CurrentNetwork>::parse("input r2 as token.public;").unwrap().1;
+        let input = Input::parse("input r2 as token.public;").unwrap().1;
         assert_eq!(format!("{input}"), "input r2 as token.public;");
 
         Ok(())

@@ -35,7 +35,7 @@ use synthesizer_snark::{Certificate, Proof, VerifyingKey};
 #[derive(Clone)]
 pub struct TransactionMemory<N: Network> {
     /// The mapping of `transaction ID` to `transaction type`.
-    id_map: MemoryMap<N::TransactionID, TransactionType>,
+    id_map: MemoryMap<TransactionID, TransactionType>,
     /// The deployment store.
     deployment_store: DeploymentStore<N, DeploymentMemory<N>>,
     /// The execution store.
@@ -46,7 +46,7 @@ pub struct TransactionMemory<N: Network> {
 
 #[rustfmt::skip]
 impl<N: Network> TransactionStorage<N> for TransactionMemory<N> {
-    type IDMap = MemoryMap<N::TransactionID, TransactionType>;
+    type IDMap = MemoryMap<TransactionID, TransactionType>;
     type DeploymentStorage = DeploymentMemory<N>;
     type ExecutionStorage = ExecutionMemory<N>;
     type FeeStorage = FeeMemory<N>;
@@ -90,11 +90,11 @@ impl<N: Network> TransactionStorage<N> for TransactionMemory<N> {
 #[allow(clippy::type_complexity)]
 pub struct DeploymentMemory<N: Network> {
     /// The ID map.
-    id_map: MemoryMap<N::TransactionID, ProgramID<N>>,
+    id_map: MemoryMap<TransactionID, ProgramID<N>>,
     /// The edition map.
     edition_map: MemoryMap<ProgramID<N>, u16>,
     /// The reverse ID map.
-    reverse_id_map: MemoryMap<(ProgramID<N>, u16), N::TransactionID>,
+    reverse_id_map: MemoryMap<(ProgramID<N>, u16), TransactionID>,
     /// The owner map.
     owner_map: MemoryMap<(ProgramID<N>, u16), ProgramOwner<N>>,
     /// The program map.
@@ -109,9 +109,9 @@ pub struct DeploymentMemory<N: Network> {
 
 #[rustfmt::skip]
 impl<N: Network> DeploymentStorage<N> for DeploymentMemory<N> {
-    type IDMap = MemoryMap<N::TransactionID, ProgramID<N>>;
+    type IDMap = MemoryMap<TransactionID, ProgramID<N>>;
     type EditionMap = MemoryMap<ProgramID<N>, u16>;
-    type ReverseIDMap = MemoryMap<(ProgramID<N>, u16), N::TransactionID>;
+    type ReverseIDMap = MemoryMap<(ProgramID<N>, u16), TransactionID>;
     type OwnerMap = MemoryMap<(ProgramID<N>, u16), ProgramOwner<N>>;
     type ProgramMap = MemoryMap<(ProgramID<N>, u16), Program<N>>;
     type VerifyingKeyMap = MemoryMap<(ProgramID<N>, Identifier<N>, u16), VerifyingKey<N>>;
@@ -178,20 +178,20 @@ impl<N: Network> DeploymentStorage<N> for DeploymentMemory<N> {
 #[allow(clippy::type_complexity)]
 pub struct ExecutionMemory<N: Network> {
     /// The ID map.
-    id_map: MemoryMap<N::TransactionID, (Vec<N::TransitionID>, bool)>,
+    id_map: MemoryMap<TransactionID, (Vec<N::TransitionID>, bool)>,
     /// The reverse ID map.
-    reverse_id_map: MemoryMap<N::TransitionID, N::TransactionID>,
+    reverse_id_map: MemoryMap<N::TransitionID, TransactionID>,
     /// The inclusion map.
-    inclusion_map: MemoryMap<N::TransactionID, (N::StateRoot, Option<Proof<N>>)>,
+    inclusion_map: MemoryMap<TransactionID, (N::StateRoot, Option<Proof<N>>)>,
     /// The fee store.
     fee_store: FeeStore<N, FeeMemory<N>>,
 }
 
 #[rustfmt::skip]
 impl<N: Network> ExecutionStorage<N> for ExecutionMemory<N> {
-    type IDMap = MemoryMap<N::TransactionID, (Vec<N::TransitionID>, bool)>;
-    type ReverseIDMap = MemoryMap<N::TransitionID, N::TransactionID>;
-    type InclusionMap = MemoryMap<N::TransactionID, (N::StateRoot, Option<Proof<N>>)>;
+    type IDMap = MemoryMap<TransactionID, (Vec<N::TransitionID>, bool)>;
+    type ReverseIDMap = MemoryMap<N::TransitionID, TransactionID>;
+    type InclusionMap = MemoryMap<TransactionID, (N::StateRoot, Option<Proof<N>>)>;
     type FeeStorage = FeeMemory<N>;
 
     /// Initializes the execution storage.
@@ -230,17 +230,17 @@ impl<N: Network> ExecutionStorage<N> for ExecutionMemory<N> {
 #[allow(clippy::type_complexity)]
 pub struct FeeMemory<N: Network> {
     /// The fee map.
-    fee_map: MemoryMap<N::TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>,
+    fee_map: MemoryMap<TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>,
     /// The reverse fee map.
-    reverse_fee_map: MemoryMap<N::TransitionID, N::TransactionID>,
+    reverse_fee_map: MemoryMap<N::TransitionID, TransactionID>,
     /// The transition store.
     transition_store: TransitionStore<N, TransitionMemory<N>>,
 }
 
 #[rustfmt::skip]
 impl<N: Network> FeeStorage<N> for FeeMemory<N> {
-    type FeeMap = MemoryMap<N::TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>;
-    type ReverseFeeMap = MemoryMap<N::TransitionID, N::TransactionID>;
+    type FeeMap = MemoryMap<TransactionID, (N::TransitionID, N::StateRoot, Option<Proof<N>>)>;
+    type ReverseFeeMap = MemoryMap<N::TransitionID, TransactionID>;
     type TransitionStorage = TransitionMemory<N>;
 
     /// Initializes the fee storage.

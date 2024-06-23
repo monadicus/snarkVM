@@ -14,11 +14,11 @@
 
 use super::*;
 
-impl<E: Environment, I: IntegerType> MulWrapped<Self> for Integer<E, I> {
+impl<I: IntegerType> MulWrapped<Self> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn mul_wrapped(&self, other: &Integer<E, I>) -> Self::Output {
+    fn mul_wrapped(&self, other: &Integer<I>) -> Self::Output {
         // Determine the variable mode.
         if self.is_constant() && other.is_constant() {
             // Compute the product and return the new constant.
@@ -57,7 +57,7 @@ impl<E: Environment, I: IntegerType> MulWrapped<Self> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn MulWrapped<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn MulWrapped<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode, bool, bool);
 
     fn count(case: &Self::Case) -> Count {
@@ -74,9 +74,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn MulWrapped<Integer<E, I>, Outpu
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn MulWrapped<Integer<E, I>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType> OutputMode<dyn MulWrapped<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode, bool, bool);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -99,13 +97,13 @@ mod tests {
 
     fn check_mul<I: IntegerType>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, I>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<I>::new(mode_b, second);
         let a_is_zero = a.is_zero().eject_value();
         let b_is_zero = b.is_zero().eject_value();
         let expected = first.wrapping_mul(&second);
@@ -196,8 +194,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Mul: ({first} * {second})");
                 check_mul::<I>(&name, first, second, mode_a, mode_b);

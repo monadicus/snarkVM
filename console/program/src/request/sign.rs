@@ -18,7 +18,8 @@ impl Request {
     /// Returns the request for a given private key, program ID, function name, inputs, input types, and RNG, where:
     ///     challenge := HashToScalar(r * G, pk_sig, pr_sig, signer, \[tvk, tcm, function ID, input IDs\])
     ///     response := r - challenge * sk_sig
-    pub fn sign<N: Network, R: Rng + CryptoRng>(
+    pub fn sign<R: Rng + CryptoRng>(
+        network_id: u16,
         private_key: &PrivateKey,
         program_id: ProgramID,
         function_name: Identifier,
@@ -72,7 +73,7 @@ impl Request {
         let is_root = if is_root { Field::one() } else { Field::zero() };
 
         // Retrieve the network ID.
-        let network_id = U16::new(N::ID);
+        let network_id = U16::new(network_id);
         // Compute the function ID.
         let function_id = compute_function_id(&network_id, &program_id, &function_name)?;
 

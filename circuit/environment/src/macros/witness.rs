@@ -23,7 +23,7 @@ macro_rules! witness {
         // Determine the witness mode, by checking if all given circuits are constant.
         let mode = witness_mode!($( $circuit ),*);
 
-        E::new_witness(mode, || {
+        $crate::Circuit::new_witness(mode, || {
             // Reassign each circuit to its primitive type.
             $( let rename_selfs!($circuit) = $circuit.eject_value(); )*
             // Execute the code block, returning the primitive to be injected.

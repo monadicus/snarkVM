@@ -59,7 +59,7 @@ impl<'de, N: Network> Deserialize<'de> for Transaction<N> {
                 // Deserialize the transaction into a JSON value.
                 let mut transaction = serde_json::Value::deserialize(deserializer)?;
                 // Retrieve the transaction ID.
-                let id: N::TransactionID = DeserializeExt::take_from_value::<D>(&mut transaction, "id")?;
+                let id: TransactionID = DeserializeExt::take_from_value::<D>(&mut transaction, "id")?;
 
                 // Recover the transaction.
                 let transaction = match transaction

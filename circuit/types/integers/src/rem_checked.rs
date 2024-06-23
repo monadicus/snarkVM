@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_environment::Circuit;
+
 use super::*;
 
-impl<E: Environment, I: IntegerType> Rem<Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Rem<Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn rem(self, other: Self) -> Self::Output {
@@ -22,15 +24,15 @@ impl<E: Environment, I: IntegerType> Rem<Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Rem<Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Rem<Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn rem(self, other: Integer<E, I>) -> Self::Output {
+    fn rem(self, other: Integer<I>) -> Self::Output {
         self % &other
     }
 }
 
-impl<E: Environment, I: IntegerType> Rem<&Integer<E, I>> for Integer<E, I> {
+impl<I: IntegerType> Rem<&Integer<I>> for Integer<I> {
     type Output = Self;
 
     fn rem(self, other: &Self) -> Self::Output {
@@ -38,40 +40,40 @@ impl<E: Environment, I: IntegerType> Rem<&Integer<E, I>> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Rem<&Integer<E, I>> for &Integer<E, I> {
-    type Output = Integer<E, I>;
+impl<I: IntegerType> Rem<&Integer<I>> for &Integer<I> {
+    type Output = Integer<I>;
 
-    fn rem(self, other: &Integer<E, I>) -> Self::Output {
+    fn rem(self, other: &Integer<I>) -> Self::Output {
         let mut output = self.clone();
         output %= other;
         output
     }
 }
 
-impl<E: Environment, I: IntegerType> RemAssign<Integer<E, I>> for Integer<E, I> {
-    fn rem_assign(&mut self, other: Integer<E, I>) {
+impl<I: IntegerType> RemAssign<Integer<I>> for Integer<I> {
+    fn rem_assign(&mut self, other: Integer<I>) {
         *self %= &other;
     }
 }
 
-impl<E: Environment, I: IntegerType> RemAssign<&Integer<E, I>> for Integer<E, I> {
-    fn rem_assign(&mut self, other: &Integer<E, I>) {
+impl<I: IntegerType> RemAssign<&Integer<I>> for Integer<I> {
+    fn rem_assign(&mut self, other: &Integer<I>) {
         // Stores the remainder of `self` divided by `other` in `self`.
         *self = self.rem_checked(other);
     }
 }
 
-impl<E: Environment, I: IntegerType> RemChecked<Self> for Integer<E, I> {
+impl<I: IntegerType> RemChecked<Self> for Integer<I> {
     type Output = Self;
 
     #[inline]
-    fn rem_checked(&self, other: &Integer<E, I>) -> Self::Output {
+    fn rem_checked(&self, other: &Integer<I>) -> Self::Output {
         match (self.is_constant(), other.is_constant()) {
             // If `other` is a constant and is zero, then halt.
-            (_, true) if other.eject_value().is_zero() => E::halt("Attempted to divide by zero."),
+            (_, true) if other.eject_value().is_zero() => Circuit::halt("Attempted to divide by zero."),
             // If `self` and `other` are constants, and other is not zero, then directly return the remainder.
             (true, true) => match self.eject_value().checked_rem(&other.eject_value()) {
-                None => E::halt("Overflow on division of two integer constants"),
+                None => Circuit::halt("Overflow on division of two integer constants"),
                 Some(value) => Integer::constant(console::Integer::new(value)),
             },
             // Handle the remaining cases.
@@ -83,7 +85,7 @@ impl<E: Environment, I: IntegerType> RemChecked<Self> for Integer<E, I> {
                     let min = Integer::constant(console::Integer::MIN);
                     let neg_one = Integer::constant(-console::Integer::one());
                     let overflows = self.is_equal(&min) & other.is_equal(&neg_one);
-                    E::assert(!overflows);
+                    Circuit::assert(!overflows);
 
                     // Divide the absolute value of `self` and `other` in the base field.
                     let unsigned_dividend = self.abs_wrapped().cast_as_dual();
@@ -106,23 +108,23 @@ impl<E: Environment, I: IntegerType> RemChecked<Self> for Integer<E, I> {
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn Rem<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn Rem<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
-        <Self as Metrics<dyn RemChecked<Integer<E, I>, Output = Integer<E, I>>>>::count(case)
+        <Self as Metrics<dyn RemChecked<Integer<I>, Output = Integer<I>>>>::count(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn Rem<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> OutputMode<dyn Rem<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
-        <Self as OutputMode<dyn RemChecked<Integer<E, I>, Output = Integer<E, I>>>>::output_mode(case)
+        <Self as OutputMode<dyn RemChecked<Integer<I>, Output = Integer<I>>>>::output_mode(case)
     }
 }
 
-impl<E: Environment, I: IntegerType> Metrics<dyn RemChecked<Integer<E, I>, Output = Integer<E, I>>> for Integer<E, I> {
+impl<I: IntegerType> Metrics<dyn RemChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn count(case: &Self::Case) -> Count {
@@ -143,9 +145,7 @@ impl<E: Environment, I: IntegerType> Metrics<dyn RemChecked<Integer<E, I>, Outpu
     }
 }
 
-impl<E: Environment, I: IntegerType> OutputMode<dyn RemChecked<Integer<E, I>, Output = Integer<E, I>>>
-    for Integer<E, I>
-{
+impl<I: IntegerType> OutputMode<dyn RemChecked<Integer<I>, Output = Integer<I>>> for Integer<I> {
     type Case = (Mode, Mode);
 
     fn output_mode(case: &Self::Case) -> Mode {
@@ -169,13 +169,13 @@ mod tests {
 
     fn check_rem<I: IntegerType + RefUnwindSafe>(
         name: &str,
-        first: console::Integer<<Circuit as Environment>::Network, I>,
-        second: console::Integer<<Circuit as Environment>::Network, I>,
+        first: console::Integer<I>,
+        second: console::Integer<I>,
         mode_a: Mode,
         mode_b: Mode,
     ) {
-        let a = Integer::<Circuit, I>::new(mode_a, first);
-        let b = Integer::<Circuit, I>::new(mode_b, second);
+        let a = Integer::<I>::new(mode_a, first);
+        let b = Integer::<I>::new(mode_b, second);
         if second == console::Integer::zero() {
             match mode_b {
                 Mode::Constant => check_operation_halts(&a, &b, Integer::rem_checked),
@@ -252,8 +252,8 @@ mod tests {
     {
         for first in I::MIN..=I::MAX {
             for second in I::MIN..=I::MAX {
-                let first = console::Integer::<_, I>::new(first);
-                let second = console::Integer::<_, I>::new(second);
+                let first = console::Integer::<I>::new(first);
+                let second = console::Integer::<I>::new(second);
 
                 let name = format!("Rem: ({first} % {second})");
                 check_rem::<I>(&name, first, second, mode_a, mode_b);

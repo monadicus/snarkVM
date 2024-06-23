@@ -25,9 +25,9 @@ impl<N: Network> StackEvaluate<N> for Stack<N> {
         closure: &Closure<N>,
         inputs: &[Value<N>],
         call_stack: CallStack<N>,
-        signer: Address<N>,
-        caller: Address<N>,
-        tvk: Field<N>,
+        signer: Address,
+        caller: Address,
+        tvk: Field,
     ) -> Result<Vec<Value<N>>> {
         let timer = timer!("Stack::evaluate_closure");
 

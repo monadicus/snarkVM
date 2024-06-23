@@ -118,8 +118,8 @@ mod tests {
         for _ in 0..ITERATIONS {
             let expected = Uniform::rand(rng);
 
-            let (encoded, sign_high) = Elligator2::<CurrentEnvironment>::encode_without_cofactor_clear(&expected)?;
-            let decoded = Elligator2::<CurrentEnvironment>::decode(&encoded, sign_high)?;
+            let (encoded, sign_high) = Elligator2::encode_without_cofactor_clear(&expected)?;
+            let decoded = Elligator2::decode(&encoded, sign_high)?;
             assert_eq!(expected, decoded);
 
             match sign_high {
@@ -134,12 +134,12 @@ mod tests {
 
     #[test]
     fn test_zero_fails() {
-        let encode = Elligator2::<CurrentEnvironment>::encode(&Zero::zero());
+        let encode = Elligator2::encode(&Zero::zero());
         assert!(encode.is_err());
 
-        let decode = Elligator2::<CurrentEnvironment>::decode(&Zero::zero(), true);
+        let decode = Elligator2::decode(&Zero::zero(), true);
         assert!(decode.is_err());
-        let decode = Elligator2::<CurrentEnvironment>::decode(&Zero::zero(), false);
+        let decode = Elligator2::decode(&Zero::zero(), false);
         assert!(decode.is_err());
     }
 }

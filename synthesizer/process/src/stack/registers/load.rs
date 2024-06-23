@@ -90,7 +90,7 @@ impl<N: Network, A: circuit::Aleo<Network = N>> RegistersLoadCircuit<N, A> for R
         &self,
         stack: &(impl StackMatches<N> + StackProgram<N>),
         operand: &Operand<N>,
-    ) -> Result<circuit::Value<A>> {
+    ) -> Result<circuit::Value> {
         use circuit::Inject;
 
         // Retrieve the register.

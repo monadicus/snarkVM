@@ -16,7 +16,7 @@ use super::*;
 
 impl<N: Network> Ratifications<N> {
     /// Returns the ratifications root, by computing the root for a Merkle tree of the ratification IDs.
-    pub fn to_ratifications_root(&self) -> Result<Field<N>> {
+    pub fn to_ratifications_root(&self) -> Result<Field> {
         Ok(*self.to_tree()?.root())
     }
 
@@ -61,6 +61,6 @@ mod tests {
     #[test]
     fn test_ratifications_depth() {
         // Ensure the log2 relationship between depth and the maximum number of ratifications.
-        assert_eq!(2usize.pow(RATIFICATIONS_DEPTH as u32), Ratifications::<CurrentNetwork>::MAX_RATIFICATIONS);
+        assert_eq!(2usize.pow(RATIFICATIONS_DEPTH as u32), Ratifications::MAX_RATIFICATIONS);
     }
 }

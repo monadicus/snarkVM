@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use snarkvm_circuit_network::AleoV0;
+
 use super::*;
 
-impl<A: Aleo> StatePath<A> {
+impl StatePath {
     /// Returns `true` if the state path is valid.
     ///
     /// # Parameters
@@ -51,25 +53,27 @@ impl<A: Aleo> StatePath<A> {
     ///                                                                                 |
     ///                                                                          transition_leaf
     /// ```
-    pub fn verify(&self, is_global: &Boolean<A>, local_state_root: &Field<A>) -> Boolean<A> {
+    pub fn verify(&self, is_global: &Boolean, local_state_root: &Field) -> Boolean {
         // Ensure the transition path is valid.
-        let check_transition_path =
-            A::verify_merkle_path_bhp(&self.transition_path, &self.transition_root, &self.transition_leaf.to_bits_le())
-                & self.transition_leaf.variant().is_equal(&U8::constant(console::U8::new(3))); // Variant = 3 (Input::Record)
+        let check_transition_path = AleoV0::verify_merkle_path_bhp(
+            &self.transition_path,
+            &self.transition_root,
+            &self.transition_leaf.to_bits_le(),
+        ) & self.transition_leaf.variant().is_equal(&U8::constant(console::U8::new(3))); // Variant = 3 (Input::Record)
 
         // Ensure the transaction leaf is valid.
         let check_transaction_leaf =
-            A::hash_bhp512(&(&self.transition_root, &self.tcm).to_bits_le()).is_equal(self.transaction_leaf.id());
+            AleoV0::hash_bhp512(&(&self.transition_root, &self.tcm).to_bits_le()).is_equal(self.transaction_leaf.id());
 
         // Ensure the transaction path is valid.
-        let check_transaction_path = A::verify_merkle_path_bhp(
+        let check_transaction_path = AleoV0::verify_merkle_path_bhp(
             &self.transaction_path,
             &self.transaction_id,
             &self.transaction_leaf.to_bits_le(),
         ) & self.transaction_leaf.variant().is_equal(&U8::one()); // Variant = 1 (Transaction::Execution)
 
         // Ensure the transactions path is valid.
-        let check_transactions_path = A::verify_merkle_path_bhp(
+        let check_transactions_path = AleoV0::verify_merkle_path_bhp(
             &self.transactions_path,
             self.header_leaf.id(),
             &self.transaction_id.to_bits_le(),
@@ -77,7 +81,7 @@ impl<A: Aleo> StatePath<A> {
 
         // Ensure the header path is valid.
         let check_header_path =
-            A::verify_merkle_path_bhp(&self.header_path, &self.header_root, &self.header_leaf.to_bits_le())
+            AleoV0::verify_merkle_path_bhp(&self.header_path, &self.header_root, &self.header_leaf.to_bits_le())
                 & self.header_leaf.index().is_equal(&U8::one()); // Index = 1 (Header::transactions_root)
 
         // Construct the block hash preimage.
@@ -85,11 +89,11 @@ impl<A: Aleo> StatePath<A> {
         self.header_root.write_bits_le(&mut block_hash_preimage);
 
         // Ensure the block path is valid.
-        let check_block_hash = A::hash_bhp1024(&block_hash_preimage).is_equal(&self.block_hash);
+        let check_block_hash = AleoV0::hash_bhp1024(&block_hash_preimage).is_equal(&self.block_hash);
 
         // Ensure the global state root is correct.
         let check_state_root =
-            A::verify_merkle_path_bhp(&self.block_path, &self.global_state_root, &self.block_hash.to_bits_le());
+            AleoV0::verify_merkle_path_bhp(&self.block_path, &self.global_state_root, &self.block_hash.to_bits_le());
 
         // Combine the transition and transaction path checks.
         let check_transition_and_transaction_path =
@@ -130,8 +134,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample the console state path.
-            let console_state_path =
-                console::state_path::test_helpers::sample_global_state_path::<CurrentNetwork>(None, rng).unwrap();
+            let console_state_path = console::state_path::test_helpers::sample_global_state_path(None, rng).unwrap();
             // Sample the local state root.
             let local_state_root = console::Field::rand(rng);
 
@@ -144,7 +147,7 @@ mod tests {
                 // Inject the local state root.
                 let circuit_local_state_root = Field::new(mode, local_state_root);
                 // Inject the state path.
-                let circuit_state_path = StatePath::<Circuit>::new(mode, console_state_path.clone());
+                let circuit_state_path = StatePath::new(mode, console_state_path.clone());
 
                 // Ensure the state path is valid.
                 let is_valid = circuit_state_path.verify(&circuit_is_global, &circuit_local_state_root);
@@ -178,8 +181,7 @@ mod tests {
 
         for i in 0..ITERATIONS {
             // Sample the console state path.
-            let console_state_path =
-                console::state_path::test_helpers::sample_local_state_path::<CurrentNetwork>(None, rng).unwrap();
+            let console_state_path = console::state_path::test_helpers::sample_local_state_path(None, rng).unwrap();
             // Sample the local state root.
             let local_state_root = **console_state_path.transaction_id();
 
@@ -201,7 +203,7 @@ mod tests {
                     };
 
                     // Inject the state path.
-                    let circuit_state_path = StatePath::<Circuit>::new(mode, console_state_path.clone());
+                    let circuit_state_path = StatePath::new(mode, console_state_path.clone());
 
                     // Ensure the state path is valid.
                     let is_valid = circuit_state_path.verify(&circuit_is_global, &circuit_local_state_root);

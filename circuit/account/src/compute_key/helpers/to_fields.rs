@@ -14,8 +14,8 @@
 
 use super::*;
 
-impl<A: Aleo> ToFields for ComputeKey<A> {
-    type Field = Field<A>;
+impl ToFields for ComputeKey {
+    type Field = Field;
 
     /// Casts a compute key into a list of base fields.
     fn to_fields(&self) -> Vec<Self::Field> {
@@ -42,7 +42,7 @@ mod tests {
         for i in 0..ITERATIONS {
             // Sample a random compute key.
             let expected = console::ComputeKey::try_from(console::PrivateKey::new(rng).unwrap()).unwrap();
-            let candidate = ComputeKey::<CurrentAleo>::new(mode, expected);
+            let candidate = ComputeKey::new(mode, expected);
 
             CurrentAleo::scope(&format!("{mode} {i}"), || {
                 let candidate = candidate.to_fields();
